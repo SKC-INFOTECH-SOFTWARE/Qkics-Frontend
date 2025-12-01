@@ -4,7 +4,10 @@ import axiosSecure from "../utils/axiosSecure";
 
 import { API_BASE_URL } from "../../config/api";
 
+import { useAlert } from "../../context/AlertContext";
+
 function SignupModal({ onRegister, onClose, openLogin, isDark }) {
+  const { showAlert } = useAlert();
   const [username, setUsername] = useState("");
   const [usernameErr, setUsernameErr] = useState("");
 
@@ -105,17 +108,17 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
   // handle register
   const handleSignup = async () => {
     if (!username || !password || !password2) {
-      alert("Enter required fields");
+      showAlert("Enter required fields", "warning");
       return;
     }
 
     if (password !== password2) {
-      alert("Passwords do not match");
+      showAlert("Passwords do not match", "error");
       return;
     }
 
     if (usernameErr || emailErr || phoneErr) {
-      alert("Fix validation errors first");
+      showAlert("Fix validation errors first", "warning");
       return;
     }
 
@@ -143,11 +146,13 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
 
       onRegister(username);
 
-      alert("Signup successful!");
+      onRegister(username);
+
+      showAlert("Signup successful!", "success");
       onClose();
     } catch (error) {
       console.log("Signup error:", error.response?.data);
-      alert("Signup failed. Try again.");
+      showAlert("Signup failed. Try again.", "error");
     }
   };
 
@@ -165,11 +170,10 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
           placeholder="Username"
           value={username}
           onChange={(e) => handleUsernameChange(e.target.value)}
-          className={`w-full px-3 py-2 rounded border ${
-            isDark
+          className={`w-full px-3 py-2 rounded border ${isDark
               ? "bg-neutral-700 border-neutral-600 text-white"
               : "bg-neutral-50 text-black"
-          }`}
+            }`}
         />
         {usernameErr && (
           <p className="text-red-500 text-xs mt-1">{usernameErr}</p>
@@ -182,11 +186,10 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className={`w-full px-3 py-2 rounded border ${
-          isDark
+        className={`w-full px-3 py-2 rounded border ${isDark
             ? "bg-neutral-700 border-neutral-600 text-white"
             : "bg-neutral-50 text-black"
-        }`}
+          }`}
       />
 
       {/* CONFIRM PASSWORD */}
@@ -195,11 +198,10 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
         placeholder="Confirm Password"
         value={password2}
         onChange={(e) => setPassword2(e.target.value)}
-        className={`w-full px-3 py-2 rounded border ${
-          isDark
+        className={`w-full px-3 py-2 rounded border ${isDark
             ? "bg-neutral-700 border-neutral-600 text-white"
             : "bg-neutral-50 text-black"
-        }`}
+          }`}
       />
 
       {/* EMAIL */}
@@ -209,11 +211,10 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
           placeholder="Email (optional)"
           value={email}
           onChange={(e) => handleEmailChange(e.target.value)}
-          className={`w-full px-3 py-2 rounded border ${
-            isDark
+          className={`w-full px-3 py-2 rounded border ${isDark
               ? "bg-neutral-700 border-neutral-600 text-white"
               : "bg-neutral-50 text-black"
-          }`}
+            }`}
         />
         {emailErr && <p className="text-red-500 text-xs mt-1">{emailErr}</p>}
       </div>
@@ -225,11 +226,10 @@ function SignupModal({ onRegister, onClose, openLogin, isDark }) {
           placeholder="Phone (optional)"
           value={phone}
           onChange={(e) => handlePhoneChange(e.target.value)}
-          className={`w-full px-3 py-2 rounded border ${
-            isDark
+          className={`w-full px-3 py-2 rounded border ${isDark
               ? "bg-neutral-700 border-neutral-600 text-white"
               : "bg-neutral-50 text-black"
-          }`}
+            }`}
         />
         {phoneErr && <p className="text-red-500 text-xs mt-1">{phoneErr}</p>}
       </div>

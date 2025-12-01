@@ -1,8 +1,10 @@
 // src/pages/EntrepreneurProfile.jsx
 import { useEffect, useState } from "react";
 import axiosSecure from "../components/utils/axiosSecure";
+import { useAlert } from "../context/AlertContext";
 
 function EntrepreneurProfile({ theme }) {
+  const { showAlert } = useAlert();
   const isDark = theme === "dark";
 
   const [user, setUser] = useState(null);
@@ -107,10 +109,10 @@ function EntrepreneurProfile({ theme }) {
       setProfile(entRes.data);
 
       setEditMode(false);
-      alert("Profile updated successfully!");
+      showAlert("Profile updated successfully!", "success");
     } catch (err) {
       console.log(err.response?.data);
-      alert("Update failed");
+      showAlert("Update failed", "error");
     }
   };
 
@@ -120,10 +122,10 @@ function EntrepreneurProfile({ theme }) {
       const res = await axiosSecure.post("/v1/entrepreneur/profile/", formData);
       setProfile(res.data);
       setCreating(false);
-      alert("Entrepreneur profile created!");
+      showAlert("Entrepreneur profile created!", "success");
     } catch (err) {
       console.log(err.response?.data);
-      alert("Create failed!");
+      showAlert("Create failed!", "error");
     }
   };
 
@@ -137,23 +139,21 @@ function EntrepreneurProfile({ theme }) {
 
   // INPUT STYLE - EXACT MATCH TO Profile.jsx
   const inputClass = (enabled) =>
-    `w-full mt-1 px-3 py-2 rounded border ${
-      isDark
-        ? enabled
-          ? "bg-neutral-700 border-green-400 text-white"
-          : "bg-neutral-800 border-neutral-700 text-white opacity-60 cursor-not-allowed"
-        : enabled
-          ? "bg-white border-green-400 text-black"
-          : "bg-neutral-100 border-neutral-300 text-black opacity-60 cursor-not-allowed"
+    `w-full mt-1 px-3 py-2 rounded border ${isDark
+      ? enabled
+        ? "bg-neutral-700 border-green-400 text-white"
+        : "bg-neutral-800 border-neutral-700 text-white opacity-60 cursor-not-allowed"
+      : enabled
+        ? "bg-white border-green-400 text-black"
+        : "bg-neutral-100 border-neutral-300 text-black opacity-60 cursor-not-allowed"
     }`;
 
   const isEntreEditable = () => true;
 
   return (
     <div
-      className={`max-w-2xl mx-auto mt-20 p-6 rounded-xl shadow ${
-        isDark ? "bg-neutral-900 text-white" : "bg-white text-black"
-      }`}
+      className={`max-w-2xl mx-auto mt-20 p-6 rounded-xl shadow ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"
+        }`}
     >
       {/* HEADER SECTION (same as Profile.jsx) */}
       <div className="flex gap-5 items-center">

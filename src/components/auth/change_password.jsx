@@ -1,7 +1,10 @@
 import { useState } from "react";
 import axiosSecure from "../utils/axiosSecure";
 
+import { useAlert } from "../../context/AlertContext";
+
 function ChangePasswordModal({ onClose, isDark }) {
+  const { showAlert } = useAlert();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
@@ -29,11 +32,11 @@ function ChangePasswordModal({ onClose, isDark }) {
         }
       );
 
-      alert(res.data.message || "Password changed successfully.");
+      showAlert(res.data.message || "Password changed successfully.", "success");
       onClose();
     } catch (error) {
       console.log("Password change error:", error.response?.data);
-      alert(error.response?.data?.detail || "Failed to change password");
+      showAlert(error.response?.data?.detail || "Failed to change password", "error");
     }
   };
 
@@ -49,9 +52,8 @@ function ChangePasswordModal({ onClose, isDark }) {
         placeholder="Old Password"
         value={oldPassword}
         onChange={(e) => setOldPassword(e.target.value)}
-        className={`w-full px-3 py-2 rounded border mb-3 ${
-          isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
-        }`}
+        className={`w-full px-3 py-2 rounded border mb-3 ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
+          }`}
       />
 
       <input
@@ -59,9 +61,8 @@ function ChangePasswordModal({ onClose, isDark }) {
         placeholder="New Password"
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
-        className={`w-full px-3 py-2 rounded border mb-3 ${
-          isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
-        }`}
+        className={`w-full px-3 py-2 rounded border mb-3 ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
+          }`}
       />
 
       <input
@@ -69,9 +70,8 @@ function ChangePasswordModal({ onClose, isDark }) {
         placeholder="Confirm New Password"
         value={newPassword2}
         onChange={(e) => setNewPassword2(e.target.value)}
-        className={`w-full px-3 py-2 rounded border ${
-          isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
-        }`}
+        className={`w-full px-3 py-2 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
+          }`}
       />
 
       <button

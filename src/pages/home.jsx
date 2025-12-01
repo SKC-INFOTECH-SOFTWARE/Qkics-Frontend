@@ -12,7 +12,7 @@ import useTags from "../components/hooks/useTags";
 import CreatePostModal from "../components/posts/create_post";
 import LoginModal from "../components/auth/login";
 import SignupModal from "../components/auth/register";
-import { API_BASE_URL } from "../config/api";
+
 
 function Home({ theme, searchQuery }) {
   const isDark = theme === "dark";
@@ -80,10 +80,6 @@ function Home({ theme, searchQuery }) {
     setShowCreatePost(true);
   };
 
-  console.log("BASE URL:", API_BASE_URL);
-
-  console.log("BASE URL:", axiosSecure.defaults.baseURL);
-console.log("FULL URL:", axiosSecure.getUri({ url: "/v1/community/posts/2/" }));
 
 
   return (
