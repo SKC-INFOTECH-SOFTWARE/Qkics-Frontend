@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BiLike, BiSolidLike } from "react-icons/bi";
 import { HiPencilAlt, HiTrash } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { CiEdit } from "react-icons/ci";
 
 import axiosSecure from "../components/utils/axiosSecure";
 import useLike from "../components/hooks/useLike";
@@ -96,6 +97,8 @@ function Profile({ theme }) {
       const updatedUser = res.data.user;
       setProfileUser(updatedUser);
 
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
       // Update form fields also
       setEditData({
         first_name: updatedUser.first_name || "",
@@ -111,6 +114,39 @@ function Profile({ theme }) {
       alert("Update failed!");
     }
   };
+
+  const handleProfilePicUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("profile_picture", file);
+
+  try {
+    const res = await axiosSecure.patch("/v1/auth/me/update/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const updatedUser = res.data.user;
+    setProfileUser(updatedUser);
+
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+
+    alert("Profile picture updated!");
+
+    // Reload after short delay
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
+
+  } catch (err) {
+    console.log("Profile pic upload error:", err);
+    alert("Upload failed!");
+  }
+};
+
 
   /* -------------------------
         DELETE POST
@@ -154,10 +190,35 @@ function Profile({ theme }) {
           className={`p-6 rounded-xl shadow flex gap-6 items-center mb-6
           ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}`}
         >
-          <div className="w-28 h-28 rounded-full bg-red-600 text-white flex items-center justify-center text-5xl font-bold">
-            {profileUser.first_name?.charAt(0) ||
-              profileUser.username?.charAt(0)?.toUpperCase()}
-          </div>
+          <div className="relative w-28 h-28">
+
+  {/* PROFILE IMAGE OR INITIAL */}
+  {profileUser.profile_picture ? (
+    <img
+      src={profileUser.profile_picture}
+      alt="Profile"
+      className="w-28 h-28 rounded-full object-cover"
+    />
+  ) : (
+    <div className="w-28 h-28 rounded-full bg-red-600 text-white flex items-center justify-center text-5xl font-bold">
+      {profileUser.first_name
+        ? profileUser.first_name.charAt(0).toUpperCase()
+        : profileUser.username.charAt(0).toUpperCase()}
+    </div>
+  )}
+
+  {/* EDIT ICON */}
+  <label className="absolute bottom-1 right-1 bg-black/70 text-white w-8 h-8 flex items-center justify-center rounded-full cursor-pointer hover:bg-black">
+    <CiEdit />
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleProfilePicUpload}
+      className="hidden"
+    />
+  </label>
+</div>
+
 
           <div>
             <h1 className="text-3xl font-bold">
@@ -179,136 +240,140 @@ function Profile({ theme }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* LEFT — USER DETAILS */}
-          <div
-            className={`p-6 rounded-xl shadow
-            ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}`}
-          >
-            {/* ✅ EDIT BUTTON MOVED HERE */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">User Details</h2>
+          {/* LEFT — USER DETAILS */}
+<div
+  className={`px-6 pt-6 pb-3 rounded-xl shadow self-start
+    ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}`}
+>
+  {/* EDIT BUTTON */}
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-xl font-semibold">User Details</h2>
 
-              {!editMode ? (
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="px-4 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700"
-                >
-                  Edit
-                </button>
-              ) : (
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleUpdateProfile}
-                    className="px-4 py-1.5 rounded-md bg-green-500 text-white"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditData({
-                        first_name: profileUser.first_name || "",
-                        last_name: profileUser.last_name || "",
-                        email: profileUser.email || "",
-                        phone: profileUser.phone || "",
-                      });
-                      setEditMode(false);
-                    }}
-                    className="px-4 py-1.5 rounded-md bg-neutral-600 text-white"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
+    {!editMode ? (
+      <button
+        onClick={() => setEditMode(true)}
+        className="px-4 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700"
+      >
+        Edit
+      </button>
+    ) : (
+      <div className="flex gap-2">
+        <button
+          onClick={handleUpdateProfile}
+          className="px-4 py-1.5 rounded-md bg-green-500 text-white"
+        >
+          Save
+        </button>
 
-            <div className="space-y-4">
+        <button
+          onClick={() => {
+            setEditData({
+              first_name: profileUser.first_name || "",
+              last_name: profileUser.last_name || "",
+              email: profileUser.email || "",
+              phone: profileUser.phone || "",
+            });
+            setEditMode(false);
+          }}
+          className="px-4 py-1.5 rounded-md bg-neutral-600 text-white"
+        >
+          Cancel
+        </button>
+      </div>
+    )}
+  </div>
 
-              {/* FIRST NAME */}
-              <div>
-                <label className="text-sm opacity-80">First Name</label>
-                <input
-                  type="text"
-                  value={editData.first_name}
-                  disabled={!editMode}
-                  onChange={(e) =>
-                    setEditData({ ...editData, first_name: e.target.value })
-                  }
-                  className={`w-full mt-1 px-3 py-2 rounded border
-                    ${
-                      isDark
-                        ? editMode
-                          ? "bg-neutral-700 border-green-400"
-                          : "bg-neutral-800 border-neutral-700 opacity-60"
-                        : editMode
-                        ? "bg-white border-green-400"
-                        : "bg-neutral-100 border-neutral-300 opacity-60"
-                    }`}
-                />
-              </div>
+  {/* FIELDS */}
+  <div className="flex flex-col gap-4">
 
-              {/* LAST NAME */}
-              <div>
-                <label className="text-sm opacity-80">Last Name</label>
-                <input
-                  type="text"
-                  value={editData.last_name}
-                  disabled={!editMode}
-                  onChange={(e) =>
-                    setEditData({ ...editData, last_name: e.target.value })
-                  }
-                  className={`w-full mt-1 px-3 py-2 rounded border
-                    ${
-                      isDark
-                        ? editMode
-                          ? "bg-neutral-700 border-green-400"
-                          : "bg-neutral-800 border-neutral-700 opacity-60"
-                        : editMode
-                        ? "bg-white border-green-400"
-                        : "bg-neutral-100 border-neutral-300 opacity-60"
-                    }`}
-                />
-              </div>
+    {/* FIRST NAME */}
+    <div>
+      <label className="text-sm opacity-80">First Name</label>
+      <input
+        type="text"
+        value={editData.first_name}
+        disabled={!editMode}
+        onChange={(e) =>
+          setEditData({ ...editData, first_name: e.target.value })
+        }
+        className={`w-full mt-1 px-3 py-2 rounded border
+          ${
+            isDark
+              ? editMode
+                ? "bg-neutral-700 border-green-400"
+                : "bg-neutral-800 border-neutral-700 opacity-60"
+              : editMode
+              ? "bg-white border-green-400"
+              : "bg-neutral-100 border-neutral-300 opacity-60"
+          }`}
+      />
+    </div>
 
-              {/* EMAIL */}
-              <div>
-                <label className="text-sm opacity-80">Email</label>
-                <input
-                  type="email"
-                  value={editData.email}
-                  disabled
-                  className={`w-full mt-1 px-3 py-2 rounded border opacity-60 cursor-not-allowed
-                    ${
-                      isDark
-                        ? "bg-neutral-800 border-neutral-700"
-                        : "bg-neutral-100 border-neutral-300"
-                    }`}
-                />
-              </div>
+    {/* LAST NAME */}
+    <div>
+      <label className="text-sm opacity-80">Last Name</label>
+      <input
+        type="text"
+        value={editData.last_name}
+        disabled={!editMode}
+        onChange={(e) =>
+          setEditData({ ...editData, last_name: e.target.value })
+        }
+        className={`w-full mt-1 px-3 py-2 rounded border
+          ${
+            isDark
+              ? editMode
+                ? "bg-neutral-700 border-green-400"
+                : "bg-neutral-800 border-neutral-700 opacity-60"
+              : editMode
+              ? "bg-white border-green-400"
+              : "bg-neutral-100 border-neutral-300 opacity-60"
+          }`}
+      />
+    </div>
 
-              {/* PHONE */}
-              <div>
-                <label className="text-sm opacity-80">Phone</label>
-                <input
-                  type="text"
-                  value={editData.phone}
-                  disabled={!editMode}
-                  onChange={(e) =>
-                    setEditData({ ...editData, phone: e.target.value })
-                  }
-                  className={`w-full mt-1 px-3 py-2 rounded border
-                    ${
-                      isDark
-                        ? editMode
-                          ? "bg-neutral-700 border-green-400"
-                          : "bg-neutral-800 border-neutral-700 opacity-60"
-                        : editMode
-                        ? "bg-white border-green-400"
-                        : "bg-neutral-100 border-neutral-300 opacity-60"
-                    }`}
-                />
-              </div>
+    {/* EMAIL */}
+    <div>
+      <label className="text-sm opacity-80">Email</label>
+      <input
+        type="email"
+        value={editData.email}
+        disabled
+        className={`w-full mt-1 px-3 py-2 rounded border opacity-60 cursor-not-allowed
+          ${
+            isDark
+              ? "bg-neutral-800 border-neutral-700"
+              : "bg-neutral-100 border-neutral-300"
+          }`}
+      />
+    </div>
 
-            </div>
-          </div>
+    {/* PHONE */}
+    <div>
+      <label className="text-sm opacity-80">Phone</label>
+      <input
+        type="text"
+        value={editData.phone}
+        disabled={!editMode}
+        onChange={(e) =>
+          setEditData({ ...editData, phone: e.target.value })
+        }
+        className={`w-full mt-1 mb-5 px-3 py-2 rounded border
+          ${
+            isDark
+              ? editMode
+                ? "bg-neutral-700 border-green-400"
+                : "bg-neutral-800 border-neutral-700 opacity-60"
+              : editMode
+              ? "bg-white border-green-400"
+              : "bg-neutral-100 border-neutral-300 opacity-60"
+          }`}
+      />
+    </div>
+
+  </div>
+</div>
+
 
           {/* RIGHT — POSTS */}
           <div
@@ -345,11 +410,19 @@ function Profile({ theme }) {
                   <header className="p-5 flex items-start gap-4 relative">
                     <div className="h-10 w-10 rounded-full bg-[#3a86ff]">
                       <img
-                        src="https://isobarscience.com/wp-content/uploads/2020/09/default-profile-picture1.jpg"
-                        alt=""
-                        width="50"
-                        className="rounded-full"
-                      />
+  src={
+    post.author.profile_picture
+      ? post.author.profile_picture
+      : "https://ui-avatars.com/api/?name=" +
+        (post.author.first_name
+          ? post.author.first_name
+          : post.author.username)
+  }
+  alt="Author"
+  width="50"
+  className="rounded-full object-cover h-10 w-10"
+/>
+
                     </div>
 
                     <div>

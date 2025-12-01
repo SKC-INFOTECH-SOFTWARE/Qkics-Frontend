@@ -12,6 +12,7 @@ import useTags from "../components/hooks/useTags";
 import CreatePostModal from "../components/posts/create_post";
 import LoginModal from "../components/auth/login";
 import SignupModal from "../components/auth/register";
+import { API_BASE_URL } from "../config/api";
 
 function Home({ theme, searchQuery }) {
   const isDark = theme === "dark";
@@ -79,6 +80,12 @@ function Home({ theme, searchQuery }) {
     setShowCreatePost(true);
   };
 
+  console.log("BASE URL:", API_BASE_URL);
+
+  console.log("BASE URL:", axiosSecure.defaults.baseURL);
+console.log("FULL URL:", axiosSecure.getUri({ url: "/v1/community/posts/2/" }));
+
+
   return (
     <div className={`min-h-screen mt-3 ${bg}`}>
       <div className="pt-14 max-w-6xl mx-auto px-4 pb-10 grid grid-cols-12 gap-4">
@@ -141,10 +148,10 @@ function Home({ theme, searchQuery }) {
 
                     {tags.length > 8 && (
                       <button
-                        className={`w-full px-4 py-2 mt-2 text-sm ${hoverBg} rounded-xl border ${borderColor}`}
+                        className={`w-full px-4 py-2 mt-2 text-sm text text-blue-500 ${hoverBg} rounded-xl border ${borderColor}`}
                         onClick={() => setShowAllTags(!showAllTags)}
                       >
-                        {showAllTags ? "Show Less ▲" : "Show More ▼"}
+                        {showAllTags  ? "Show Less ▲" : "Show More ▼"}
                       </button>
                     )}
                   </>
@@ -165,11 +172,18 @@ function Home({ theme, searchQuery }) {
               <header className="p-5 flex items-start gap-4 relative">
                 <div className="h-10 w-10 rounded-full bg-[#3a86ff]">
                   <img
-                    src="https://isobarscience.com/wp-content/uploads/2020/09/default-profile-picture1.jpg"
-                    alt=""
-                    width="50"
-                    className="rounded-full"
-                  />
+  src={
+    post.author.profile_picture
+      ? post.author.profile_picture
+      : post.author.first_name
+        ? `https://ui-avatars.com/api/?name=${post.author.first_name}&background=random&length=1`
+        : `https://ui-avatars.com/api/?name=${post.author.username}&background=random&length=1`
+  }
+  alt={post.author.username}
+  className="rounded-full object-cover h-10 w-10"
+/>
+
+
                 </div>
 
                 <div>

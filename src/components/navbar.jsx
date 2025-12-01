@@ -157,11 +157,21 @@ function Navbar({
                   }`}
                 >
                   <img
-                        src="https://isobarscience.com/wp-content/uploads/2020/09/default-profile-picture1.jpg"
-                        alt=""
-                        width="50"
-                        className="rounded-full"
-                      />
+  src={
+    JSON.parse(localStorage.getItem("user"))?.profile_picture
+      ? JSON.parse(localStorage.getItem("user")).profile_picture
+      : JSON.parse(localStorage.getItem("user"))?.first_name
+        ? `https://ui-avatars.com/api/?name=${
+            JSON.parse(localStorage.getItem("user")).first_name
+          }&background=random&length=1`
+        : `https://ui-avatars.com/api/?name=${
+            JSON.parse(localStorage.getItem("user")).username
+          }&background=random&length=1`
+  }
+  alt="profile"
+  className="rounded-full object-cover h-8 w-8"
+/>
+
                 </button>
 
                 {dropdown && (
