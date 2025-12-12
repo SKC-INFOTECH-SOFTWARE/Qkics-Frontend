@@ -18,6 +18,12 @@ import ExpertProfile from "./profiles/expertProfile";
 import Comments from "./components/posts/comment";
 import ExpertWizard from "./profiles/expertWizards/ExpertWizard";
 import EntrepreneurWizard from "./profiles/entreprenuerWizard/entreprenuerWizard";
+import AdminDashboard from "./admin/adminPages/adminDashboard";
+import AdminUsers from "./admin/adminPages/adminUsers";
+import AdminPosts from "./admin/adminPages/adminPosts";
+import SystemLogs from "./admin/superadminPages/systemLogs";
+import AdminLayout from "./admin/adminLayout";
+import AdminTags from "./admin/adminPages/adminTags";
 
 function App() {
   const dispatch = useDispatch();
@@ -26,7 +32,7 @@ function App() {
   /* -----------------------------------------
       FETCH USER PROFILE ONCE (Redux)
   ----------------------------------------- */
-  const user = useSelector((state) => state.user.data);
+  const { data: user, status } = useSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(fetchUserProfile());
@@ -82,26 +88,47 @@ function App() {
   }, [showAlert]);
 
   /* -----------------------------------------
+      NAVBAR VISIBILITY LOGIC
+      - while status === "loading" : hide navbar (prevents flicker)
+      - after loading:
+         - if user == null -> show navbar (logged out)
+         - if user.user_type is admin/superadmin -> hide navbar
+         - otherwise show navbar
+  ----------------------------------------- */
+  const shouldShowNavbar = () => {
+    // hide while we are fetching profile initially
+    if (status === "loading") return false;
+
+    // after loading: if no user -> show navbar (public / logged out)
+    if (!user) return true;
+
+    // hide for admin / superadmin
+    if (user.user_type === "admin" || user.user_type === "superadmin") return false;
+
+    // show for everyone else
+    return true;
+  };
+
+  /* -----------------------------------------
       RETURN UI
   ----------------------------------------- */
   return (
     <>
-      <Navbar
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        user={user}                // <-- Redux user
-        onSearch={(text) => setSearchText(text)}
-      />
+      {/* HIDE NAVBAR FOR ADMIN ROUTES */}
+      {shouldShowNavbar() && (
+        <Navbar
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          user={user}
+          onSearch={(text) => setSearchText(text)}
+        />
+      )}
+
 
       <Routes>
         <Route
           path="/"
-          element={
-            <Home
-              theme={theme}
-              searchQuery={searchText}
-            />
-          }
+          element={<Home theme={theme} searchQuery={searchText} />}
         />
 
         <Route path="/following" element={<Following theme={theme} />} />
@@ -115,6 +142,16 @@ function App() {
 
         <Route path="/post/:id/comments" element={<Comments theme={theme} />} />
         <Route path="/logout" element={<Logout />} />
+
+        {/* admin and superadmin routes  */}
+        <Route element={<AdminLayout theme={theme} onToggleTheme={toggleTheme} />}>
+          <Route path="/admin" element={<AdminDashboard theme={theme} />} />
+          <Route path="/superadmin" element={<AdminDashboard theme={theme} />} />
+          <Route path="/adminTags" element={<AdminTags theme={theme} />} />
+          <Route path="/adminUsers" element={<AdminUsers theme={theme} />} />
+          <Route path="/adminPosts" element={<AdminPosts theme={theme} />} />
+          <Route path="/system-logs" element={<SystemLogs theme={theme} />} />
+        </Route>
       </Routes>
     </>
   );

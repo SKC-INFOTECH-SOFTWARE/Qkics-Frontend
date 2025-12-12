@@ -155,36 +155,48 @@ export default function CertificationPage({ certifications = [], setExpertData, 
             </div>
 
             {/* CARD CONTENT */}
-            <div className="space-y-2">
-              <p>
-                Name : <span className="font-semibold">{cert.name}</span>
-              </p>
+            <div className="space-y-1">
 
-              <p>Issuing Organization : {cert.issuing_organization}</p>
+  {/* Certification Name */}
+  <h3 className="text-lg font-semibold">
+    {cert.name}
+  </h3>
 
-              <p>Issued On : {cert.issue_date}</p>
+  {/* Issuing Organization */}
+  <p className="text-sm opacity-80">
+    {cert.issuing_organization}
+  </p>
 
-              <p>
-                Expiration :
-                {" "}
-                {cert.expiration_date === null ? "No Expiration" : cert.expiration_date}
-              </p>
+  {/* Issued + Expiration */}
+  <p className="text-sm opacity-60 mt-1">
+    Issued {cert.issue_date}
+    {cert.expiration_date
+      ? ` • Expires ${cert.expiration_date}`
+      : " • No Expiration"}
+  </p>
 
-              <p>Credential ID : {cert.credential_id || "N/A"}</p>
+  {/* Credential ID */}
+  {cert.credential_id && (
+    <p className="text-sm opacity-70">
+      Credential ID: {cert.credential_id}
+    </p>
+  )}
 
-              {cert.credential_url && (
-                <p>
-                  Credential URL :{" "}
-                  <a
-                    href={cert.credential_url}
-                    target="_blank"
-                    className="text-blue-400 underline"
-                  >
-                    {cert.credential_url}
-                  </a>
-                </p>
-              )}
-            </div>
+  {/* Credential URL */}
+  {cert.credential_url && (
+    <p className="text-sm mt-2">
+      <a
+        href={cert.credential_url}
+        target="_blank"
+        className="text-blue-400 underline"
+      >
+        {cert.credential_url}
+      </a>
+    </p>
+  )}
+
+</div>
+
           </div>
         ))
       )}

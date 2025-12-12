@@ -164,22 +164,36 @@ export default function ExperiencePage({ experiences = [], setExpertData, isDark
               />
             </div>
 
-            <div className="space-y-2">
-              <p>Job Title : <span className="text-lg font-semibold">{exp.job_title}</span></p>
-              <p>Company : {exp.company}</p>
-              <p>Location : {exp.location}</p>
-              <p>Employment Type : {exp.employment_type}</p>
+            <div className="space-y-1">
 
-              <p>
-                Duration : {exp.start_date} →{" "}
-                {exp.end_date === null || exp.end_date === "" ? "Present" : exp.end_date}
-              </p>
+  {/* Job Title */}
+  <h3 className="text-lg font-semibold">
+    {exp.job_title}
+  </h3>
 
-              <div>
-                <p>Description :</p>
-                <p>{exp.description}</p>
-              </div>
-            </div>
+  {/* Company + Location */}
+  <p className="text-sm opacity-80">
+    {exp.company}
+    {exp.location ? ` • ${exp.location}` : ""}
+  </p>
+
+  {/* Employment Type + Duration */}
+  <p className="text-sm opacity-60">
+    {exp.employment_type.replace("_", " ").toUpperCase()} 
+    {" • "}
+    {exp.start_date} — {exp.end_date ? exp.end_date : "Present"}
+  </p>
+
+  {/* Description */}
+  {exp.description && (
+    <p className="text-sm mt-3 leading-relaxed opacity-90">
+      {exp.description}
+    </p>
+  )}
+
+</div>
+
+
           </div>
         ))
       )}

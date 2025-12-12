@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { BiLike, BiSolidLike } from "react-icons/bi";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Navigate } from "react-router-dom";   // ← UPDATED HERE
 import { FaPlus } from "react-icons/fa6";
 import { HiPencilAlt, HiTrash } from "react-icons/hi";
 import { FaGraduationCap, FaUser } from "react-icons/fa";
 import { IoIosRocket } from "react-icons/io";
-
-
+import { FaEllipsisH } from "react-icons/fa";
 
 import { useConfirm } from "../context/ConfirmContext";
 import { useAlert } from "../context/AlertContext";
@@ -29,12 +28,16 @@ function Home({ theme }) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const searchQuery = searchParams.get("search") || ""; // URL → the only source
+  const searchQuery = searchParams.get("search") || ""; 
 
   const { showConfirm } = useConfirm();
   const { showAlert } = useAlert();
 
   const loggedUser = useSelector((state) => state.user.data);
+
+
+
+  
 
   // THEME COLORS
   const bg = isDark ? "bg-[#0f0f0f]" : "bg-[#f5f5f5]";
@@ -57,7 +60,7 @@ function Home({ theme }) {
   const accessToken = getAccessToken();
 
   // HOOKS
-  const { posts, setPosts, loaderRef } = useFeed(null, searchQuery);
+  const { posts, setPosts, loaderRef , next } = useFeed(null, searchQuery);
 
   const { handleLike } = useLike(
     setPosts,
@@ -176,6 +179,17 @@ function Home({ theme }) {
       );
   }
 }
+
+
+  // 🚨 ADMIN REDIRECT LOGIC — ONLY CHANGE YOU NEEDED
+  if (loggedUser?.user_type === "admin") {
+    return <Navigate to="/admin" />;
+  }
+
+  if (loggedUser?.user_type === "superadmin") {
+    return <Navigate to="/superadmin" />;
+  }
+
 
   return (
     <div className={`min-h-screen mt-3 ${bg}`}>
@@ -307,7 +321,7 @@ function Home({ theme }) {
                       }
                       className="p-2 rounded-full hover:bg-gray-200/20"
                     >
-                      ⋮
+                     <FaEllipsisH />
                     </button>
 
                     {menuOpen === post.id && (
@@ -435,9 +449,17 @@ function Home({ theme }) {
             </article>
           ))}
 
-          <div ref={loaderRef} className="h-10 flex justify-center items-center opacity-50">
-            <p>Loading...</p>
-          </div>
+          <div ref={loaderRef} className="h-12 flex justify-center items-center opacity-50">
+  {posts.length === 0 ? (
+    <p>No posts yet</p>
+  ) : next ? (
+    <p>Loading more...</p>
+  ) : (
+    <p>No more posts</p>
+  )}
+</div>
+
+
         </main>
 
         {/* RIGHT SIDEBAR */}

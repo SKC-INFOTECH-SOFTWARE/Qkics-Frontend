@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 
 /* ============================================================
-   MAIN EXPORT — Contains all modal components
+   EXPORTS
 ============================================================ */
 export {
   AddExperienceModal,
@@ -14,7 +14,7 @@ export {
 };
 
 /* ============================================================
-   MODAL WRAPPER
+   MODAL OVERLAY WRAPPER
 ============================================================ */
 function ModalOverlay({ children, isDark, onClose }) {
   return (
@@ -24,8 +24,8 @@ function ModalOverlay({ children, isDark, onClose }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"} 
-        rounded-xl shadow-lg w-full max-w-2xl p-6`}
+        className={`${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}
+          rounded-xl shadow-xl w-full max-w-2xl p-6`}
       >
         {children}
       </div>
@@ -36,7 +36,14 @@ function ModalOverlay({ children, isDark, onClose }) {
 /* ============================================================
    REUSABLE INPUT FIELD
 ============================================================ */
-function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
+function Input({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder = "",
+  disabled = false,
+}) {
   return (
     <div>
       <label className="text-sm opacity-80">{label}</label>
@@ -72,15 +79,13 @@ function AddExperienceModal({ onClose, onCreate }) {
 
   const submit = async () => {
     if (!form.job_title || !form.company || !form.start_date) {
-      alert("Please fill job title, company and start date");
+      alert("Please fill job title, company and start date.");
       return;
     }
     setSaving(true);
     try {
       await onCreate(form);
       onClose();
-    } catch (e) {
-      console.error(e);
     } finally {
       setSaving(false);
     }
@@ -91,11 +96,18 @@ function AddExperienceModal({ onClose, onCreate }) {
       <h2 className="text-xl font-semibold mb-4">Add Experience</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="Job Title" value={form.job_title}
-          onChange={(v) => setForm((p) => ({ ...p, job_title: v }))} />
 
-        <Input label="Company" value={form.company}
-          onChange={(v) => setForm((p) => ({ ...p, company: v }))} />
+        <Input
+          label="Job Title"
+          value={form.job_title}
+          onChange={(v) => setForm((p) => ({ ...p, job_title: v }))}
+        />
+
+        <Input
+          label="Company"
+          value={form.company}
+          onChange={(v) => setForm((p) => ({ ...p, company: v }))}
+        />
 
         {/* Employment Type */}
         <div>
@@ -103,7 +115,9 @@ function AddExperienceModal({ onClose, onCreate }) {
           <select
             className="w-full mt-1 px-3 py-2 rounded border"
             value={form.employment_type}
-            onChange={(e) => setForm((p) => ({ ...p, employment_type: e.target.value }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, employment_type: e.target.value }))
+            }
           >
             <option value="full_time">Full Time</option>
             <option value="part_time">Part Time</option>
@@ -112,14 +126,25 @@ function AddExperienceModal({ onClose, onCreate }) {
           </select>
         </div>
 
-        <Input label="Location" value={form.location}
-          onChange={(v) => setForm((p) => ({ ...p, location: v }))} />
+        <Input
+          label="Location"
+          value={form.location}
+          onChange={(v) => setForm((p) => ({ ...p, location: v }))}
+        />
 
-        <Input label="Start Date" type="date" value={form.start_date}
-          onChange={(v) => setForm((p) => ({ ...p, start_date: v }))} />
+        <Input
+          label="Start Date"
+          type="date"
+          value={form.start_date}
+          onChange={(v) => setForm((p) => ({ ...p, start_date: v }))}
+        />
 
-        <Input label="End Date" type="date" value={form.end_date}
-          onChange={(v) => setForm((p) => ({ ...p, end_date: v }))} />
+        <Input
+          label="End Date"
+          type="date"
+          value={form.end_date}
+          onChange={(v) => setForm((p) => ({ ...p, end_date: v }))}
+        />
 
         {/* Description */}
         <div className="md:col-span-2">
@@ -128,12 +153,13 @@ function AddExperienceModal({ onClose, onCreate }) {
             className="w-full mt-1 px-3 py-2 rounded border"
             rows={4}
             value={form.description}
-            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, description: e.target.value }))
+            }
           />
         </div>
       </div>
 
-      {/* Footer */}
       <div className="mt-6 flex gap-3">
         <button
           onClick={submit}
@@ -142,7 +168,6 @@ function AddExperienceModal({ onClose, onCreate }) {
         >
           {saving ? "Adding..." : "Add Experience"}
         </button>
-
         <button onClick={onClose} className="px-4 py-2 rounded-md border">
           Cancel
         </button>
@@ -169,15 +194,13 @@ function AddEducationModal({ onClose, onCreate }) {
 
   const submit = async () => {
     if (!form.school || !form.degree) {
-      alert("Please fill school and degree");
+      alert("School and Degree are required.");
       return;
     }
     setSaving(true);
     try {
       await onCreate(form);
       onClose();
-    } catch (e) {
-      console.error(e);
     } finally {
       setSaving(false);
     }
@@ -188,31 +211,55 @@ function AddEducationModal({ onClose, onCreate }) {
       <h2 className="text-xl font-semibold mb-4">Add Education</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="School" value={form.school}
-          onChange={(v) => setForm((p) => ({ ...p, school: v }))} />
 
-        <Input label="Degree" value={form.degree}
-          onChange={(v) => setForm((p) => ({ ...p, degree: v }))} />
+        <Input
+          label="Institute"
+          value={form.school}
+          onChange={(v) => setForm((p) => ({ ...p, school: v }))}
+        />
 
-        <Input label="Field of Study" value={form.field_of_study}
-          onChange={(v) => setForm((p) => ({ ...p, field_of_study: v }))} />
+        <Input
+          label="Degree"
+          value={form.degree}
+          onChange={(v) => setForm((p) => ({ ...p, degree: v }))}
+        />
 
-        <Input label="Start Year" type="number" value={form.start_year}
-          onChange={(v) => setForm((p) => ({ ...p, start_year: v }))} />
+        <Input
+          label="Field of Study"
+          value={form.field_of_study}
+          onChange={(v) => setForm((p) => ({ ...p, field_of_study: v }))}
+        />
 
-        <Input label="End Year" type="number" value={form.end_year}
-          onChange={(v) => setForm((p) => ({ ...p, end_year: v }))} />
+        <Input
+          label="Start Year"
+          type="number"
+          value={form.start_year}
+          onChange={(v) => setForm((p) => ({ ...p, start_year: v }))}
+        />
 
-        <Input label="Grade" value={form.grade}
-          onChange={(v) => setForm((p) => ({ ...p, grade: v }))} />
+        <Input
+          label="End Year"
+          type="number"
+          value={form.end_year}
+          onChange={(v) => setForm((p) => ({ ...p, end_year: v }))}
+        />
 
+        <Input
+          label="Grade"
+          value={form.grade}
+          onChange={(v) => setForm((p) => ({ ...p, grade: v }))}
+        />
+
+        {/* Description */}
         <div className="md:col-span-2">
           <label className="text-sm opacity-80">Description</label>
           <textarea
             rows={3}
             className="w-full mt-1 px-3 py-2 rounded border"
             value={form.description}
-            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, description: e.target.value }))
+            }
           />
         </div>
       </div>
@@ -251,15 +298,13 @@ function AddCertificationModal({ onClose, onCreate }) {
 
   const submit = async () => {
     if (!form.name || !form.issuing_organization) {
-      alert("Please fill name and issuing organization");
+      alert("Name and Issuing Organization are required.");
       return;
     }
     setSaving(true);
     try {
       await onCreate(form);
       onClose();
-    } catch (e) {
-      console.error(e);
     } finally {
       setSaving(false);
     }
@@ -270,23 +315,43 @@ function AddCertificationModal({ onClose, onCreate }) {
       <h2 className="text-xl font-semibold mb-4">Add Certification</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="Name" value={form.name}
-          onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
+        <Input
+          label="Name"
+          value={form.name}
+          onChange={(v) => setForm((p) => ({ ...p, name: v }))}
+        />
 
-        <Input label="Issuing Organization" value={form.issuing_organization}
-          onChange={(v) => setForm((p) => ({ ...p, issuing_organization: v }))} />
+        <Input
+          label="Issuing Organization"
+          value={form.issuing_organization}
+          onChange={(v) => setForm((p) => ({ ...p, issuing_organization: v }))}
+        />
 
-        <Input label="Issue Date" type="date" value={form.issue_date}
-          onChange={(v) => setForm((p) => ({ ...p, issue_date: v }))} />
+        <Input
+          label="Issue Date"
+          type="date"
+          value={form.issue_date}
+          onChange={(v) => setForm((p) => ({ ...p, issue_date: v }))}
+        />
 
-        <Input label="Expiration Date" type="date" value={form.expiration_date}
-          onChange={(v) => setForm((p) => ({ ...p, expiration_date: v }))} />
+        <Input
+          label="Expiration Date"
+          type="date"
+          value={form.expiration_date}
+          onChange={(v) => setForm((p) => ({ ...p, expiration_date: v }))}
+        />
 
-        <Input label="Credential ID" value={form.credential_id}
-          onChange={(v) => setForm((p) => ({ ...p, credential_id: v }))} />
+        <Input
+          label="Credential ID"
+          value={form.credential_id}
+          onChange={(v) => setForm((p) => ({ ...p, credential_id: v }))}
+        />
 
-        <Input label="Credential URL" value={form.credential_url}
-          onChange={(v) => setForm((p) => ({ ...p, credential_url: v }))} />
+        <Input
+          label="Credential URL"
+          value={form.credential_url}
+          onChange={(v) => setForm((p) => ({ ...p, credential_url: v }))}
+        />
       </div>
 
       <div className="mt-6 flex gap-3">
@@ -321,15 +386,13 @@ function AddHonorModal({ onClose, onCreate }) {
 
   const submit = async () => {
     if (!form.title || !form.issuer) {
-      alert("Please fill title and issuer");
+      alert("Title and Issuer are required.");
       return;
     }
     setSaving(true);
     try {
       await onCreate(form);
       onClose();
-    } catch (e) {
-      console.error(e);
     } finally {
       setSaving(false);
     }
@@ -340,14 +403,24 @@ function AddHonorModal({ onClose, onCreate }) {
       <h2 className="text-xl font-semibold mb-4">Add Honor / Award</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="Title" value={form.title}
-          onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
+        <Input
+          label="Title"
+          value={form.title}
+          onChange={(v) => setForm((p) => ({ ...p, title: v }))}
+        />
 
-        <Input label="Issuer" value={form.issuer}
-          onChange={(v) => setForm((p) => ({ ...p, issuer: v }))} />
+        <Input
+          label="Issuer"
+          value={form.issuer}
+          onChange={(v) => setForm((p) => ({ ...p, issuer: v }))}
+        />
 
-        <Input label="Issue Date" type="date" value={form.issue_date}
-          onChange={(v) => setForm((p) => ({ ...p, issue_date: v }))} />
+        <Input
+          label="Issue Date"
+          type="date"
+          value={form.issue_date}
+          onChange={(v) => setForm((p) => ({ ...p, issue_date: v }))}
+        />
 
         <div className="md:col-span-2">
           <label className="text-sm opacity-80">Description</label>
@@ -355,7 +428,9 @@ function AddHonorModal({ onClose, onCreate }) {
             className="w-full mt-1 px-3 py-2 rounded border"
             rows={3}
             value={form.description}
-            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, description: e.target.value }))
+            }
           />
         </div>
       </div>
@@ -378,7 +453,7 @@ function AddHonorModal({ onClose, onCreate }) {
 }
 
 /* ============================================================
-   SUBMIT NOTE MODAL (before submit for review)
+   SUBMIT NOTE MODAL (Before submitting for review)
 ============================================================ */
 function SubmitNoteModal({ onClose, onSubmit }) {
   const [note, setNote] = useState("");
@@ -386,15 +461,13 @@ function SubmitNoteModal({ onClose, onSubmit }) {
 
   const submit = async () => {
     if (note.trim().length === 0) {
-      alert("Please enter a note for admin");
+      alert("Please enter a note for admin.");
       return;
     }
     setSending(true);
     try {
       await onSubmit(note);
       onClose();
-    } catch (e) {
-      console.error(e);
     } finally {
       setSending(false);
     }

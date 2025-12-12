@@ -32,30 +32,32 @@ export default function useFeed(_, searchQuery) {
   /** -----------------------------
    * LOAD FEED (NORMAL OR SEARCH)
    -------------------------------- */
- const loadFeed = async () => {
-  const client = getClient();
-  let url = "";
+  const loadFeed = async () => {
+    const client = getClient();
+    const token = getAccessToken();
+    let url = "";
 
-  if (searchQuery && searchQuery.trim() !== "") {
-    // Convert slug: artificial-intelligence → artificial intelligence
-    const cleanQuery = searchQuery.replace(/-/g, " ");
+    if (searchQuery && searchQuery.trim() !== "") {
+      const cleanQuery = searchQuery.replace(/-/g, " ");
 
-    url = `v1/community/search/?q=${cleanQuery}`;
-  } else {
-    const prefix = getAccessToken() ? "/v1" : "/api/v1";
-    url = `${prefix}/community/posts/`;
-  }
+      // ✅ FIXED: use correct prefix for login/logout
+      const prefix = token ? "/v1" : "/api/v1";
+      url = `${prefix}/community/search/?q=${cleanQuery}`;
+    } else {
+      const prefix = token ? "/v1" : "/api/v1";
+      url = `${prefix}/community/posts/`;
+    }
 
-  setPosts([]);
-  setNext(null);
+    setPosts([]);
+    setNext(null);
 
-  const res = await client.get(url);
-  const parsed = extractResults(res.data);
-  const freshPosts = parsed.results.map(normalize);
+    const res = await client.get(url);
+    const parsed = extractResults(res.data);
+    const freshPosts = parsed.results.map(normalize);
 
-  setPosts(freshPosts);
-  setNext(parsed.next);
-};
+    setPosts(freshPosts);
+    setNext(parsed.next);
+  };
 
 
   /** -----------------------------
@@ -102,5 +104,5 @@ export default function useFeed(_, searchQuery) {
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
-  return { posts, setPosts, loaderRef };
+  return { posts, setPosts, loaderRef, next };
 }

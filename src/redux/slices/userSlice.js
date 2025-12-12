@@ -1,7 +1,7 @@
+// src/redux/slices/userSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosSecure from "../../components/utils/axiosSecure";
 import { setAccessToken } from "../store/tokenManager";
-
 
 // 1️⃣ Fetch logged-in user profile
 export const fetchUserProfile = createAsyncThunk(
@@ -27,7 +27,7 @@ export const loginUser = createAsyncThunk(
       const accessToken = res.data.access;
       const user = res.data.user;
 
-      setAccessToken(accessToken);  // store only in memory
+      setAccessToken(accessToken); // store only in memory
 
       return user; // return user object only
     } catch (err) {
@@ -49,14 +49,14 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
-
 const userSlice = createSlice({
   name: "user",
 
   initialState: {
+    // IMPORTANT: start as "loading" so the app hides the navbar until the first fetch resolves
     data: null,
     role: null,
-    status: "idle",
+    status: "loading", // "loading" | "success" | "error" | "idle"
     error: null,
   },
 
@@ -64,7 +64,9 @@ const userSlice = createSlice({
     logoutUser: (state) => {
       state.data = null;
       state.role = null;
-      state.status = "idle";
+      // set to "error" (or "idle") to indicate not-authenticated and not-loading
+      state.status = "error";
+      state.error = null;
 
       setAccessToken(null); // clear token from memory
     },
@@ -76,7 +78,6 @@ const userSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-
       // FETCH PROFILE
       .addCase(fetchUserProfile.pending, (state) => {
         state.status = "loading";
@@ -84,23 +85,28 @@ const userSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.status = "success";
         state.data = action.payload;
-        state.role = action.payload.role;
+        state.role = action.payload.role || null;
+        state.error = null;
       })
-      .addCase(fetchUserProfile.rejected, (state) => {
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        // treat rejected as "not authenticated" (or failed) — clear data and set status
         state.status = "error";
+        state.data = null;
+        state.role = null;
+        state.error = action.payload || action.error?.message || "Failed to fetch profile";
       });
 
     // LOGIN
     builder
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "success";
-
         state.data = action.payload;
-        state.role = action.payload.role;
+        state.role = action.payload.role || null;
+        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "error";
-        state.error = action.payload;
+        state.error = action.payload || action.error?.message || "Login failed";
       });
 
     // PROFILE UPDATE

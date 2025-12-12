@@ -154,25 +154,35 @@ export default function EducationPage({ education = [], setExpertData, isDark })
             </div>
 
             {/* CARD CONTENT */}
-            <div className="space-y-2">
-              <p>
-                School : <span className="font-semibold">{edu.school}</span>
-              </p>
-              <p>Degree : {edu.degree}</p>
-              <p>Field of Study : {edu.field_of_study}</p>
+            <div className="space-y-1">
 
-              <p>
-                Duration : {edu.start_year} →{" "}
-                {edu.end_year === null ? "Present" : edu.end_year}
-              </p>
+  {/* School Name */}
+  <h3 className="text-lg font-semibold">
+    {edu.school}
+  </h3>
 
-              <p>Grade : {edu.grade}</p>
+  {/* Degree + Field of Study */}
+  <p className="text-sm opacity-80">
+    {edu.degree}
+    {edu.field_of_study ? ` • ${edu.field_of_study}` : ""}
+  </p>
 
-              <div>
-                <p>Description :</p>
-                <p>{edu.description}</p>
-              </div>
-            </div>
+  {/* Duration + Grade */}
+  <p className="text-sm opacity-60 mt-1">
+    {edu.start_year} — {edu.end_year ? edu.end_year : "Present"}
+    {edu.grade ? ` • Grade: ${edu.grade}` : ""}
+  </p>
+
+  {/* Description */}
+  {edu.description && (
+    <p className="text-sm mt-3 leading-relaxed opacity-90">
+      {edu.description}
+    </p>
+  )}
+
+</div>
+
+
           </div>
         ))
       )}
@@ -195,7 +205,7 @@ export default function EducationPage({ education = [], setExpertData, isDark })
 
             <div className="grid gap-3">
 
-               <label className="text-sm opacity-70">School <span className="text-red-600">* </span>:</label>
+               <label className="text-sm opacity-70">Institute <span className="text-red-600">* </span>:</label>
               <input
                 
                 value={form.school}

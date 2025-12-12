@@ -149,18 +149,32 @@ export default function HonorsPage({ honors_awards = [], setExpertData, isDark }
             </div>
 
             {/* CONTENT */}
-            <div className="space-y-2">
-              <p>
-                Title : <span className="font-semibold">{h.title}</span>
-              </p>
-              <p>Issuer : {h.issuer || "N/A"}</p>
-              <p>Issued On : {h.issue_date}</p>
+            <div className="space-y-1">
 
-              <div>
-                <p>Description :</p>
-                <p>{h.description || "N/A"}</p>
-              </div>
-            </div>
+  {/* Award Title */}
+  <h3 className="text-lg font-semibold">
+    {h.title}
+  </h3>
+
+  {/* Issuer */}
+  <p className="text-sm opacity-80">
+    {h.issuer || "Unknown Issuer"}
+  </p>
+
+  {/* Issued Date */}
+  <p className="text-sm opacity-60 mt-1">
+    Issued {h.issue_date}
+  </p>
+
+  {/* Description */}
+  {h.description && (
+    <p className="text-sm mt-3 leading-relaxed opacity-90">
+      {h.description}
+    </p>
+  )}
+
+</div>
+
           </div>
         ))
       )}

@@ -212,7 +212,7 @@ export default function UserPosts({
                 {post.image && (
                   <img
                     src={post.image}
-                    className="w-full max-h-96 object-cover rounded-xl mt-4"
+                    className="w-full max-h-96 object-contain rounded-xl mt-4"
                     alt="post"
                   />
                 )}

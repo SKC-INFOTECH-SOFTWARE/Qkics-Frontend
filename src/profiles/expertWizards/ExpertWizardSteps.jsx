@@ -3,12 +3,7 @@ import React from "react";
 
 /**
  * Steps Component
- * Renders:
- *  - Step 1: Basic Profile
- *  - Step 2: Credentials
- *  - Step 3: Review & Submit
- *
- * Receives logic + state from ExpertWizard.jsx
+ * Receives everything from ExpertWizard.jsx
  */
 
 export default function Steps(props) {
@@ -43,7 +38,8 @@ export default function Steps(props) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {/* Left Sidebar */}
+      
+      {/* LEFT SIDEBAR */}
       <div className={`${isDark ? "text-white" : "text-black"} md:col-span-1`}>
         <nav className="space-y-2 sticky top-28">
           <NavItem title="Basic Profile" stepNum={1} active={step === 1} onClick={() => goTo(1)} />
@@ -52,7 +48,7 @@ export default function Steps(props) {
         </nav>
       </div>
 
-      {/* Main Step Content */}
+      {/* RIGHT MAIN CONTENT */}
       <div className="md:col-span-3">
         {step === 1 && (
           <Step1
@@ -104,7 +100,7 @@ export default function Steps(props) {
 }
 
 /* ----------------------------------------------
-   NAV ITEM (sidebar)
+   NAV ITEM
 ---------------------------------------------- */
 function NavItem({ title, stepNum, active, onClick }) {
   return (
@@ -125,7 +121,7 @@ function NavItem({ title, stepNum, active, onClick }) {
 ---------------------------------------------- */
 function Step1({ profile, setProfile, isEditable, isDark, saving, next, handleSaveProfile }) {
   return (
-    <div className={`p-6 rounded-xl shadow mb-6 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+    <div className={`p-6 rounded-xl shadow mb-6 min-h-[70vh] ${isDark ? "bg-neutral-900" : "bg-white"}`}>
       <h2 className="text-xl font-semibold mb-4">Basic Profile</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -136,11 +132,11 @@ function Step1({ profile, setProfile, isEditable, isDark, saving, next, handleSa
           onChange={(v) => setProfile((p) => ({ ...p, last_name: v }))} />
 
         <Input label="Headline" value={profile.headline} disabled={!isEditable}
-          placeholder="e.g. PHD IN DEEP LEARNING | CNN & GNN"
+          placeholder="e.g. PHD IN DEEP LEARNING"
           onChange={(v) => setProfile((p) => ({ ...p, headline: v }))} />
 
         <Input label="Primary Expertise" value={profile.primary_expertise} disabled={!isEditable}
-          placeholder="e.g. Deep Learning - CNN & GNN"
+          placeholder="e.g. Deep Learning"
           onChange={(v) => setProfile((p) => ({ ...p, primary_expertise: v }))} />
 
         <Input label="Other Expertise" value={profile.other_expertise} disabled={!isEditable}
@@ -170,13 +166,13 @@ function Step1({ profile, setProfile, isEditable, isDark, saving, next, handleSa
           onClick={handleSaveProfile}
           disabled={saving || !isEditable}
           className={`px-4 py-2 rounded-md font-semibold ${
-            isEditable ? "bg-blue-600 text-white" : "bg-neutral-600 text-white/80 cursor-not-allowed"
+            isEditable ? "bg-green-500 text-white" : "bg-neutral-600 text-white/80 cursor-not-allowed"
           }`}
         >
           {saving ? "Saving..." : "Save Draft"}
         </button>
 
-        <button onClick={next} className="px-4 py-2 rounded-md border">
+        <button onClick={next} className="px-4 py-2 rounded-md  bg-blue-600 text-white">
           Next
         </button>
       </div>
@@ -185,7 +181,7 @@ function Step1({ profile, setProfile, isEditable, isDark, saving, next, handleSa
 }
 
 /* ----------------------------------------------
-   STEP 2 — CREDENTIALS
+   STEP 2 — CREDENTIALS (SCROLL FIXED)
 ---------------------------------------------- */
 function Step2({
   isDark,
@@ -194,23 +190,34 @@ function Step2({
   certifications,
   honors,
   isEditable,
+  saving,
+  handleSaveProfile,
   prev,
   next,
   setShowAddModal,
 }) {
   return (
-    <div className={`p-6 rounded-xl shadow mb-6 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+    <div
+      className={`p-6 rounded-xl shadow mb-6 min-h-[75vh] ${
+        isDark ? "bg-neutral-900" : "bg-white"
+      }`}
+    >
       <h2 className="text-xl font-semibold mb-4">Credentials</h2>
 
+      {/* 2-column grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CredentialCard
           title="Experience"
           items={experiences}
-          onAdd={() => (isEditable ? setShowAddModal("experience") : null)}
+          onAdd={() => isEditable && setShowAddModal("experience")}
           renderItem={(it) => (
             <div>
-              <div className="font-semibold">{it.job_title} @ {it.company}</div>
-              <div className="text-sm opacity-70">{it.start_date} — {it.end_date || "Present"}</div>
+              <div className="font-semibold">
+                {it.job_title} @ {it.company}
+              </div>
+              <div className="text-sm opacity-70">
+                {it.start_date} — {it.end_date || "Present"}
+              </div>
             </div>
           )}
         />
@@ -218,11 +225,15 @@ function Step2({
         <CredentialCard
           title="Education"
           items={educations}
-          onAdd={() => (isEditable ? setShowAddModal("education") : null)}
+          onAdd={() => isEditable && setShowAddModal("education")}
           renderItem={(it) => (
             <div>
-              <div className="font-semibold">{it.school} — {it.degree}</div>
-              <div className="text-sm opacity-70">{it.start_year} — {it.end_year || ""}</div>
+              <div className="font-semibold">
+                {it.school} — {it.degree}
+              </div>
+              <div className="text-sm opacity-70">
+                {it.start_year} — {it.end_year}
+              </div>
             </div>
           )}
         />
@@ -230,11 +241,13 @@ function Step2({
         <CredentialCard
           title="Certifications"
           items={certifications}
-          onAdd={() => (isEditable ? setShowAddModal("cert") : null)}
+          onAdd={() => isEditable && setShowAddModal("cert")}
           renderItem={(it) => (
             <div>
               <div className="font-semibold">{it.name}</div>
-              <div className="text-sm opacity-70">{it.issuing_organization} • {it.issue_date}</div>
+              <div className="text-sm opacity-70">
+                {it.issuing_organization} • {it.issue_date}
+              </div>
             </div>
           )}
         />
@@ -242,19 +255,36 @@ function Step2({
         <CredentialCard
           title="Honors & Awards"
           items={honors}
-          onAdd={() => (isEditable ? setShowAddModal("honor") : null)}
+          onAdd={() => isEditable && setShowAddModal("honor")}
           renderItem={(it) => (
             <div>
               <div className="font-semibold">{it.title}</div>
-              <div className="text-sm opacity-70">{it.issuer} • {it.issue_date}</div>
+              <div className="text-sm opacity-70">
+                {it.issuer} • {it.issue_date}
+              </div>
             </div>
           )}
         />
       </div>
 
+      {/* Buttons */}
       <div className="mt-6 flex items-center gap-3">
-        <button onClick={prev} className="px-4 py-2 rounded-md border">Back</button>
-        <button onClick={next} className="px-4 py-2 rounded-md bg-blue-600 text-white">Next</button>
+        <button onClick={prev} className="px-4 py-2 rounded-md border">
+          Back
+        </button>
+        <button
+          onClick={handleSaveProfile}
+          disabled={saving || !isEditable}
+          className={`px-4 py-2 rounded-md ${
+            isEditable ? "bg-green-500 text-white" : "bg-neutral-600 text-white/60 cursor-not-allowed"
+          }`}
+        >
+          {saving ? "Saving..." : "Save Draft"}
+        </button>
+
+        <button onClick={next} className="px-4 py-2 rounded-md bg-blue-600 text-white">
+          Next
+        </button>
       </div>
     </div>
   );
@@ -279,16 +309,15 @@ function Step3({
   applicationStatus,
   isVerified,
 }) {
+  /* Submit button logic — OPTION A */
+  const submitDisabled =
+    submitting || applicationStatus === "pending" || applicationStatus === "approved";
+
   return (
-    <div className={`p-6 rounded-xl shadow mb-6 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+    <div className={`p-6 rounded-xl shadow mb-6 min-h-[70vh] ${isDark ? "bg-neutral-900" : "bg-white"}`}>
       <h2 className="text-xl font-semibold mb-4">Review & Submit</h2>
 
-      {/* Verified badge */}
-      {isVerified && (
-        <div className="mb-3 text-green-600 font-semibold">
-          ✓ Verified Expert
-        </div>
-      )}
+      {isVerified && <div className="mb-2 text-green-500 font-semibold">✓ Verified Expert</div>}
 
       <div className="space-y-4">
         <ReviewRow label="Name" value={`${profile.first_name} ${profile.last_name}`} />
@@ -299,18 +328,21 @@ function Step3({
         <ReviewList label="Experience" items={experiences} emptyText="No experiences added" />
         <ReviewList label="Education" items={educations} emptyText="No education added" />
         <ReviewList label="Certifications" items={certifications} emptyText="No certifications added" />
-        <ReviewList label="Honors & Awards" items={honors} emptyText="No honors/awards added" />
+        <ReviewList label="Honors & Awards" items={honors} emptyText="No honors added" />
       </div>
 
+      {/* Bottom Buttons */}
       <div className="mt-6 flex items-center gap-3">
-        <button onClick={prev} className="px-4 py-2 rounded-md border">Back</button>
+        <button onClick={prev} className="px-4 py-2 rounded-md border">
+          Back
+        </button>
 
         {/* Save Draft */}
         <button
           onClick={handleSaveProfile}
-          disabled={!isEditable || saving}
+          disabled={saving || !isEditable}
           className={`px-4 py-2 rounded-md ${
-            isEditable ? "bg-green-600 text-white" : "bg-neutral-600 text-white/80 cursor-not-allowed"
+            isEditable ? "bg-green-500 text-white" : "bg-neutral-600 text-white/60 cursor-not-allowed"
           }`}
         >
           {saving ? "Saving..." : "Save Draft"}
@@ -319,7 +351,7 @@ function Step3({
         {/* Submit for Review */}
         <button
           onClick={() => setShowSubmitNoteModal(true)}
-          disabled={submitting || applicationStatus === "pending" || applicationStatus === "approved"}
+          disabled={submitDisabled}
           className={`px-4 py-2 rounded-md ${
             applicationStatus === "approved"
               ? "bg-green-600 text-white cursor-not-allowed"
@@ -330,23 +362,20 @@ function Step3({
         >
           {applicationStatus === "approved"
             ? "Verified"
+            : applicationStatus === "pending"
+            ? "Pending Review"
             : submitting
             ? "Submitting..."
             : "Submit for Review"}
         </button>
-      </div>
-
-      <div className="mt-4 text-sm opacity-70">
-        After submission, admins will review your profile. While in review, editing will be disabled.
       </div>
     </div>
   );
 }
 
 /* ----------------------------------------------
-   SMALL REUSABLE COMPONENTS
+   SMALL COMPONENTS
 ---------------------------------------------- */
-
 function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
   return (
     <div>
@@ -370,7 +399,9 @@ function CredentialCard({ title, items, onAdd, renderItem }) {
     <div className="p-4 rounded-xl border">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold">{title}</h3>
-        <button onClick={onAdd} className="text-sm px-3 py-1 rounded-md border">Add</button>
+        <button onClick={onAdd} className="text-sm px-3 py-1 rounded-md border">
+          Add
+        </button>
       </div>
 
       {items.length === 0 ? (

@@ -54,6 +54,8 @@ function Navbar({ theme, onToggleTheme, user }) {
 
     if (user.user_type === "expert") navigate("/expert");
     else if (user.user_type === "entrepreneur") navigate("/entrepreneur");
+    else if (user.user_type === "admin") navigate("/admin");
+    else if (user.user_type === "superadmin") navigate("/superadmin");
     else navigate("/profile");
   };
 
