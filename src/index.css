@@ -3,12 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global cursor pointer for all buttons and interactive roles */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+.cursor-pointer,
+a {
+  cursor: pointer !important;
+}
 
 @keyframes slideInRight {
   0% {
     transform: translateX(40%);
     opacity: 0;
   }
+
   100% {
     transform: translateX(0);
     opacity: 1;
@@ -18,11 +26,13 @@
 .animate-slide-in {
   animation: slideInRight 0.25s ease-out;
 }
+
 @keyframes slideOutRight {
   0% {
     transform: translateX(0);
     opacity: 1;
   }
+
   100% {
     transform: translateX(40%);
     opacity: 0;
@@ -40,6 +50,7 @@
     transform: scale(0.85);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -49,11 +60,13 @@
 .animate-pop {
   animation: popup 0.25s ease-out;
 }
+
 @keyframes popout {
   0% {
     transform: scale(1);
     opacity: 1;
   }
+
   100% {
     transform: scale(0.85);
     opacity: 0;
@@ -67,13 +80,23 @@
 
 
 @keyframes fadeIn {
-  from { opacity: 0 }
-  to { opacity: 1 }
+  from {
+    opacity: 0
+  }
+
+  to {
+    opacity: 1
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.95) }
-  to { transform: scale(1) }
+  from {
+    transform: scale(0.95)
+  }
+
+  to {
+    transform: scale(1)
+  }
 }
 
 .animate-fadeIn {

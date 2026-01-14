@@ -1,6 +1,7 @@
-// src/hooks/useSearchProfiles.js
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import axios from "axios";
+import axiosSecure from "../utils/axiosSecure";
+import { getAccessToken } from "../../redux/store/tokenManager";
 import { API_BASE_URL } from "../../config/api";
 
 export default function useSearchProfiles() {
@@ -8,7 +9,7 @@ export default function useSearchProfiles() {
   const [results, setResults] = useState([]);
   const controllerRef = useRef(null);
 
-  const searchProfiles = async (query) => {
+  const searchProfiles = useCallback(async (query) => {
     if (!query || query.trim().length < 2) {
       setResults([]);
       return;
@@ -23,12 +24,17 @@ export default function useSearchProfiles() {
 
       controllerRef.current = new AbortController();
 
-      const res = await axios.get(
-        `${API_BASE_URL}v1/auth/search/?q=${encodeURIComponent(query)}`,
+      const token = getAccessToken();
+      const client = token ? axiosSecure : axios;
+      const prefix = token ? "/v1" : "/api/v1";
+
+      const res = await client.get(
+        `${prefix}/auth/search/?q=${encodeURIComponent(query)}`,
         { signal: controllerRef.current.signal }
       );
 
-      setResults(res.data?.results || []);
+      const data = res.data?.results || res.data || [];
+      setResults(Array.isArray(data) ? data : []);
     } catch (err) {
       if (err.name !== "CanceledError") {
         console.error("Profile search failed");
@@ -36,7 +42,7 @@ export default function useSearchProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return { searchProfiles, results, loading };
 }

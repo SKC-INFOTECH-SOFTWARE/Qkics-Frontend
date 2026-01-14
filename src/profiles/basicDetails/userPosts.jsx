@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { BiLike, BiSolidLike } from "react-icons/bi";
 import { HiPencilAlt, HiTrash } from "react-icons/hi";
 import { savePostViewState } from "../../redux/slices/postViewSlice";
@@ -11,6 +11,7 @@ import CreatePostModal from "../../components/posts/create_post";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useAlert } from "../../context/AlertContext";
 import axiosSecure from "../../components/utils/axiosSecure";
+import useClickOutside from "../../components/hooks/useClickOutside";
 
 import { updatePost, addPost, setEditingPost, setCreateModalOpen, removePost } from "../../redux/slices/postsSlice";
 
@@ -78,6 +79,8 @@ export default function UserPosts() {
   });
 
   const [menuOpen, setMenuOpen] = useState(null);
+  const menuRef = useRef(null);
+  useClickOutside(menuRef, () => setMenuOpen(null));
   const [expandedPost, setExpandedPost] = useState(null);
 
   const cardBg = isDark ? "bg-[#2c2c2c]" : "bg-white";
@@ -174,7 +177,7 @@ export default function UserPosts() {
 
                 {/* MENU BUTTON */}
                 {!readOnly && (
-                  <div className="ml-auto relative">
+                  <div className="ml-auto relative" ref={menuOpen === post.id ? menuRef : null}>
                     <button
                       onClick={() =>
                         setMenuOpen(menuOpen === post.id ? null : post.id)

@@ -1,6 +1,8 @@
 // src/hooks/useSearchPosts.js
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import axios from "axios";
+import axiosSecure from "../utils/axiosSecure";
+import { getAccessToken } from "../../redux/store/tokenManager";
 import { API_BASE_URL } from "../../config/api";
 
 export default function useSearchPosts() {
@@ -9,7 +11,7 @@ export default function useSearchPosts() {
   const [error, setError] = useState(null);
   const controllerRef = useRef(null);
 
-  const searchPosts = async (query) => {
+  const searchPosts = useCallback(async (query) => {
     // ✅ Minimum 3 characters
     if (!query || query.trim().length < 3) {
       setResults([]);
@@ -27,14 +29,27 @@ export default function useSearchPosts() {
 
       controllerRef.current = new AbortController();
 
-      const res = await axios.get(
-        `${API_BASE_URL}v1/community/search/?q=${encodeURIComponent(
+      const token = getAccessToken();
+      const client = token ? axiosSecure : axios;
+      const prefix = token ? "/v1" : "/api/v1";
+
+      const res = await client.get(
+        `${prefix}/community/search/?q=${encodeURIComponent(
           query
         )}&limit=5`,
         { signal: controllerRef.current.signal }
       );
 
-      setResults(res.data?.results || res.data || []);
+      const normalize = (p) => ({
+        ...p,
+        is_liked:
+          p.is_liked === true || p.is_liked === "true" || p.is_liked === 1,
+        total_likes: Number(p.total_likes || 0),
+        tags: Array.isArray(p.tags) ? p.tags : [],
+      });
+
+      const data = res.data?.results || res.data || [];
+      setResults(data.map(normalize));
     } catch (err) {
       if (err.name !== "CanceledError") {
         setError("Search failed");
@@ -42,7 +57,7 @@ export default function useSearchPosts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  return { searchPosts, results, loading, error };
+  return { searchPosts, results, setResults, loading, error };
 }

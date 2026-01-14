@@ -28,10 +28,10 @@ export default function useLike(setPosts, tokenGetter, openLoginModal) {
         prev.map((post) =>
           post.id === postId
             ? {
-                ...post,
-                is_liked: updated.is_liked,
-                total_likes: updated.total_likes,
-              }
+              ...post,
+              is_liked: updated.is_liked,
+              total_likes: updated.total_likes,
+            }
             : post
         )
       );

@@ -1,5 +1,5 @@
 // src/components/navbar.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaUser, FaKey, FaSignOutAlt } from "react-icons/fa";
@@ -16,6 +16,7 @@ import SignupModal from "./auth/Signup";
 import ChangePasswordModal from "./auth/change_password";
 import MobileBottomNav from "./ui/MobileBottomNav";
 import ModalOverlay from "./ui/ModalOverlay";
+import useClickOutside from "./hooks/useClickOutside";
 
 
 import {
@@ -93,6 +94,9 @@ function Navbar({ theme, onToggleTheme, user }) {
 
 
 
+  const dropdownRef = useRef(null);
+  useClickOutside(dropdownRef, () => setDropdown(false));
+
   const toggleDropdown = () => setDropdown((v) => !v);
 
   const goToProfile = () => {
@@ -126,7 +130,7 @@ function Navbar({ theme, onToggleTheme, user }) {
           </div>
 
           {/* NAV ICONS */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-2 ">
             <Link to="/">
               <button className={getNavClass("/")}>
                 <FontAwesomeIcon icon={faHouse} className="h-4 w-4 mb-0.5" />
@@ -166,7 +170,7 @@ function Navbar({ theme, onToggleTheme, user }) {
           {/* SEARCH */}
           <div className="flex-1 search-container relative max-w-md">
             <div
-              className={`flex items-center gap-2 rounded px-3 py-1.5 ${isDark ? "bg-neutral-800" : "bg-neutral-200"
+              className={`flex items-center gap-2 rounded px-3 py-1.5 mr-2 ${isDark ? "bg-neutral-800" : "bg-neutral-200"
                 }`}
             >
               <input
@@ -181,10 +185,10 @@ function Navbar({ theme, onToggleTheme, user }) {
 
               {searchQuery && (
                 <>
-                  <button onClick={triggerSearch}>
+                  <button onClick={triggerSearch} className="hover:text-red-500">
                     <FaSearch size={12} />
                   </button>
-                  <button onClick={clearSearch}>
+                  <button onClick={clearSearch} className="hover:text-red-500">
                     <FaTimes size={12} />
                   </button>
                 </>
@@ -242,7 +246,7 @@ function Navbar({ theme, onToggleTheme, user }) {
 
             {/* Logged IN */}
             {isLoggedIn && (
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={toggleDropdown}
                   className={`h-8 w-8 rounded-full flex items-center justify-center ${isDark
