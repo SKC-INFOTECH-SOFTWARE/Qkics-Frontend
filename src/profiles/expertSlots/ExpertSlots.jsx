@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -15,21 +15,22 @@ import { useConfirm } from "../../context/ConfirmContext";
 import SlotForm from "./SlotForm";
 import SlotCard from "./SlotCard";
 
-export default function ExpertSlots({ theme }) {
-  const isDark = theme === "dark";
-  const { bg, card, border, input } = useThemeClasses(isDark);
+export default function ExpertSlots({ theme: propTheme }) {
   const dispatch = useDispatch();
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
-  console.log("ExpertSlots theme:", theme, "isDark:", isDark);
   /* ----------------------------
       REDUX STATE
   ----------------------------- */
-  const user = useSelector((state) => state.user.data);
+  const { data: user, theme: reduxTheme } = useSelector((state) => state.user);
   const { items: slots, loading, error } = useSelector(
     (state) => state.expertSlots
   );
+
+  const theme = propTheme || reduxTheme;
+  const isDark = theme === "dark";
+  const { bg, card, border, input } = useThemeClasses(isDark);
 
   /* ----------------------------
       LOCAL UI STATE
@@ -106,10 +107,11 @@ export default function ExpertSlots({ theme }) {
     });
   };
 
-  const sortedSlots = [...slots].sort(
-  (a, b) =>
-    new Date(a.start_datetime) - new Date(b.start_datetime)
-);
+  const sortedSlots = useMemo(() => {
+    return [...slots].sort(
+      (a, b) => new Date(a.start_datetime) - new Date(b.start_datetime)
+    );
+  }, [slots]);
 
 
 
@@ -147,17 +149,17 @@ export default function ExpertSlots({ theme }) {
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {sortedSlots.map((slot) => (
-  <SlotCard
-    key={slot.uuid}
-    slot={slot}
-    isDark={isDark}
-    onEdit={() => {
-      setEditingSlot(slot);
-      setShowModal(true);
-    }}
-    onDelete={() => handleDelete(slot.uuid)}
-  />
-))}
+            <SlotCard
+              key={slot.uuid}
+              slot={slot}
+              isDark={isDark}
+              onEdit={() => {
+                setEditingSlot(slot);
+                setShowModal(true);
+              }}
+              onDelete={() => handleDelete(slot.uuid)}
+            />
+          ))}
 
         </div>
       )}

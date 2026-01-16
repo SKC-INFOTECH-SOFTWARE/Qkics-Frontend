@@ -37,6 +37,7 @@ import PaymentPage from "./payment";
 import Subscription from "./components/subscription/Subscription";
 import MyBookings from "./components/myBookings/MyBookings";
 import SearchResultsPage from "./pages/SearchResultsPage";
+import ChatPage from "./chat";
 
 function App() {
   const dispatch = useDispatch();
@@ -146,6 +147,7 @@ function App() {
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
+        <Route path="/chat/:roomId?" element={<ChatPage />} />
 
 
         <Route path="/post/:id/comments" element={<Comments />} />

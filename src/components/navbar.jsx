@@ -112,6 +112,13 @@ function Navbar({ theme, onToggleTheme, user }) {
     else navigate("/normal");
   };
 
+  const handleSearchFocus = () => {
+  if (location.pathname !== "/search") {
+    navigate("/search");
+  }
+};
+
+
   return (
     <>
       <header
@@ -125,7 +132,7 @@ function Navbar({ theme, onToggleTheme, user }) {
           {/* LOGO */}
           <div className="flex items-center gap-2 mr-0 md:mr-1">
             <Link to="/">
-              <img className="rounded" src="/logo.png" alt="logo" width="70" />
+              <img className="rounded " src="/logo.png" alt="logo" width="70" />
             </Link>
           </div>
 
@@ -181,6 +188,8 @@ function Navbar({ theme, onToggleTheme, user }) {
             </button>
           </nav>
 
+          
+
           {/* SEARCH */}
           <div className="flex-1 search-container relative max-w-md">
             <div
@@ -192,7 +201,7 @@ function Navbar({ theme, onToggleTheme, user }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
-                onFocus={() => setIsSearchFocused(true)}
+                onFocus={handleSearchFocus}
                 placeholder="Search posts..."
                 className="bg-transparent outline-none w-full text-xs"
               />
@@ -215,7 +224,7 @@ function Navbar({ theme, onToggleTheme, user }) {
           {/* RIGHT SECTION */}
           <div className="flex items-center gap-3 text-xs">
             {/* Try Q-KICS */}
-            <button className="hidden sm:inline-flex px-3 py-1.5 rounded-xl bg-red-500 text-white hover:bg-red-600 font-semibold"
+            <button className="hidden sm:inline-flex px-3 py-1.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all active:scale-[0.98] shadow-lg shadow-red-600/20"
               onClick={() => navigate("/subscription")}>
               Try Q-KICS +
             </button>
@@ -328,7 +337,7 @@ function Navbar({ theme, onToggleTheme, user }) {
                       className="w-full flex items-center gap-2 px-4 py-2 hover:bg-neutral-700/20 rounded-xl"
                       onClick={() => {
                         setDropdown(false);
-                        navigate("/subscription");
+                        navigate("/chat");
                       }}
                     >
                       <IoChatboxEllipses /> Chats

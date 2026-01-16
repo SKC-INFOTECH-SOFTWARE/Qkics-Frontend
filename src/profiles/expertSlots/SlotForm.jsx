@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import useThemeClasses from "../../components/utils/useThemeClasses";
-
+import { useAlert } from "../../context/AlertContext";
 
 export default function SlotForm({
   initialData,
@@ -9,6 +9,7 @@ export default function SlotForm({
   isDark,
 }) {
   const isEdit = Boolean(initialData);
+  const { showAlert } = useAlert();
 
   const { input, border } = useThemeClasses(isDark);
 
@@ -24,8 +25,16 @@ export default function SlotForm({
   useEffect(() => {
     if (!initialData) return;
 
-    setStart(initialData.start_datetime.slice(0, 16));
-    setEnd(initialData.end_datetime.slice(0, 16));
+    // Convert ISO string (UTC) to local time format YYYY-MM-DDTHH:mm
+    const toLocalString = (isoStr) => {
+      if (!isoStr) return "";
+      const date = new Date(isoStr);
+      const offset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+    };
+
+    setStart(toLocalString(initialData.start_datetime));
+    setEnd(toLocalString(initialData.end_datetime));
     setDuration(initialData.duration_minutes);
     setPrice(initialData.price);
     setRequiresApproval(initialData.requires_approval);
@@ -49,8 +58,8 @@ export default function SlotForm({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!start || !end || !price) {
-      alert("All fields are required");
+    if (!start || !end || price === "" || price === null) {
+      showAlert("All fields are required", "error");
       return;
     }
 
@@ -58,7 +67,7 @@ export default function SlotForm({
     const endDate = new Date(end);
 
     if (endDate <= startDate) {
-      alert("End time must be after start time");
+      showAlert("End time must be after start time", "error");
       return;
     }
 
@@ -157,11 +166,10 @@ export default function SlotForm({
         <button
           type="button"
           onClick={onCancel}
-          className={`px-4 py-2 border rounded ${
-            isDark
+          className={`px-4 py-2 border rounded ${isDark
               ? "border-neutral-600 hover:bg-neutral-700"
               : "border-neutral-300 hover:bg-gray-100"
-          }`}
+            }`}
         >
           Cancel
         </button>
