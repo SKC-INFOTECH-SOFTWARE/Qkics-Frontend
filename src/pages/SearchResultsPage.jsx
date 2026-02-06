@@ -16,7 +16,7 @@ import axiosSecure from "../components/utils/axiosSecure";
 import PostCard from "../components/posts/PostCard";
 import ModalOverlay from "../components/ui/ModalOverlay";
 import LoginModal from "../components/auth/login";
-import SignupModal from "../components/auth/signup";
+import SignupModal from "../components/auth/Signup";
 import UserBadge from "../components/ui/UserBadge";
 import CreatePostModal from "../components/posts/create_post";
 

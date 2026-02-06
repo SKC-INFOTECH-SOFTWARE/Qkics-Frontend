@@ -8,7 +8,7 @@ import { IoChatboxEllipses } from "react-icons/io5";
 import { MdNotificationsActive } from "react-icons/md";
 
 import LoginModal from "./auth/login";
-import SignupModal from "./auth/signup";
+import SignupModal from "./auth/Signup";
 import ChangePasswordModal from "./auth/change_password";
 import CreatePostModal from "./posts/create_post";
 import MobileBottomNav from "./ui/MobileBottomNav";
