@@ -17,7 +17,8 @@ import EntrepreneurProfile from "./profiles/entrepreneur";
 import ExpertProfile from "./profiles/expertProfile";
 import Comments from "./components/posts/comment";
 import ExpertWizard from "./profiles/expertWizards/ExpertWizard";
-import EntrepreneurWizard from "./profiles/entreprenuerWizard/EntreprenuerWizard";
+// Line 20 in src/App.jsx
+import EntrepreneurWizard from "./profiles/entreprenuerWizard/EntreprenuerWizard.jsx";
 
 import AdminDashboard from "./admin/adminPages/adminDashboard";
 import AdminUsers from "./admin/adminPages/adminUsers";
