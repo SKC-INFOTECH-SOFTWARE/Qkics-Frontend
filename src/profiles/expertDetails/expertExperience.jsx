@@ -5,6 +5,7 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useAlert } from "../../context/AlertContext";
 import { GoPlus } from "react-icons/go";
+import ModalOverlay from "../../components/ui/ModalOverlay";
 
 export default function ExperiencePage({
   experiences = [],
@@ -34,9 +35,12 @@ export default function ExperiencePage({
   const [editingId, setEditingId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const cardBg = isDark
-    ? "bg-neutral-900 border-neutral-700 text-white"
-    : "bg-white border-neutral-300 text-black";
+  const inputClass = `w-full bg-transparent border-b-2 font-medium focus:outline-none transition-all pb-2 ${isDark
+      ? "border-white/20 focus:border-red-500 text-white placeholder-neutral-600"
+      : "border-black/10 focus:border-red-500 text-black placeholder-neutral-400"
+    }`;
+
+  const labelClass = `block text-xs font-black uppercase tracking-widest mb-3 ${isDark ? "text-neutral-500" : "text-neutral-400"}`;
 
   /* OPEN ADD MODAL */
   const openAddModal = () => {
@@ -135,191 +139,194 @@ export default function ExperiencePage({
   };
 
   return (
-    <div>
+    <div className={`premium-card p-8 md:p-12 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
       {/* HEADING + ADD BUTTON */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Your Experience</h2>
+      <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
+        <h2 className="text-xl font-black uppercase tracking-tight">Experience</h2>
 
         {!readOnly && (
           <button
             onClick={openAddModal}
-            className="px-4 py-2 rounded bg-red-600 text-white"
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-red-600/20"
           >
-            <GoPlus className="text-xl" />
+            <GoPlus size={16} /> Add
           </button>
         )}
       </div>
 
       {experiences.length === 0 ? (
-        <p className="opacity-70">No experience added yet.</p>
+        <div className={`text-center py-10 border border-dashed rounded-3xl ${isDark ? "border-white/10 text-neutral-500" : "border-black/10 text-neutral-400"}`}>
+          <p className="font-medium">No experience added yet.</p>
+        </div>
       ) : (
-        experiences.map((exp) => (
-          <div
-            key={exp.id}
-            className={`relative p-5 rounded-xl border mb-4 ${cardBg}`}
-          >
-            {/* Edit/Delete icons */}
-            {!readOnly && (
-              <div className="absolute top-3 right-3 flex gap-3">
-                <FiEdit
-                  className="cursor-pointer hover:text-red-500"
-                  size={20}
-                  onClick={() => openEditModal(exp)}
-                />
-                <FiTrash2
-                  className="cursor-pointer hover:text-red-500"
-                  size={20}
-                  onClick={() => deleteExperience(exp.id)}
-                />
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold">{exp.job_title}</h3>
-
-              <p className="text-sm opacity-80">
-                {exp.company}
-                {exp.location ? ` • ${exp.location}` : ""}
-              </p>
-
-              <p className="text-sm opacity-60">
-                {exp.employment_type.replace("_", " ").toUpperCase()} •{" "}
-                {exp.start_date} — {exp.end_date ? exp.end_date : "Present"}
-              </p>
-
-              {exp.description && (
-                <p className="text-sm mt-3 leading-relaxed opacity-90">
-                  {exp.description}
-                </p>
+        <div className="space-y-4">
+          {experiences.map((exp) => (
+            <div
+              key={exp.id}
+              className={`relative group p-6 rounded-3xl border transition-all hover:shadow-lg ${isDark ? "bg-white/5 border-white/5 hover:border-white/10" : "bg-neutral-50 border-black/5 hover:border-black/10"}`}
+            >
+              {/* Edit/Delete icons */}
+              {!readOnly && (
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => openEditModal(exp)}
+                    className={`p-2 rounded-full transition-colors ${isDark ? "hover:bg-white/10 text-white" : "hover:bg-black/10 text-black"}`}
+                  >
+                    <FiEdit size={16} />
+                  </button>
+                  <button
+                    onClick={() => deleteExperience(exp.id)}
+                    className={`p-2 rounded-full transition-colors hover:bg-red-500/10 text-red-500`}
+                  >
+                    <FiTrash2 size={16} />
+                  </button>
+                </div>
               )}
+
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold">{exp.job_title}</h3>
+
+                <p className="text-sm font-medium opacity-80">
+                  {exp.company}
+                  {exp.location ? ` • ${exp.location}` : ""}
+                </p>
+
+                <p className="text-xs font-black uppercase tracking-widest opacity-50 mt-2">
+                  {exp.employment_type.replace("_", " ")} •{" "}
+                  {exp.start_date} — {exp.end_date ? exp.end_date : "Present"}
+                </p>
+
+                {exp.description && (
+                  <p className="text-sm mt-4 leading-relaxed opacity-70 border-t border-white/5 pt-4">
+                    {exp.description}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
 
       {/* MODAL */}
       {!readOnly && openModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex justify-center items-center z-50"
-          onClick={() => setOpenModal(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-lg p-6 rounded-xl shadow-lg ${isDark ? "bg-neutral-800 text-white" : "bg-white text-black"
-              }`}
-          >
-            <h2 className="text-xl font-semibold mb-4">
-              {editingId ? "Edit Experience" : "Add Experience"}
-            </h2>
+        <ModalOverlay close={() => setOpenModal(false)}>
+          <div className={`w-full max-w-2xl p-8 rounded-3xl shadow-2xl relative ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
 
-            <div className="grid gap-3">
-              <label className="text-sm opacity-70">
-                Job Title <span className="text-red-600">*</span>
-              </label>
-              <input
-                value={form.job_title}
-                onChange={(e) =>
-                  setForm({ ...form, job_title: e.target.value })
-                }
-                className="p-2 border rounded"
-              />
-
-              <label className="text-sm opacity-70">
-                Company <span className="text-red-600">*</span>
-              </label>
-              <input
-                value={form.company}
-                onChange={(e) =>
-                  setForm({ ...form, company: e.target.value })
-                }
-                className="p-2 border rounded"
-              />
-
-              <label className="text-sm opacity-70">
-                Location <span className="text-red-600">*</span>
-              </label>
-              <input
-                value={form.location}
-                onChange={(e) =>
-                  setForm({ ...form, location: e.target.value })
-                }
-                className="p-2 border rounded"
-              />
-
-              <label className="text-sm opacity-70">
-                Employment Type <span className="text-red-600">*</span>
-              </label>
-              <select
-                value={form.employment_type}
-                onChange={(e) =>
-                  setForm({ ...form, employment_type: e.target.value })
-                }
-                className="p-2 border rounded"
+            <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+              <h2 className="text-2xl font-black uppercase tracking-tight">
+                {editingId ? "Edit" : "Add"} <span className="text-red-600">Experience</span>
+              </h2>
+              <button
+                onClick={() => setOpenModal(false)}
+                className={`text-2xl hover:text-red-500 transition-colors ${isDark ? "text-white" : "text-black"}`}
               >
-                <option value="">Select Employment Type</option>
-                <option value="full_time">Full Time</option>
-                <option value="part_time">Part Time</option>
-                <option value="contract">Contract</option>
-                <option value="internship">Internship</option>
-                <option value="freelance">Freelance</option>
-              </select>
+                &times;
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-6">
+
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm opacity-70">
-                    Start Date <span className="text-red-600">*</span>
-                  </label>
+                  <label className={labelClass}>Job Title <span className="text-red-600">*</span></label>
                   <input
-                    type="date"
-                    value={form.start_date}
-                    onChange={(e) =>
-                      setForm({ ...form, start_date: e.target.value })
-                    }
-                    className="p-2 border rounded w-full"
+                    value={form.job_title}
+                    onChange={(e) => setForm({ ...form, job_title: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. Senior Developer"
                   />
                 </div>
-
                 <div>
-                  <label className="text-sm opacity-70">End Date</label>
+                  <label className={labelClass}>Company <span className="text-red-600">*</span></label>
                   <input
-                    type="date"
-                    value={form.end_date ?? ""}
-                    onChange={(e) =>
-                      setForm({ ...form, end_date: e.target.value })
-                    }
-                    className="p-2 border rounded w-full"
+                    value={form.company}
+                    onChange={(e) => setForm({ ...form, company: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. Google"
                   />
                 </div>
               </div>
 
-              <label className="text-sm opacity-70">Description</label>
-              <textarea
-                rows="4"
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="p-2 border rounded"
-              />
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelClass}>Location <span className="text-red-600">*</span></label>
+                  <input
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g. New York, USA"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Employment Type <span className="text-red-600">*</span></label>
+                  <select
+                    value={form.employment_type}
+                    onChange={(e) => setForm({ ...form, employment_type: e.target.value })}
+                    className={inputClass}
+                  >
+                    <option value="" className="text-black">Select Type</option>
+                    <option value="full_time" className="text-black">Full Time</option>
+                    <option value="part_time" className="text-black">Part Time</option>
+                    <option value="contract" className="text-black">Contract</option>
+                    <option value="internship" className="text-black">Internship</option>
+                    <option value="freelance" className="text-black">Freelance</option>
+                  </select>
+                </div>
+              </div>
+
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className={labelClass}>Start Date <span className="text-red-600">*</span></label>
+                  <input
+                    type="date"
+                    value={form.start_date}
+                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>End Date</label>
+                  <input
+                    type="date"
+                    value={form.end_date ?? ""}
+                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClass}>Description</label>
+                <textarea
+                  rows="4"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className={`${inputClass} border rounded-xl p-3`}
+                  placeholder="Describe your role and achievements..."
+                />
+              </div>
+
             </div>
 
-            <div className="flex justify-end gap-3 mt-5">
+            <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-white/10">
               <button
                 onClick={() => setOpenModal(false)}
-                className="px-4 py-2 rounded bg-neutral-500 text-white"
+                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isDark ? "hover:bg-white/10" : "hover:bg-neutral-100"}`}
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleSubmit}
-                className="px-4 py-2 rounded bg-red-600 text-white"
+                className="px-6 py-2 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 hover:bg-red-700 transition-all"
               >
-                {editingId ? "Update" : "Add"}
+                {editingId ? "Save Changes" : "Add Experience"}
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

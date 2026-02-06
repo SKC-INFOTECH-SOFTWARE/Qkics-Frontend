@@ -17,6 +17,7 @@ import UserDetails from "./basicDetails/userDetails";
 import UserPosts from "./basicDetails/userPosts";
 import InvestorDetails from "./investorDetails/investorDetails";
 import ModalOverlay from "../components/ui/ModalOverlay";
+import UserBadge from "../components/ui/UserBadge";
 
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { RiFundsLine } from "react-icons/ri";
@@ -248,8 +249,11 @@ export default function InvestorProfile({
   --------------------------- */
   if (!user || !investorData) {
     return (
-      <div className={`mt-20 text-center ${isDark ? "text-white" : "text-black"}`}>
-        Loading...
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className={`text-[10px] font-black uppercase tracking-[0.3em] opacity-30 ${isDark ? "text-white" : "text-black"}`}>Loading Profile...</span>
+        </div>
       </div>
     );
   }
@@ -257,107 +261,117 @@ export default function InvestorProfile({
   /* ===============================
       UI
   =============================== */
+  const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className={`min-h-screen pt-20 px-4 pb-20 md:pb-0 ${isDark ? "bg-neutral-950 text-white" : "bg-neutral-100 text-black"}`}>
-      <div className="max-w-4xl mx-auto">
+    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+      <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className={`p-6 rounded-xl shadow flex flex-col md:flex-row gap-6 items-center mb-6 text-center md:text-left ${isDark ? "bg-neutral-900" : "bg-white"}`}>
-          <div className="relative w-28 h-28 mx-auto md:mx-0">
-            {user.profile_picture ? (
-              <img
-                src={`${user.profile_picture}?t=${Date.now()}`}
-                className="w-28 h-28 rounded-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => setShowImageModal(true)}
-              />
-            ) : (
-              <div className="w-28 h-28 bg-blue-600 rounded-full flex items-center justify-center text-4xl font-bold">
-                {user.username.charAt(0).toUpperCase()}
+        <div className={`premium-card p-8 md:p-12 mb-12 animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+
+            {/* PROFILE PICTURE */}
+            <div className="relative group">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-transparent group-hover:ring-red-500/20 transition-all duration-700">
+                {user.profile_picture ? (
+                  <img
+                    src={`${user.profile_picture}?t=${Date.now()}`}
+                    className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-700 cursor-pointer"
+                    onClick={() => setShowImageModal(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-blue-600 flex items-center justify-center text-4xl font-bold text-white">
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
-            )}
 
-            {!readOnly && (
-              <label className="absolute bottom-1 right-1 text-white bg-black/70 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer">
-                <MdEdit />
-                <input type="file" className="hidden" accept="image/*" onChange={handleProfilePicUpload} />
-              </label>
-            )}
-          </div>
+              {/* EDIT BUTTON */}
+              {!readOnly && (
+                <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-black text-white rounded-xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-blue-600 transition-colors z-20">
+                  <MdEdit size={16} />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleProfilePicUpload} />
+                </label>
+              )}
+            </div>
 
-          <div>
-            <h1 className="text-3xl font-bold">
-              {user.first_name || user.last_name
-                ? `${user.first_name} ${user.last_name}`
-                : user.username}
-            </h1>
-
-            <p className="text-neutral-400 mt-2">
-              <span className="inline-flex px-2 py-1 rounded-xl text-xs border border-blue-400 bg-blue-400/10 text-blue-500">
-                @{user?.username}
-              </span>
-              &nbsp;—&nbsp;
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl text-xs border border-red-400 bg-red-400/10 text-red-500">
-                <FaBriefcase />
-                Investor
-              </span>
-
-            </p>
+            {/* INFO */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
+                <div>
+                  <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-2 ${text}`}>
+                    {user.first_name || user.last_name
+                      ? `${user.first_name} ${user.last_name}`
+                      : user.username}
+                  </h1>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      @{user?.username}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                      <FaBriefcase size={12} /> Investor
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* TABS */}
-        <div className="flex justify-center gap-10 border-b pb-2">
-          {["about", "posts"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-2 text-lg font-medium ${activeTab === tab
-                ? "text-red-500 border-b-2 border-red-500"
-                : "text-neutral-500"
-                }`}
-            >
-              {tab === "about" ? "About" : "Posts"}
-            </button>
-          ))}
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex flex-wrap justify-center p-1.5 rounded-2xl glass transition-all shadow-xl">
+            {['about', 'posts'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab
+                  ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
+                  : "text-neutral-500 hover:text-black dark:hover:text-white"
+                  }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* CONTENT */}
         <div className="mt-6">
           {activeTab === "about" && (
-            <div className="flex flex-col md:flex-row gap-6 relative">
+            <div className="flex flex-col lg:flex-row gap-8 relative">
 
-              {/* LEFT */}
-              <div className={`hidden md:block w-full md:w-1/4 sticky top-24 h-[17vh] pt-5 px-3 rounded-xl shadow ${isDark ? "bg-neutral-900" : "bg-white"}`}>
-                <button
-                  onClick={() => scrollToSection(userRef, "user-details")}
-                  className={`flex items-center gap-2 w-full mb-2 py-2 px-3 rounded-lg ${leftActive === "user-details"
-                    ? "bg-red-600 text-white"
-                    : isDark
-                      ? "text-neutral-400 hover:bg-neutral-800"
-                      : "text-neutral-600 hover:bg-neutral-200"
-                    }`}
-                >
-                  <MdOutlineManageAccounts /> User Details
-                </button>
+              {/* SIDEBAR NAVIGATION */}
+              <div className="hidden lg:block w-72 flex-shrink-0">
+                <div className={`sticky top-32 p-4 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl"}`}>
+                  <button
+                    onClick={() => scrollToSection(userRef, "user-details")}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all mb-1 ${leftActive === "user-details"
+                      ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                      : "text-neutral-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white"
+                      }`}
+                  >
+                    <MdOutlineManageAccounts size={18} /> User Details
+                  </button>
 
-                <button
-                  onClick={() => scrollToSection(investorRef, "investor-details")}
-                  className={`flex items-center gap-2 w-full py-2 px-3  rounded-lg ${leftActive === "investor-details"
-                    ? "bg-red-600 text-white"
-                    : isDark
-                      ? "text-neutral-400 hover:bg-neutral-800"
-                      : "text-neutral-600 hover:bg-neutral-200"
-                    }`}
-                >
-                  <RiFundsLine className="text-lg" />
-                  <span>Investor Details</span>
-                </button>
+                  <button
+                    onClick={() => scrollToSection(investorRef, "investor-details")}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all mb-1 ${leftActive === "investor-details"
+                      ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                      : "text-neutral-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white"
+                      }`}
+                  >
+                    <RiFundsLine size={18} />
+                    <span>Investor Details</span>
+                  </button>
+                </div>
               </div>
 
-              {/* RIGHT */}
-              <div className="w-full md:w-3/4 space-y-10">
-                <div ref={userRef} className="scroll-mt-24">
+
+              {/* MAIN CONTENT AREA */}
+              <div className="flex-1 space-y-12 min-w-0">
+                <div ref={userRef} className="scroll-mt-32">
                   <UserDetails
                     editMode={!readOnly && editUser}
                     setEditMode={readOnly ? () => { } : setEditUser}
@@ -367,7 +381,7 @@ export default function InvestorProfile({
                   />
                 </div>
 
-                <div ref={investorRef} className="scroll-mt-24">
+                <div ref={investorRef} className="scroll-mt-32">
                   <InvestorDetails
                     investorData={investorData}
                     setInvestorData={setInvestorData}
@@ -386,10 +400,10 @@ export default function InvestorProfile({
       {/* PROFILE PICTURE MODAL */}
       {showImageModal && (
         <ModalOverlay close={() => setShowImageModal(false)}>
-          <div className={`relative p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
+          <div className={`relative p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center animate-pop ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
             <button
               onClick={() => setShowImageModal(false)}
-              className={`absolute top-2 right-2 p-2 rounded-full transition-all ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"
+              className={`absolute top-4 right-4 p-2 rounded-full transition-all ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"
                 }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -399,7 +413,7 @@ export default function InvestorProfile({
             <img
               src={`${user.profile_picture}?t=${Date.now()}`}
               alt="Profile Large"
-              className="w-80 h-80 md:w-96 md:h-96 rounded-full object-cover shadow-lg"
+              className="w-80 h-80 md:w-96 md:h-96 rounded-2xl object-cover shadow-2xl ring-4 ring-white/10"
               onClick={(e) => e.stopPropagation()}
             />
           </div>

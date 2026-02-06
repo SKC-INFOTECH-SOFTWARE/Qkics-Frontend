@@ -20,53 +20,68 @@ export default function MyDownloads({ theme }) {
   }, []);
 
   return (
-    <div className={`rounded-2xl shadow-xl overflow-hidden ${isDark ? "bg-neutral-800 border border-neutral-700" : "bg-white border border-gray-100"}`}>
-      <div className="p-6 border-b border-gray-100 dark:border-neutral-700 flex items-center gap-3">
-        <FaHistory className={isDark ? "text-blue-400" : "text-blue-600"} />
-        <h2 className="text-xl font-bold">Download History</h2>
+    <div className={`premium-card overflow-hidden animate-fadeIn `}>
+      <div className={`p-8 border-b flex items-center justify-between ${isDark ? "border-white/5" : "border-black/5"}`}>
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-red-600/10 flex items-center justify-center text-red-500 shadow-inner">
+            <FaHistory size={20} />
+          </div>
+          <div>
+            <h2 className={`text-xl font-black tracking-tight `}>Download History</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">Asset Collective</p>
+          </div>
+        </div>
+        <div className="text-right hidden sm:block">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-0.5">Total Assets</p>
+          <p className={`text-sm font-black `}>{downloads.length}</p>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className={isDark ? "bg-neutral-900/50" : "bg-gray-50"}>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500">Document</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 text-center">Access</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 text-right">Date & Time</th>
+            <tr className={`${isDark ? "bg-white/5" : "bg-black/5"}`}>
+              <th className="p-6 text-[10px] font-black uppercase tracking-widest opacity-40">Document Intelligence</th>
+              <th className="p-6 text-[10px] font-black uppercase tracking-widest opacity-40 text-center">Status</th>
+              <th className="p-6 text-[10px] font-black uppercase tracking-widest opacity-40 text-right">Timestamp</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-neutral-700">
+          <tbody className={`divide-y ${isDark ? "divide-white/5" : "divide-black/5"}`}>
             {downloads.length > 0 ? (
               downloads.map((d, i) => (
-                <tr key={i} className={`transition-colors ${isDark ? "hover:bg-neutral-700/50" : "hover:bg-blue-50/30"}`}>
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isDark ? "bg-neutral-700" : "bg-gray-100"}`}>
-                        <FaDownload className={`text-sm ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                <tr key={i} className={`group transition-all duration-300 ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+                  <td className="p-6">
+                    <div className="flex items-center gap-5">
+                      <div className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all duration-500 ${isDark ? "bg-white/5" : "bg-black/5"} group-hover:bg-red-500 group-hover:text-white`}>
+                        <FaDownload size={14} />
                       </div>
-                      <span className="font-semibold text-sm">{d.document_title}</span>
+                      <span className={`font-bold text-sm group-hover:text-red-500 transition-colors `}>{d.document_title}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-center">
-                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${d.access_type_snapshot === "PREMIUM"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-emerald-100 text-emerald-700"
+                  <td className="p-6 text-center">
+                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full border shadow-sm transition-all duration-500 ${d.access_type_snapshot === "PREMIUM"
+                      ? "bg-amber-500/10 text-amber-500 border-amber-500/10"
+                      : "bg-emerald-500/10 text-emerald-500 border-emerald-500/10"
                       }`}>
                       {d.access_type_snapshot}
                     </span>
                   </td>
-                  <td className={`p-4 text-right text-xs font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                    {new Date(d.downloaded_at).toLocaleString(undefined, {
-                      dateStyle: 'medium',
-                      timeStyle: 'short'
-                    })}
+                  <td className="p-6 text-right">
+                    <div className="flex flex-col">
+                      <span className={`text-[11px] font-black `}>
+                        {new Date(d.downloaded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <span className="text-[10px] font-bold opacity-30 uppercase tracking-tighter">
+                        {new Date(d.downloaded_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="p-10 text-center text-gray-500 italic">
-                  No downloads found in your history.
+                <td colSpan="3" className="p-20 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-20 italic">No assets discovered in your local collection yet.</p>
                 </td>
               </tr>
             )}

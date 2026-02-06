@@ -1,4 +1,4 @@
-function notification () {
+function notification() {
   return (
     <div className="min-h-screen bg-neutral-900 text-white flex items-center justify-center">
       <h1 className="text-3xl font-bold">Notifications Page - Coming Soon!</h1>

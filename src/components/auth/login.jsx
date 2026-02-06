@@ -60,9 +60,13 @@ function LoginModal({ onClose, openSignup, isDark }) {
 
   return (
     <div className={`p-6 rounded-2xl shadow-xl w-[90%] max-w-sm ${bg}`}>
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-xl font-semibold">Login</h2>
-        <button onClick={onClose}>✕</button>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-black uppercase tracking-tighter">Login</h2>
+        <button
+          onClick={onClose}
+          className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors ${isDark ? "hover:bg-white/10 text-neutral-400" : "hover:bg-black/5 text-neutral-500"
+            }`}
+        >✕</button>
       </div>
 
       <input
@@ -86,17 +90,23 @@ function LoginModal({ onClose, openSignup, isDark }) {
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="w-full mt-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+        className={`w-full mt-6 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${loading
+            ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
+            : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
+          }`}
       >
         {loading ? "Logging in..." : "Login"}
       </button>
 
-      <button onClick={() => {
-        console.log("🔥 LOGIN → SIGNUP CLICKED");
-        openSignup();
-      }} className="w-full mt-2 text-sm underline">
-        Create an account
-      </button>
+      <div className="mt-6 text-center">
+        <button onClick={() => {
+          console.log("🔥 LOGIN → SIGNUP CLICKED");
+          openSignup();
+        }} className={`text-[10px] font-black uppercase tracking-widest hover:underline ${isDark ? "text-neutral-400 hover:text-white" : "text-neutral-500 hover:text-black"
+          }`}>
+          Don't have an account? <span className="text-red-600">Join QKICS</span>
+        </button>
+      </div>
     </div>
   );
 }

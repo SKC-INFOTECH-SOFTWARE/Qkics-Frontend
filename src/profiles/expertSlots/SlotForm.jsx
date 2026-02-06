@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import useThemeClasses from "../../components/utils/useThemeClasses";
 import { useAlert } from "../../context/AlertContext";
 
 export default function SlotForm({
@@ -10,8 +9,6 @@ export default function SlotForm({
 }) {
   const isEdit = Boolean(initialData);
   const { showAlert } = useAlert();
-
-  const { input, border } = useThemeClasses(isDark);
 
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -82,20 +79,34 @@ export default function SlotForm({
     onSave(payload, initialData?.uuid);
   };
 
-  const inputClass = `w-full rounded px-3 py-2 mt-1 border ${input} ${border}`;
+  const inputClass = `w-full bg-transparent border-b-2 font-medium focus:outline-none transition-all pb-2 ${isDark
+      ? "border-white/20 focus:border-red-500 text-white placeholder-neutral-600"
+      : "border-black/10 focus:border-red-500 text-black placeholder-neutral-400"
+    }`;
+
+  const labelClass = `block text-xs font-black uppercase tracking-widest mb-3 ${isDark ? "text-neutral-500" : "text-neutral-400"}`;
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={`space-y-4 ${isDark ? "text-white" : "text-black"}`}
+      className={`${isDark ? "text-white" : "text-black"}`}
     >
-      <h2 className="text-lg font-semibold">
-        {isEdit ? "Edit Slot" : "Create New Slot"}
-      </h2>
+      <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+        <h2 className="text-2xl font-black uppercase tracking-tight">
+          {isEdit ? "Edit" : "Create"} <span className="text-red-600">Slot</span>
+        </h2>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={`text-2xl hover:text-red-500 transition-colors ${isDark ? "text-white" : "text-black"}`}
+        >
+          &times;
+        </button>
+      </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-8 mb-8">
         <div>
-          <label className="text-sm font-medium">
+          <label className={labelClass}>
             Start Date & Time
           </label>
           <input
@@ -108,7 +119,7 @@ export default function SlotForm({
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className={labelClass}>
             End Date & Time
           </label>
           <input
@@ -121,19 +132,19 @@ export default function SlotForm({
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className={labelClass}>
             Duration (minutes)
           </label>
           <input
             type="number"
             value={duration}
             disabled
-            className={`${inputClass} opacity-70 cursor-not-allowed`}
+            className={`${inputClass} opacity-50 cursor-not-allowed`}
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className={labelClass}>
             Price (₹)
           </label>
           <input
@@ -142,23 +153,28 @@ export default function SlotForm({
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             className={inputClass}
+            placeholder="0.00"
           />
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={requiresApproval}
-          onChange={(e) => setRequiresApproval(e.target.checked)}
-        />
-        Requires approval before booking
-      </label>
+      <div className="mb-8">
+        <label className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer border transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-neutral-50 border-neutral-200 hover:bg-neutral-100"}`}>
+          <input
+            type="checkbox"
+            checked={requiresApproval}
+            onChange={(e) => setRequiresApproval(e.target.checked)}
+            className="w-5 h-5 accent-red-600 rounded"
+          />
+          <span className="font-medium text-sm">Requires approval before booking confirmation</span>
+        </label>
+      </div>
 
-      <div className="flex gap-3 pt-2">
+
+      <div className="flex gap-4">
         <button
           type="submit"
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          className="flex-1 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
         >
           {isEdit ? "Update Slot" : "Create Slot"}
         </button>
@@ -166,9 +182,9 @@ export default function SlotForm({
         <button
           type="button"
           onClick={onCancel}
-          className={`px-4 py-2 border rounded ${isDark
-              ? "border-neutral-600 hover:bg-neutral-700"
-              : "border-neutral-300 hover:bg-gray-100"
+          className={`flex-1 py-3 border rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isDark
+            ? "border-white/10 hover:bg-white/5 text-white"
+            : "border-black/10 hover:bg-black/5 text-black"
             }`}
         >
           Cancel

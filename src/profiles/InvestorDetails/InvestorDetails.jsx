@@ -29,9 +29,6 @@ export default function InvestorDetails({
   const [allIndustries, setAllIndustries] = useState([]);
   const [allStages, setAllStages] = useState([]);
 
-  /* --------------------------
-      FETCH META DATA
-  --------------------------- */
   useEffect(() => {
     axiosSecure.get("/v1/investors/meta/").then((res) => {
       setAllIndustries(res.data?.industries || []);
@@ -39,9 +36,6 @@ export default function InvestorDetails({
     });
   }, []);
 
-  /* --------------------------
-      SYNC FROM PARENT
-  --------------------------- */
   useEffect(() => {
     if (investorData) {
       setLocal(normalize(investorData));
@@ -60,19 +54,19 @@ export default function InvestorDetails({
     ["corporate", "Corporate VC"],
   ];
 
+  // Premium Input Styles
   const inputClass = (enabled) =>
-    `w-full mt-1 px-3 py-2 rounded border ${isDark
+    `w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium ${isDark
       ? enabled
-        ? "bg-neutral-700 border-green-400 text-white"
-        : "bg-neutral-800 border-neutral-700 text-white opacity-60"
+        ? "border-red-600 text-white placeholder-white/30"
+        : "border-white/10 text-white/50"
       : enabled
-        ? "bg-white border-green-400"
-        : "bg-neutral-100 border-neutral-300 opacity-60"
+        ? "border-red-600 text-black placeholder-black/30"
+        : "border-black/10 text-black/50"
     }`;
 
-  /* --------------------------
-      SAVE
-  --------------------------- */
+  const labelClass = "text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block";
+
   const handleSave = async () => {
     try {
       const payload = {
@@ -86,7 +80,6 @@ export default function InvestorDetails({
         linkedin_url: local.linkedin_url,
         twitter_url: local.twitter_url,
         investor_type: local.investor_type,
-
         focus_industries: local.focus_industries.map((i) => i.id),
         preferred_stages: local.preferred_stages.map((s) => s.id),
       };
@@ -107,232 +100,190 @@ export default function InvestorDetails({
     }
   };
 
-  /* ===============================
-      UI
-  =============================== */
-
   return (
-    <div
-      className={`p-6 rounded-xl shadow ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"
-        }`}
-    >
+    <div className={`premium-card p-8 md:p-12 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Investor Details</h2>
+      <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
+        <h2 className="text-xl font-black uppercase tracking-tight">
+          <span className="hidden md:inline">Investor <span className="text-red-600">Profile</span></span>
+          <span className="md:hidden">Professional <span className="text-red-600">Profile</span></span>
+        </h2>
 
         {!readOnly &&
           (!editMode ? (
             <button
               onClick={() => setEditMode(true)}
-              className="px-4 py-1.5 rounded-md bg-red-500 text-white hover:bg-red-700"
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
+                ? "bg-neutral-800 text-white hover:bg-neutral-700"
+                : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
             >
-              Edit
+              Edit Details
             </button>
           ) : (
             <div className="flex gap-2">
-              <button
-                onClick={handleSave}
-                className="px-4 py-1.5 rounded-md bg-green-600 text-white"
-              >
-                Save
-              </button>
               <button
                 onClick={() => {
                   setEditMode(false);
                   setLocal(normalize(investorData));
                 }}
-                className="px-4 py-1.5 rounded-md bg-neutral-600 text-white"
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
+                  ? "text-white hover:bg-neutral-800"
+                  : "text-black hover:bg-neutral-100"}`}
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-6 py-2 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20"
+              >
+                Save Changes
               </button>
             </div>
           ))}
       </div>
 
-      {/* CONTENT */}
-      <div className="flex flex-col gap-4">
-        <Field
-          label="Display Name"
-          value={local.display_name}
-          onChange={(v) => setLocal({ ...local, display_name: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+      {/* CONTENT GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-        <Field
-          label="One Liner"
-          value={local.one_liner}
-          onChange={(v) => setLocal({ ...local, one_liner: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
-
-        <Textarea
-          label="Investment Thesis"
-          value={local.investment_thesis}
-          onChange={(v) =>
-            setLocal({ ...local, investment_thesis: v })
-          }
-          editMode={editMode}
-          inputClass={inputClass}
-        />
-
-        <MultiSelect
-          label="Focus Industries"
-          items={allIndustries}
-          selected={local.focus_industries}
-          editMode={editMode}
-          onToggle={(item) =>
-            setLocal({
-              ...local,
-              focus_industries: toggleItem(
-                local.focus_industries,
-                item
-              ),
-            })
-          }
-        />
-
-        <MultiSelect
-          label="Preferred Stages"
-          items={allStages}
-          selected={local.preferred_stages}
-          editMode={editMode}
-          onToggle={(item) =>
-            setLocal({
-              ...local,
-              preferred_stages: toggleItem(
-                local.preferred_stages,
-                item
-              ),
-            })
-          }
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field
-            label="Min Check Size"
-            value={local.check_size_min}
-            onChange={(v) =>
-              setLocal({ ...local, check_size_min: v })
-            }
-            editMode={editMode}
-            inputClass={inputClass}
-          />
-
-          <Field
-            label="Max Check Size"
-            value={local.check_size_max}
-            onChange={(v) =>
-              setLocal({ ...local, check_size_max: v })
-            }
-            editMode={editMode}
-            inputClass={inputClass}
+        <div className="md:col-span-2">
+          <label className={labelClass}>Display Name</label>
+          <input
+            value={local.display_name}
+            disabled={!editMode}
+            onChange={(e) => setLocal({ ...local, display_name: e.target.value })}
+            className={`${inputClass(editMode)} text-2xl font-bold`}
+            placeholder="e.g. Acme Ventures"
           />
         </div>
 
-        <Field
-          label="Location"
-          value={local.location}
-          onChange={(v) => setLocal({ ...local, location: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+        <div className="md:col-span-2">
+          <label className={labelClass}>One Liner</label>
+          <input
+            value={local.one_liner}
+            disabled={!editMode}
+            onChange={(e) => setLocal({ ...local, one_liner: e.target.value })}
+            className={inputClass(editMode)}
+            placeholder="Brief description..."
+          />
+        </div>
 
-        <Field
-          label="Website"
-          value={local.website_url}
-          onChange={(v) =>
-            setLocal({ ...local, website_url: v })
-          }
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+        <div className="md:col-span-2">
+          <label className={labelClass}>Investment Thesis</label>
+          <textarea
+            rows={3}
+            value={local.investment_thesis}
+            disabled={!editMode}
+            onChange={(e) => setLocal({ ...local, investment_thesis: e.target.value })}
+            className={`${inputClass(editMode)} resize-none`}
+            placeholder="Detailed thesis..."
+          />
+        </div>
 
-        <Field
-          label="LinkedIn"
-          value={local.linkedin_url}
-          onChange={(v) =>
-            setLocal({ ...local, linkedin_url: v })
-          }
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+        {/* INDUSTRIES & STAGES */}
+        <div className="md:col-span-2 space-y-6">
+          <MultiSelect
+            label="Focus Industries"
+            items={allIndustries}
+            selected={local.focus_industries}
+            editMode={editMode}
+            labelClass={labelClass}
+            onToggle={(item) =>
+              setLocal({
+                ...local,
+                focus_industries: toggleItem(local.focus_industries, item),
+              })
+            }
+          />
 
-        <Field
-          label="Twitter"
-          value={local.twitter_url}
-          onChange={(v) =>
-            setLocal({ ...local, twitter_url: v })
-          }
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+          <MultiSelect
+            label="Preferred Stages"
+            items={allStages}
+            selected={local.preferred_stages}
+            editMode={editMode}
+            labelClass={labelClass}
+            onToggle={(item) =>
+              setLocal({
+                ...local,
+                preferred_stages: toggleItem(local.preferred_stages, item),
+              })
+            }
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 md:col-span-2">
+          <div>
+            <label className={labelClass}>Min Check ($)</label>
+            <input
+              type="number"
+              value={local.check_size_min}
+              onChange={(e) => setLocal({ ...local, check_size_min: e.target.value })}
+              disabled={!editMode}
+              className={inputClass(editMode)}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Max Check ($)</label>
+            <input
+              type="number"
+              value={local.check_size_max}
+              onChange={(e) => setLocal({ ...local, check_size_max: e.target.value })}
+              disabled={!editMode}
+              className={inputClass(editMode)}
+            />
+          </div>
+        </div>
 
         <div>
-          <label className="text-sm opacity-80">
-            Investor Type
-          </label>
+          <label className={labelClass}>Location</label>
+          <input
+            value={local.location}
+            onChange={(e) => setLocal({ ...local, location: e.target.value })}
+            disabled={!editMode}
+            className={inputClass(editMode)}
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Investor Type</label>
           <select
             disabled={!editMode}
             value={local.investor_type}
-            onChange={(e) =>
-              setLocal({
-                ...local,
-                investor_type: e.target.value,
-              })
-            }
-            className={inputClass(editMode)}
+            onChange={(e) => setLocal({ ...local, investor_type: e.target.value })}
+            className={`${inputClass(editMode)} bg-transparent`}
           >
             {investorTypes.map(([value, label]) => (
-              <option key={value} value={value}>
+              <option key={value} value={value} className="text-black">
                 {label}
               </option>
             ))}
           </select>
         </div>
+
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className={labelClass}>Website</label>
+            <input value={local.website_url} onChange={(e) => setLocal({ ...local, website_url: e.target.value })} disabled={!editMode} className={inputClass(editMode)} />
+          </div>
+          <div>
+            <label className={labelClass}>LinkedIn</label>
+            <input value={local.linkedin_url} onChange={(e) => setLocal({ ...local, linkedin_url: e.target.value })} disabled={!editMode} className={inputClass(editMode)} />
+          </div>
+          <div>
+            <label className={labelClass}>Twitter</label>
+            <input value={local.twitter_url} onChange={(e) => setLocal({ ...local, twitter_url: e.target.value })} disabled={!editMode} className={inputClass(editMode)} />
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
 
-/* ===============================
-    REUSABLE COMPONENTS
-=============================== */
-
-function Field({ label, value, onChange, editMode, inputClass }) {
+function MultiSelect({ label, items, selected, editMode, onToggle, labelClass }) {
   return (
     <div>
-      <label className="text-sm opacity-80">{label}</label>
-      <input
-        disabled={!editMode}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass(editMode)}
-      />
-    </div>
-  );
-}
-
-function Textarea({ label, value, onChange, editMode, inputClass }) {
-  return (
-    <div>
-      <label className="text-sm opacity-80">{label}</label>
-      <textarea
-        disabled={!editMode}
-        rows={4}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass(editMode)}
-      />
-    </div>
-  );
-}
-
-function MultiSelect({ label, items, selected, editMode, onToggle }) {
-  return (
-    <div>
-      <label className="text-sm opacity-80">{label}</label>
+      <label className={labelClass}>{label}</label>
 
       {!editMode ? (
         <div className="flex flex-wrap gap-2 mt-2">
@@ -340,29 +291,28 @@ function MultiSelect({ label, items, selected, editMode, onToggle }) {
             selected.map((i) => (
               <span
                 key={i.id}
-                className="px-3 py-1 rounded-full text-xs bg-blue-500/10 border border-blue-400 text-blue-400"
+                className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-blue-500/10 border border-blue-400/20 text-blue-500"
               >
                 {i.name}
               </span>
             ))
           ) : (
-            <span className="opacity-60">—</span>
+            <span className="opacity-30 text-xs italic">Not specified</span>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
           {items.map((item) => (
-            <label
+            <button
               key={item.id}
-              className="flex items-center gap-2 text-sm"
+              onClick={() => onToggle(item)}
+              className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg border transition-all text-left ${selected.find((s) => s.id === item.id)
+                ? "bg-red-600 text-white border-red-600"
+                : "border-white/10 hover:bg-white/5 opacity-60 hover:opacity-100"
+                }`}
             >
-              <input
-                type="checkbox"
-                checked={!!selected.find((s) => s.id === item.id)}
-                onChange={() => onToggle(item)}
-              />
               {item.name}
-            </label>
+            </button>
           ))}
         </div>
       )}

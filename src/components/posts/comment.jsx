@@ -5,12 +5,14 @@ import axiosSecure from "../utils/axiosSecure";
 import useCommentLike from "../hooks/useCommentLike";
 
 import { BiLike, BiSolidLike } from "react-icons/bi";
+import { FaReply, FaTrash } from "react-icons/fa";
 
 import { useSelector, useDispatch } from "react-redux";
 import { clearPostViewState } from "../../redux/slices/postViewSlice";
 
 import { useAlert } from "../../context/AlertContext";
 import { useConfirm } from "../../context/ConfirmContext";
+import UserBadge from "../../components/ui/UserBadge"; // Verify this path if errors occur
 
 /* -------------------------------------------------------
    Reusable Reply Input Component
@@ -20,31 +22,37 @@ function ReplyInput({
   setReplyContent,
   onSubmit,
   onCancel,
-  border,
-  card,
-  text,
+  isDark,
 }) {
   return (
-    <div className="mt-3 ml-3">
-      <textarea
-        rows="1"
-        value={replyContent}
-        onChange={(e) => setReplyContent(e.target.value)}
-        className={`w-full p-2 rounded border ${border} ${card} ${text}`}
-      />
-      <div className="flex gap-3 mt-2">
-        <button
-          onClick={onSubmit}
-          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Send
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-3 py-1 bg-neutral-600 text-white rounded"
-        >
-          Cancel
-        </button>
+    <div className="mt-4 animate-scaleIn origin-top-left">
+      <div className={`p-4 rounded-2xl border transition-all ${isDark
+        ? "bg-white/5 border-white/10 focus-within:bg-white/10 focus-within:border-white/20"
+        : "bg-black/5 border-black/5 focus-within:bg-white focus-within:border-black/10 focus-within:shadow-lg"
+        }`}>
+        <textarea
+          rows="2"
+          value={replyContent}
+          onChange={(e) => setReplyContent(e.target.value)}
+          placeholder="Write a reply..."
+          className={`w-full bg-transparent outline-none resize-none text-sm font-medium ${isDark ? "text-white placeholder:text-neutral-500" : "text-black placeholder:text-neutral-400"}`}
+          autoFocus
+        />
+        <div className="flex justify-end gap-3 mt-2">
+          <button
+            onClick={onCancel}
+            className={`px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${isDark ? "text-neutral-400 hover:text-white" : "text-neutral-500 hover:text-black"
+              }`}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSubmit}
+            className="px-6 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+          >
+            Reply
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -78,10 +86,11 @@ export default function Comments() {
   const loaderRef = useRef(null);
 
   const isDark = theme === "dark";
-  const text = isDark ? "text-white" : "text-black";
-  const card = isDark ? "bg-neutral-800" : "bg-white";
-  const border = isDark ? "border-neutral-700" : "border-neutral-300";
-  const subtle = isDark ? "text-neutral-400" : "text-neutral-600";
+  const text = isDark ? "text-[#eaeaea]" : "text-[#111111]";
+  const mutedText = isDark ? "text-neutral-500" : "text-neutral-500";
+  const bg = isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]";
+  const cardBg = isDark ? "bg-[#141414]" : "bg-white";
+  const borderColor = isDark ? "border-white/5" : "border-black/5";
 
 
   const normalizeContent = (text, previewLimit = 300, fullLimit = 5000) => {
@@ -315,247 +324,300 @@ export default function Comments() {
     return () => obs.disconnect();
   }, [nextCursor]);
 
-  if (!post) return <p className={text}>Loading...</p>;
+  if (!post) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${bg}`}>
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-20 pb-15">
+    <div className={`min-h-screen ${bg} pb-20 px-4 md:px-8`}>
+      <div className="max-w-7xl mx-auto">
 
-      {/* BACK BUTTON */}
-      <button
-        onClick={() => {
-          const view = postView;
-          dispatch(clearPostViewState());
-          navigate(-1);
+        {/* BACK BUTTON */}
+        <button
+          onClick={() => {
+            const view = postView;
+            dispatch(clearPostViewState());
+            navigate(-1);
 
-          setTimeout(() => {
-            if (view.from === "normal-profile") {
-              sessionStorage.setItem(
-                "normalProfileTab",
-                view.tab || "posts"
-              );
-            }
-            if (view.from === "expert-profile") {
-              sessionStorage.setItem(
-                "expertActiveTab",
-                view.tab || "posts"
-              );
-            }
-            window.scrollTo(0, view.scroll || 0);
-          }, 150);
-        }}
-        className="mb-4 px-3 py-2 rounded-lg bg-gray-200 dark:bg-neutral-700 text-black dark:text-white"
-      >
-        ← Back
-      </button>
+            setTimeout(() => {
+              if (view.from === "normal-profile") {
+                sessionStorage.setItem(
+                  "normalProfileTab",
+                  view.tab || "posts"
+                );
+              }
+              if (view.from === "expert-profile") {
+                sessionStorage.setItem(
+                  "expertActiveTab",
+                  view.tab || "posts"
+                );
+              }
+              window.scrollTo(0, view.scroll || 0);
+            }, 150);
+          }}
+          className={`flex items-center gap-2 mb-6 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${isDark ? "hover:bg-white/10 text-neutral-400 hover:text-white" : "hover:bg-black/5 text-neutral-500 hover:text-black"}`}
+        >
+          ← Back
+        </button>
 
-      {/* 50 / 50 GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* GRID LAYOUT */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-        {/* LEFT — POST */}
-        <div className="lg:sticky lg:top-24 h-fit">
-          <div className={`p-5 rounded-xl border ${border} ${card}`}>
-            <h1 className={`text-xl font-bold ${text}`}>{post.title}</h1>
+          {/* LEFT — POST (Sticky) */}
+          <div className="lg:col-span-6 xl:col-span-7 lg:sticky lg:top-28">
+            <div className={`p-6 md:p-8 rounded-3xl border ${borderColor} ${cardBg} shadow-2xl`}>
 
-            <p className={`${text} mt-3 leading-relaxed`}>
-              {post.content}
-            </p>
-
-            {Array.isArray(post.tags) && post.tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    // onClick={() => applySearch(tag.slug)} // 🔥 tag → search
-                    className={`px-3 py-1 text-xs  rounded-full border 
-                          ${isDark
-                        ? "bg-blue-900/30 text-blue-300 border-blue-800"
-                        : "bg-blue-100 text-blue-700 border-blue-300"
-                      } hover:bg-blue-200/40`}
-                  >
-                    #{tag.name}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {post.image && (
-              <img
-                src={post.image}
-                alt="post"
-                className="mt-4 w-full max-h-[420px] object-contain rounded-lg"
-              />
-            )}
-
-            <p className={`mt-4 text-sm ${subtle}`}>
-              Posted by @{post.author.username}
-            </p>
-          </div>
-        </div>
-
-        {/* RIGHT — COMMENTS */}
-        <div>
-
-          {/* ADD COMMENT */}
-          <div className={`p-4 rounded-xl border ${border} ${card}`}>
-            <textarea
-              rows="3"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write a comment..."
-              className={`w-full p-3 rounded border ${border} ${card} ${text}`}
-            />
-            <button
-              onClick={addComment}
-              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded"
-            >
-              Post Comment
-            </button>
-          </div>
-
-          {/* COMMENTS LIST */}
-          <div className="mt-6 space-y-4">
-            {comments.map((c) => (
-              <div
-                key={c.id}
-                className={`p-4 rounded-xl border ${border} ${card}`}
-              >
-                <div className="flex justify-between">
-                  <p className={`${text} font-semibold`}>
-                    @{c.author.username}
+              {/* POST HEADER */}
+              <div className="flex items-center gap-4 mb-6">
+                <img
+                  src={post.author.profile_picture || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`}
+                  alt="avatar"
+                  className="w-12 h-12 rounded-2xl object-cover shadow-lg"
+                />
+                <div>
+                  <p className={`font-bold ${text} text-lg leading-tight`}>
+                    {post.author.first_name ? `${post.author.first_name} ${post.author.last_name || ""}` : post.author.username}
                   </p>
-
-                  {user?.id === c.author.id && (
-                    <button
-                      onClick={() => deleteComment(c.id)}
-                      className="text-red-500 text-xs hover:underline"
-                    >
-                      Delete
-                    </button>
-                  )}
+                  <p className={`text-xs font-bold uppercase tracking-wider ${mutedText}`}>@{post.author.username}</p>
                 </div>
+              </div>
 
-                <p className={`${text} mt-2`}>{c.content}</p>
+              <h1 className={`text-2xl md:text-3xl font-black tracking-tight mb-4 ${text}`}>{post.title}</h1>
 
-                <div className="flex gap-4 mt-2">
-                  <button
-                    onClick={() => handleCommentLike(c.id)}
-                    className="flex items-center gap-1 text-blue-500"
-                  >
-                    {c.is_liked ? <BiSolidLike /> : <BiLike />}
-                    {c.total_likes}
-                  </button>
+              <p className={`${text} text-base md:text-lg leading-relaxed whitespace-pre-wrap`}>
+                {post.content}
+              </p>
 
-                  <button
-                    className="text-blue-500 text-sm hover:underline"
-                    onClick={() => {
-                      setActiveReplyBox(`comment-${c.id}`);
-                      setReplyContent("");
-                    }}
-                  >
-                    Reply
-                  </button>
-
-                  {c.reply_count > 0 && (
-                    <button
-                      className="text-blue-500 text-sm hover:underline"
-                      onClick={() => loadReplies(c.id)}
+              {/* TAGS */}
+              {Array.isArray(post.tags) && post.tags.length > 0 && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${isDark
+                        ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                        : "bg-blue-50 text-blue-600 border-blue-100"
+                        }`}
                     >
-                      {openReplies[c.id]
-                        ? "Hide Replies"
-                        : `Show Replies (${c.reply_count})`}
-                    </button>
-                  )}
+                      #{tag.name}
+                    </span>
+                  ))}
                 </div>
+              )}
 
-                {activeReplyBox === `comment-${c.id}` && (
-                  <ReplyInput
-                    replyContent={replyContent}
-                    setReplyContent={setReplyContent}
-                    onSubmit={() => addReply(c.id)}
-                    onCancel={() => setActiveReplyBox(null)}
-                    border={border}
-                    card={card}
-                    text={text}
+              {post.image && (
+                <div className="mt-8 rounded-2xl overflow-hidden shadow-2xl border border-white/5 bg-black/50">
+                  <img
+                    src={post.image}
+                    alt="post"
+                    className="w-full h-auto max-h-[600px] object-contain"
                   />
-                )}
+                </div>
+              )}
 
-                {openReplies[c.id] && (
-                  <div className="ml-6 mt-4 space-y-3 border-l pl-4">
-                    {c.replies.map((r) => (
-                      <div key={r.id}>
-                        <div className="flex justify-between">
-                          <p className={`${text} font-semibold`}>
-                            @{r.author.username}
-                          </p>
+              <div className={`mt-6 pt-6 border-t ${borderColor} flex items-center justify-between text-xs font-bold uppercase tracking-wider ${mutedText}`}>
+                <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                <span>{comments.length} Comments</span>
+              </div>
+            </div>
+          </div>
 
-                          {user?.id === r.author.id && (
-                            <button
-                              onClick={() => deleteReply(r.id, c.id)}
-                              className="text-red-400 text-xs hover:underline"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
+          {/* RIGHT — COMMENTS */}
+          <div className="lg:col-span-6 xl:col-span-5 space-y-8">
+            <h2 className={`text-xl font-black uppercase tracking-widest ${text} pl-2`}>Discussion</h2>
 
-                        <p className={`${text}`}>{r.content}</p>
+            {/* ADD COMMENT */}
+            <div className={`p-6 rounded-3xl border transition-all ${isDark
+              ? "bg-white/5 border-white/10 focus-within:bg-white/10 focus-within:border-white/20 focus-within:shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+              : "bg-white border-black/5 shadow-xl focus-within:shadow-2xl focus-within:border-black/10"
+              }`}>
+              <textarea
+                rows="3"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What are your thoughts?"
+                className={`w-full bg-transparent outline-none resize-none text-base font-medium ${isDark ? "text-white placeholder:text-neutral-500" : "text-black placeholder:text-neutral-400"}`}
+              />
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={addComment}
+                  disabled={!content.trim()}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 ${content.trim() ? "bg-blue-600/90 hover:bg-blue-600 text-white shadow-blue-600/20" : "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"}`}
+                >
+                  Post Comment
+                </button>
+              </div>
+            </div>
 
-                        <div className="flex gap-4 mt-1">
-                          <button
-                            onClick={() => handleCommentLike(r.id)}
-                            className="flex items-center gap-1 text-blue-500"
-                          >
-                            {r.is_liked ? <BiSolidLike /> : <BiLike />}
-                            {r.total_likes}
-                          </button>
-
-                          <button
-                            className="text-blue-500 text-xs hover:underline"
-                            onClick={() => {
-                              setActiveReplyBox(`reply-${r.id}`);
-                              setReplyContent(`@${r.author.username} `);
-                            }}
-                          >
-                            Reply
-                          </button>
-                        </div>
-
-                        {activeReplyBox === `reply-${r.id}` && (
-                          <ReplyInput
-                            replyContent={replyContent}
-                            setReplyContent={setReplyContent}
-                            onSubmit={() => addReply(c.id)}
-                            onCancel={() => setActiveReplyBox(null)}
-                            border={border}
-                            card={card}
-                            text={text}
-                          />
-                        )}
+            {/* COMMENTS LIST */}
+            <div className="space-y-6">
+              {comments.map((c) => (
+                <div
+                  key={c.id}
+                  className={`p-6 rounded-3xl border transition-all hover:shadow-lg ${borderColor} ${cardBg}`}
+                >
+                  {/* COMMENT HEADER */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={c.author.profile_picture || `https://ui-avatars.com/api/?name=${c.author.username}&background=random`}
+                        className="w-10 h-10 rounded-xl"
+                      />
+                      <div>
+                        <p className={`font-bold text-sm ${text}`}>@{c.author.username}</p>
+                        <p className={`text-[10px] uppercase tracking-wider font-bold opacity-50 ${text}`}>{c.author.user_type}</p>
                       </div>
-                    ))}
+                    </div>
 
-                    {/* LOAD MORE REPLIES */}
-                    {replyNextCursor[c.id] && (
+                    {user?.id === c.author.id && (
                       <button
-                        onClick={() => loadReplies(c.id, replyNextCursor[c.id])}
-                        className="text-blue-500 text-sm mt-2 hover:underline"
+                        onClick={() => deleteComment(c.id)}
+                        className="p-2 rounded-lg text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all"
                       >
-                        {loadingReplies[c.id] ? "Loading..." : "Load more replies"}
+                        <FaTrash size={12} />
                       </button>
                     )}
                   </div>
-                )}
 
-              </div>
-            ))}
-          </div>
+                  <p className={`${text} text-sm leading-relaxed mb-4 pl-[52px]`}>{c.content}</p>
 
-          {/* LOADER */}
-          <div
-            ref={loaderRef}
-            className="h-12 flex justify-center items-center text-gray-400"
-          >
-            {nextCursor ? "Loading more..." : "No more comments"}
+                  {/* ACTIONS */}
+                  <div className="flex items-center gap-6 pl-[52px]">
+                    <button
+                      onClick={() => handleCommentLike(c.id)}
+                      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors ${c.is_liked ? "text-blue-500" : "text-neutral-500 hover:text-blue-500"}`}
+                    >
+                      {c.is_liked ? <BiSolidLike size={16} /> : <BiLike size={16} />}
+                      {c.total_likes || "Like"}
+                    </button>
+
+                    <button
+                      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors hover:text-blue-500 ${text}`}
+                      onClick={() => {
+                        setActiveReplyBox(activeReplyBox === `comment-${c.id}` ? null : `comment-${c.id}`);
+                        setReplyContent("");
+                      }}
+                    >
+                      <FaReply /> Reply
+                    </button>
+                  </div>
+
+                  {/* REPLY BOX */}
+                  {activeReplyBox === `comment-${c.id}` && (
+                    <div className="pl-[52px]">
+                      <ReplyInput
+                        replyContent={replyContent}
+                        setReplyContent={setReplyContent}
+                        onSubmit={() => addReply(c.id)}
+                        onCancel={() => setActiveReplyBox(null)}
+                        isDark={isDark}
+                      />
+                    </div>
+                  )}
+
+                  {/* REPLIES & SHOW MORE */}
+                  <div className="pl-[52px] mt-4">
+                    {c.reply_count > 0 && (
+                      <button
+                        className={`text-xs font-bold uppercase tracking-wider text-blue-500 hover:underline mb-4`}
+                        onClick={() => loadReplies(c.id)}
+                      >
+                        {openReplies[c.id]
+                          ? "Hide Replies"
+                          : `Show ${c.reply_count} Replies`}
+                      </button>
+                    )}
+
+                    {openReplies[c.id] && (
+                      <div className="space-y-4 border-l-2 pl-4 border-dashed border-neutral-500/20">
+                        {c.replies.map((r) => (
+                          <div key={r.id} className="relative group">
+                            {/* CONNECTING LINE */}
+                            <div className="absolute -left-[22px] top-4 w-4 h-[2px] bg-neutral-500/20"></div>
+
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={r.author.profile_picture || `https://ui-avatars.com/api/?name=${r.author.username}&background=random`}
+                                  className="w-6 h-6 rounded-lg"
+                                />
+                                <p className={`font-bold text-xs ${text}`}>@{r.author.username}</p>
+                              </div>
+
+                              {user?.id === r.author.id && (
+                                <button
+                                  onClick={() => deleteReply(r.id, c.id)}
+                                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded text-red-500 hover:bg-red-500/10 transition-all"
+                                >
+                                  <FaTrash size={10} />
+                                </button>
+                              )}
+                            </div>
+
+                            <p className={`${text} text-sm ml-8 mb-2`}>{r.content}</p>
+
+                            <div className="flex gap-4 ml-8">
+                              <button
+                                onClick={() => handleCommentLike(r.id)}
+                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${r.is_liked ? "text-blue-500" : "text-neutral-500 hover:text-blue-500"}`}
+                              >
+                                {r.is_liked ? <BiSolidLike size={12} /> : <BiLike size={12} />}
+                                {r.total_likes || "Like"}
+                              </button>
+
+                              <button
+                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-blue-500`}
+                                onClick={() => {
+                                  setActiveReplyBox(activeReplyBox === `reply-${r.id}` ? null : `reply-${r.id}`);
+                                  setReplyContent(`@${r.author.username} `);
+                                }}
+                              >
+                                Reply
+                              </button>
+                            </div>
+
+                            {activeReplyBox === `reply-${r.id}` && (
+                              <div className="ml-8">
+                                <ReplyInput
+                                  replyContent={replyContent}
+                                  setReplyContent={setReplyContent}
+                                  onSubmit={() => addReply(c.id)}
+                                  onCancel={() => setActiveReplyBox(null)}
+                                  isDark={isDark}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+
+                        {/* LOAD MORE REPLIES */}
+                        {replyNextCursor[c.id] && (
+                          <button
+                            onClick={() => loadReplies(c.id, replyNextCursor[c.id])}
+                            className="text-xs font-bold uppercase tracking-wider text-blue-500 hover:underline"
+                          >
+                            {loadingReplies[c.id] ? "Loading..." : "Load more replies"}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
+            {/* LOADER */}
+            <div
+              ref={loaderRef}
+              className="h-12 flex justify-center items-center text-xs font-bold uppercase tracking-widest opacity-50"
+            >
+              {nextCursor ? "Loading more comments..." : "End of discussion"}
+            </div>
           </div>
         </div>
       </div>

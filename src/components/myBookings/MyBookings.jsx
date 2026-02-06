@@ -4,20 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { MdOutlineSchedule, MdPerson, MdOutlinePayments, MdChatBubbleOutline, MdOutlineTimer } from "react-icons/md";
 
 import axiosSecure from "../utils/axiosSecure";
-import useThemeClasses from "../utils/useThemeClasses";
 import { useAlert } from "../../context/AlertContext";
 
 export default function MyBookings() {
   const { theme, data: user } = useSelector((state) => state.user);
   const isDark = theme === "dark";
   const navigate = useNavigate();
-
-  const { card, border, border1 } = useThemeClasses(isDark);
   const { showAlert } = useAlert();
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const text = isDark ? "text-white" : "text-black";
 
   /* ---------------- FETCH BOOKINGS ---------------- */
   useEffect(() => {
@@ -29,19 +28,9 @@ export default function MyBookings() {
     try {
       setLoading(true);
       setError("");
-
-      const url =
-        user.user_type === "expert"
-          ? "/v1/bookings/?as_expert=true"
-          : "/v1/bookings/";
-
+      const url = user.user_type === "expert" ? "/v1/bookings/?as_expert=true" : "/v1/bookings/";
       const res = await axiosSecure.get(url);
-
-      // Sort by start_datetime (ascending)
-      const sorted = [...res.data].sort(
-        (a, b) => new Date(a.start_datetime) - new Date(b.start_datetime)
-      );
-
+      const sorted = [...res.data].sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime));
       setBookings(sorted);
     } catch (err) {
       console.error(err);
@@ -52,7 +41,7 @@ export default function MyBookings() {
     }
   };
 
-  /* ---------------- STATUS LABEL ---------------- */
+  /* ---------------- STATUS CONFIG ---------------- */
   const getStatusConfig = (booking) => {
     const status = (booking.cancelled_at ? "CANCELLED" :
       booking.declined_at ? "DECLINED" :
@@ -63,25 +52,25 @@ export default function MyBookings() {
     switch (status) {
       case "CONFIRMED":
       case "COMPLETED":
-        return { label: status, color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" };
+        return { label: status, color: "bg-green-500/10 border-green-500/20 text-green-500" };
       case "PAID":
-        return { label: status, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" };
+        return { label: status, color: "bg-blue-500/10 border-blue-500/20 text-blue-500" };
       case "PENDING":
-        return { label: status, color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" };
+        return { label: status, color: "bg-amber-500/10 border-amber-500/20 text-amber-500" };
       case "CANCELLED":
       case "DECLINED":
-        return { label: status, color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" };
+        return { label: status, color: "bg-red-500/10 border-red-500/20 text-red-500" };
       default:
-        return { label: status, color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400" };
+        return { label: status, color: "bg-neutral-500/10 border-neutral-500/20 text-neutral-500" };
     }
   };
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}`}>
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-lg font-medium">Loading bookings...</span>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className={`text-[10px] font-black uppercase tracking-[0.3em] opacity-30 ${text}`}>Syncing Calendar...</span>
         </div>
       </div>
     );
@@ -89,11 +78,11 @@ export default function MyBookings() {
 
   if (error) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}`}>
-        <div className="text-center p-8 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30">
-          <p className="text-red-600 dark:text-red-400 font-medium">{error}</p>
-          <button onClick={fetchBookings} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-            Try Again
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+        <div className="premium-card p-12 text-center max-w-sm glass border-red-500/20">
+          <p className="text-red-500 font-black text-sm uppercase tracking-widest mb-6">{error}</p>
+          <button onClick={fetchBookings} className="px-8 py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-xl shadow-red-600/30 hover:scale-105 transition-all">
+            Retry Connection
           </button>
         </div>
       </div>
@@ -101,31 +90,35 @@ export default function MyBookings() {
   }
 
   return (
-    <div className={`min-h-screen pt-24 pb-12 px-6 ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}`}>
-      <div className="max-w-5xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {user.user_type === "expert" ? "Client Bookings" : "My Sessions"}
+    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 animate-fadeIn">
+          <div className="max-w-xl">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+              {user.user_type === "expert" ? <>Consultation <span className="text-red-600">Feed</span></> : <>My <span className="text-red-600">Sessions</span></>}
             </h1>
-            <p className="opacity-60 text-sm mt-1">Manage and track your expert consultations</p>
+            <p className="opacity-50 font-medium leading-relaxed">
+              Strategic scheduling for high-impact professional collaborations. Track and manage your expert intelligence exchange.
+            </p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1 bg-red-600/10 text-red-600 rounded-full text-sm font-medium">
-            <span className="w-2 h-2 bg-red-600 rounded-full pulse"></span>
-            {bookings.length} {bookings.length === 1 ? 'Session' : 'Sessions'}
+          <div className="flex-shrink-0">
+            <div className="inline-flex items-center gap-3 px-6 py-3 glass rounded-2xl shadow-xl">
+              <span className="h-2 w-2 bg-red-600 rounded-full animate-pulse shadow-sm shadow-red-600/50"></span>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${text}`}>{bookings.length} Registered Sessions</span>
+            </div>
           </div>
         </div>
 
         {bookings.length === 0 ? (
-          <div className={`text-center py-20 rounded-2xl border-2 border-dashed ${isDark ? "border-neutral-800" : "border-neutral-200"}`}>
-            <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MdOutlineSchedule className="text-3xl opacity-30" />
+          <div className="premium-card py-32 text-center glass border-dashed animate-fadeIn">
+            <div className="h-20 w-20 bg-black/5 dark:bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+              <MdOutlineSchedule className="text-3xl opacity-20" />
             </div>
-            <h3 className="text-xl font-semibold mb-1">No bookings found</h3>
-            <p className="opacity-60">Your upcoming sessions will appear here.</p>
+            <h3 className={`text-xl font-black tracking-tight mb-2 ${text}`}>No activity detected</h3>
+            <p className="opacity-30 text-[10px] font-bold uppercase tracking-[0.3em]">Your trajectory is clear. Initiate a booking to begin.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {bookings.map((booking) => {
               const status = getStatusConfig(booking);
               const startDate = new Date(booking.start_datetime);
@@ -134,66 +127,67 @@ export default function MyBookings() {
               return (
                 <div
                   key={booking.uuid}
-                  className={`group rounded-2xl p-6 border transition-all hover:shadow-xl hover:translate-y-[-2px] ${card} ${isDark ? "border-neutral-800" : "border-neutral-200"}`}
-                  style={{ border: border1 }}
+                  className={`group relative p-8 premium-card transition-all duration-500 hover:shadow-2xl animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}
                 >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-600/20">
-                        <MdPerson size={24} />
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="flex gap-5">
+                      <div className="h-14 w-14 rounded-2xl bg-red-600/10 flex items-center justify-center text-red-500 shadow-inner group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
+                        <MdPerson size={28} />
                       </div>
                       <div>
-                        <h4 className="font-bold text-lg leading-tight">
+                        <h4 className={`font-black text-lg tracking-tight mb-2 group-hover:text-red-500 transition-colors ${text}`}>
                           {user.user_type === "expert" ? booking.user_name : booking.expert_name}
                         </h4>
-                        <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold ${status.color}`}>
+                        <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] uppercase font-black tracking-widest border shadow-sm transition-all duration-500 ${status.color}`}>
                           {status.label}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-red-600 dark:text-red-400">
-                        <MdOutlineSchedule size={20} />
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-semibold">{startDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-                        <p className="opacity-70">
-                          {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          {' – '}
-                          {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
+                  <div className="space-y-6 mb-8">
+                    <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 group-hover:bg-red-500/5 transition-all">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 text-red-500">
+                          <MdOutlineSchedule size={20} />
+                        </div>
+                        <div>
+                          <p className={`text-sm font-black mb-1 ${text}`}>{startDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                          <p className="text-[11px] font-bold opacity-40 uppercase tracking-tighter">
+                            {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {' — '}
+                            {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                      <div className="flex items-center gap-2">
-                        <MdOutlineTimer className="text-gray-400" />
-                        <span className="text-sm">
-                          <span className="opacity-60">Duration:</span> {booking.duration_minutes}m
-                        </span>
+                    <div className="grid grid-cols-2 gap-4 pb-2">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-1">Duration</p>
+                        <div className="flex items-center gap-2">
+                          <MdOutlineTimer className="text-red-500" size={16} />
+                          <span className={`text-[11px] font-black ${text}`}>{booking.duration_minutes}m</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MdOutlinePayments className="text-gray-400" />
-                        <span className="text-sm">
-                          <span className="opacity-60">Price:</span> ₹{booking.price}
-                        </span>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-1">Fee</p>
+                        <div className="flex items-center justify-end gap-2">
+                          <MdOutlinePayments className="text-red-500" size={16} />
+                          <span className={`text-[11px] font-black ${text}`}>₹{booking.price}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {booking.chat_room_id && (
-                    <div className="mt-8">
-                      <button
-                        onClick={() => navigate(`/chat/${booking.chat_room_id}`)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all active:scale-[0.98] shadow-lg shadow-red-600/20"
-                      >
-                        <MdChatBubbleOutline size={20} />
-                        Open Chat
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => navigate(`/chat/${booking.chat_room_id}`)}
+                      className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <MdChatBubbleOutline size={20} />
+                      Open Comm
+                    </button>
                   )}
                 </div>
               );

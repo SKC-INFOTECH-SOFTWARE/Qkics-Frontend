@@ -1,3 +1,4 @@
+// src/pages/home.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa6";
@@ -29,12 +30,10 @@ function Home() {
   const { showConfirm } = useConfirm();
   const { showAlert } = useAlert();
 
-  // THEME COLORS
-  const bg = isDark ? "bg-[#0f0f0f]" : "bg-[#f5f5f5]";
-  const cardBg = isDark ? "bg-[#2c2c2c]" : "bg-white";
-  const hoverBg = isDark ? "hover:bg-[#3a3a3a]" : "hover:bg-[#f0f0f0]";
-  const text = isDark ? "text-[#eaeaea]" : "text-[#111111]";
-  const borderColor = isDark ? "border-white/15" : "border-black/10";
+  // THEME COLORS (Now using CSS variables from index.css)
+  const bg = isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]";
+  const text = isDark ? "text-neutral-100" : "text-neutral-900";
+  const borderColor = isDark ? "border-white/5" : "border-black/5";
 
   // LOCAL STATES
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -128,7 +127,6 @@ function Home() {
       a.download = url.split("/").pop() || "image.jpg";
       document.body.appendChild(a);
       a.click();
-      a.click(); // Some browsers need double click?
       a.remove();
       window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
@@ -137,58 +135,63 @@ function Home() {
   };
 
   return (
-    <div className={`min-h-screen mt-3 ${bg} pb-20 md:pb-10`}>
-      <div className="pt-14 max-w-6xl mx-auto px-4 grid grid-cols-12 gap-4">
+    <div className={`min-h-screen ${bg} md:pb-10`}>
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-12 gap-8">
 
         {/* LEFT SIDEBAR */}
-        <aside className="hidden md:block md:col-span-3 lg:col-span-2">
-          <div className={`sticky top-16 space-y-3 text-sm ${text}`}>
+        <aside className="hidden lg:block lg:col-span-3">
+          <div className="sticky top-28 space-y-6">
+            {/* Create Post Button */}
             <button
               onClick={() => {
                 if (!loggedUser) return setShowLogin(true);
                 setEditingPost(null);
                 setShowCreatePost(true);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl ${cardBg} ${hoverBg} border ${borderColor}`}
+              className="w-full group flex items-center gap-4 px-6 py-4 rounded-2xl bg-red-600 text-white font-bold shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all active:scale-[0.98]"
             >
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white">
-                <FaPlus />
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 group-hover:bg-white/30 transition-colors">
+                <FaPlus size={18} />
               </span>
-              <span className="font-semibold">Create Post</span>
+              <span className="text-sm tracking-wide uppercase">New Discovery</span>
             </button>
 
-            <div className="mt-6 space-y-1">
-              <div className="px-4 flex items-center justify-between mb-2">
-                <p className={`text-xs font-bold uppercase tracking-wider ${text}/60`}>Tags</p>
+            {/* Tags Card */}
+            <div className={`premium-card p-6 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">Top Categories</h3>
                 {searchQuery && (
-                  <button onClick={() => applySearch("")} className="text-[11px] text-red-500 hover:underline">Clear</button>
+                  <button onClick={() => applySearch("")} className="text-[10px] text-red-500 font-bold hover:underline">RESET</button>
                 )}
               </div>
 
-              <div className="max-h-[500px] overflow-y-scroll pr-2" style={{ scrollbarWidth: "thin" }}>
+              <div className="space-y-2 max-h-[40vh] overflow-y-auto no-scrollbar">
                 {loadingTags ? (
-                  <p className="px-4 py-2 text-xs opacity-70">Loading...</p>
+                  <div className="space-y-2 animate-pulse">
+                    {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-10 rounded-xl bg-neutral-800/50" />)}
+                  </div>
                 ) : (
                   <>
-                    {Array.isArray(tags) &&
-                      (showAllTags ? tags : tags.slice(0, 8)).map((tag) => (
-                        <button
-                          key={tag.id}
-                          onClick={() => applySearch(tag.name)}
-                          className={`w-full text-left px-4 py-2 mb-2 rounded-xl border ${borderColor} ${hoverBg}
-                            ${searchQuery === tag.name ? "border-red-500 bg-red-500/10 font-semibold" : ""}
-                          `}
-                        >
-                          {tag.name}
-                        </button>
-                      ))}
+                    {(showAllTags ? tags : tags.slice(0, 8)).map((tag) => (
+                      <button
+                        key={tag.id}
+                        onClick={() => applySearch(tag.name)}
+                        className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all group border ${searchQuery === tag.name
+                          ? "bg-red-500/10 border-red-500/50 text-red-500"
+                          : "border-transparent hover:bg-neutral-800 hover:text-white"
+                          }`}
+                      >
+                        <span className="opacity-50 group-hover:opacity-100 transition-opacity mr-2">#</span>
+                        {tag.name}
+                      </button>
+                    ))}
 
-                    {Array.isArray(tags) && tags.length > 8 && (
+                    {tags.length > 8 && (
                       <button
                         onClick={() => setShowAllTags(!showAllTags)}
-                        className={`w-full px-4 py-2 mt-2 text-sm text-blue-500 ${hoverBg} rounded-xl border ${borderColor}`}
+                        className="w-full py-3 mt-4 text-xs font-bold text-center border border-dashed border-neutral-800 rounded-xl hover:bg-neutral-800 transition-colors"
                       >
-                        {showAllTags ? "Show Less ▲" : "Show More ▼"}
+                        {showAllTags ? "SHOW LESS" : "EXPLORE ALL"}
                       </button>
                     )}
                   </>
@@ -199,64 +202,84 @@ function Home() {
         </aside>
 
         {/* MAIN FEED */}
-        <main className="col-span-12 md:col-span-6 lg:col-span-7 space-y-3">
+        <main className="col-span-12 lg:col-span-6 space-y-6">
           {/* MOBILE TAGS */}
-          <div className="md:hidden relative group">
-            <div className="overflow-x-auto pb-2 flex gap-2 no-scrollbar pr-14" style={{ scrollbarWidth: "none" }}>
+          <div className="lg:hidden relative group mb-2">
+            <div className="overflow-x-auto pb-4 flex gap-3 no-scrollbar pr-14">
               {loadingTags ? (
-                <p className="text-xs opacity-50 px-2">Loading tags...</p>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4].map(i => <div key={i} className="w-24 h-8 rounded-full bg-neutral-800/50 animate-pulse" />)}
+                </div>
               ) : (
-                Array.isArray(tags) && tags.map((tag) => (
+                tags.map((tag) => (
                   <button
                     key={tag.id}
                     onClick={() => applySearch(tag.name)}
-                    className={`whitespace-nowrap px-3 py-1.5 rounded-full border text-xs font-medium transition-all shrink-0
-                     ${searchQuery === tag.name
-                        ? "bg-red-500 text-white border-red-500"
-                        : `${cardBg} ${borderColor} ${text} opacity-80`
+                    className={`whitespace-nowrap px-5 py-2 rounded-full border text-xs font-bold transition-all shrink-0 ${searchQuery === tag.name
+                      ? "bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20"
+                      : `${isDark ? "bg-neutral-900 border-white/5" : "bg-white border-black/5"} opacity-80`
                       }`}
                   >
-                    {tag.name}
+                    #{tag.name}
                   </button>
                 ))
               )}
             </div>
             {searchQuery && (
-              <div className="absolute right-0 top-0 bottom-2 z-10 flex items-center pl-4 bg-gradient-to-l from-[#f5f5f5] dark:from-[#0f0f0f]">
-                <button onClick={() => applySearch("")} className="text-white bg-red-500 text-[10px] font-bold px-3 py-2 rounded-full shadow-md">Clear</button>
+              <div className="absolute right-0 top-0 bottom-4 z-10 flex items-center pl-6 bg-gradient-to-l from-[#0a0a0a]">
+                <button onClick={() => applySearch("")} className="bg-red-500 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-xl">CLEAR</button>
               </div>
             )}
           </div>
 
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              loggedUser={loggedUser}
-              isDark={isDark}
-              onLike={handleLike}
-              onDelete={handleDelete}
-              onEdit={(p) => { setEditingPost(p); setShowCreatePost(true); }}
-              onCommentClick={(p) => {
-                if (!loggedUser) return setShowLogin(true);
-                sessionStorage.setItem("scrollY", window.scrollY);
-                navigate(`/post/${p.id}/comments`);
-              }}
-              onTagClick={applySearch}
-              onImageClick={setPreviewImage}
-              onProfileClick={goToProfile}
-            />
-          ))}
+          <div className="space-y-6">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                loggedUser={loggedUser}
+                isDark={isDark}
+                onLike={handleLike}
+                onDelete={handleDelete}
+                onEdit={(p) => { setEditingPost(p); setShowCreatePost(true); }}
+                onCommentClick={(p) => {
+                  if (!loggedUser) return setShowLogin(true);
+                  sessionStorage.setItem("scrollY", window.scrollY);
+                  navigate(`/post/${p.id}/comments`);
+                }}
+                onTagClick={applySearch}
+                onImageClick={setPreviewImage}
+                onProfileClick={goToProfile}
+              />
+            ))}
+          </div>
 
-          <div ref={loaderRef} className="h-12 flex justify-center items-center opacity-50">
-            {posts.length === 0 ? <p>No posts yet</p> : next ? <p>Loading more...</p> : <p>No more posts</p>}
+          <div ref={loaderRef} className="py-20 flex flex-col items-center justify-center opacity-30 gap-4">
+            {posts.length === 0 ? (
+              <p className="font-bold tracking-widest text-sm">NO DISCOVERIES YET</p>
+            ) : next ? (
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-red-500 border-white/10" />
+            ) : (
+              <p className="font-bold tracking-widest text-sm uppercase">End of Exploration</p>
+            )}
           </div>
         </main>
 
         {/* RIGHT SIDEBAR */}
-        <aside className="hidden lg:block lg:col-span-3 space-y-5">
-          <AdCard cardBg={cardBg} borderColor={borderColor} text={text} />
-          <AdCard cardBg={cardBg} borderColor={borderColor} text={text} />
+        <aside className="hidden lg:block lg:col-span-3">
+          <div className="sticky top-28 space-y-8">
+            <AdCard isDark={isDark} />
+            <AdCard isDark={isDark} featured />
+
+            <footer className="px-6 text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] space-y-2">
+              <div className="flex gap-4">
+                <a href="#" className="hover:text-red-500 transition-colors">Privacy</a>
+                <a href="#" className="hover:text-red-500 transition-colors">Terms</a>
+                <a href="#" className="hover:text-red-500 transition-colors">Safety</a>
+              </div>
+              <p>© 2026 QKICS GLOBAL</p>
+            </footer>
+          </div>
         </aside>
       </div>
 
@@ -290,31 +313,39 @@ function Home() {
       )}
 
       {previewImage && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center animate-fadeIn" onClick={() => { setPreviewImage(null); setZoom(1); }}>
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center animate-fadeIn" onClick={() => { setPreviewImage(null); setZoom(1); }}>
           <div className="relative max-w-[95vw] max-h-[95vh] animate-scaleIn" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => { setPreviewImage(null); setZoom(1); }} className="absolute -top-4 -right-4 z-20 bg-black text-white rounded-full w-9 h-9 flex items-center justify-center hover:bg-red-500">✕</button>
-            <button onClick={() => downloadImage(previewImage)} className="absolute -top-4 -left-4 z-20 bg-black text-white rounded-full w-9 h-9 flex items-center justify-center hover:bg-green-500" title="Download"><MdOutlineFileDownload /></button>
-            <img src={previewImage} alt="Preview" className="rounded-lg shadow-2xl max-w-full max-h-[90vh] object-contain transition-transform duration-200" style={{ transform: `scale(${zoom})` }} onDoubleClick={() => setZoom((z) => (z === 1 ? 2 : 1))} draggable={false} />
+            <div className="absolute -top-12 right-0 flex gap-4">
+              <button onClick={() => downloadImage(previewImage)} className="bg-white/10 text-white rounded-xl px-4 py-2 flex items-center gap-2 hover:bg-red-500 transition-all font-bold text-xs"><MdOutlineFileDownload size={18} /> SAVE</button>
+              <button onClick={() => { setPreviewImage(null); setZoom(1); }} className="bg-white/10 text-white rounded-xl px-4 py-2 hover:bg-neutral-800 transition-all font-bold text-xs">CLOSE</button>
+            </div>
+            <img src={previewImage} alt="Preview" className="rounded-2xl shadow-2xl max-w-full max-h-[85vh] object-contain transition-transform duration-300" style={{ transform: `scale(${zoom})` }} onDoubleClick={() => setZoom((z) => (z === 1 ? 2 : 1))} />
           </div>
         </div>
       )}
 
-      <button onClick={() => { if (!loggedUser) return setShowLogin(true); setEditingPost(null); setShowCreatePost(true); }} className="md:hidden fixed bottom-20 right-4 z-40 bg-red-500 text-white h-14 w-14 rounded-full shadow-lg flex items-center justify-center text-xl hover:bg-red-600 active:scale-95 transition-transform">
+      <button onClick={() => { if (!loggedUser) return setShowLogin(true); setEditingPost(null); setShowCreatePost(true); }} className="lg:hidden fixed bottom-24 right-6 z-40 bg-red-600 text-white h-14 w-14 rounded-2xl shadow-2xl shadow-red-600/30 flex items-center justify-center text-xl hover:bg-red-700 active:scale-90 transition-all">
         <FaPlus />
       </button>
     </div>
   );
 }
 
-function AdCard({ cardBg, borderColor, text }) {
+function AdCard({ isDark, featured }) {
   return (
-    <div className={`rounded-2xl overflow-hidden shadow-md ${cardBg} border ${borderColor}`}>
-      <div className={`px-5 py-3 text-xs font-bold uppercase tracking-wider ${text}/50`}>Advertisement (DEMO)</div>
-      <img src="https://skcinfotech.in/images/banner/ban1.png" alt="ads" />
+    <div className={`premium-card overflow-hidden group ${isDark ? "bg-neutral-900" : "bg-white"}`}>
       <div className="p-6">
-        <h4 className={`${text} font-bold`}>Grow your business with PayPal</h4>
-        <p className={`${text}/70 text-sm mt-1`}>Accept payments from anywhere.</p>
-        <button className="mt-4 px-5 py-2 rounded-full bg-red-500 text-white font-bold shadow-md hover:shadow-lg">Get Started</button>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Featured Partner</p>
+        </div>
+        <div className="relative overflow-hidden rounded-xl mb-6">
+          <img src="https://skcinfotech.in/images/banner/ban1.png" alt="ads" className="w-full aspect-video object-cover transition-transform duration-500 group-hover:scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+        <h4 className="font-bold text-lg leading-tight mb-2">Grow your business with PayPal Vision</h4>
+        <p className="opacity-60 text-sm mb-6 leading-relaxed">Unlock global payments and secure transactions with our next-gen API integration.</p>
+        <button className={`w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-600 hover:text-white transition-all ${isDark ? "bg-white/5 text-white" : "bg-neutral-100 text-black"}`}>Learn More</button>
       </div>
     </div>
   );

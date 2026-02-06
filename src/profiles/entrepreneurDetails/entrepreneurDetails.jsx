@@ -22,7 +22,6 @@ export default function EntrepreneurDetails({
   const [editMode, setEditMode] = useState(false);
   const [local, setLocal] = useState({ ...entreData });
 
-  /* ✅ FIX: keep local state in sync with parent data */
   useEffect(() => {
     if (entreData) {
       setLocal({ ...entreData });
@@ -37,15 +36,18 @@ export default function EntrepreneurDetails({
     ["bootstrapped", "Bootstrapped"],
   ];
 
+  // Premium Styles
   const inputClass = (enabled) =>
-    `w-full mt-1 px-3 py-2 rounded border ${isDark
+    `w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium ${isDark
       ? enabled
-        ? "bg-neutral-700 border-green-400 text-white"
-        : "bg-neutral-800 border-neutral-700 text-white opacity-60"
+        ? "border-red-600 text-white placeholder-white/30"
+        : "border-white/10 text-white/50"
       : enabled
-        ? "bg-white border-green-400"
-        : "bg-neutral-100 border-neutral-300 opacity-60"
+        ? "border-red-600 text-black placeholder-black/30"
+        : "border-black/10 text-black/50"
     }`;
+
+  const labelClass = "text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block";
 
   const handleSave = async () => {
     try {
@@ -77,142 +79,136 @@ export default function EntrepreneurDetails({
 
 
   return (
-    <div
-      className={`p-6 rounded-xl shadow ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"
-        }`}
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Entrepreneur Details</h2>
+    <div className={`premium-card p-8 md:p-12 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
+        <h2 className="text-xl font-black uppercase tracking-tight">
+          <span className="hidden md:inline">Startup <span className="text-red-600">Details</span></span>
+          <span className="md:hidden">Professional <span className="text-red-600">Profile</span></span>
+        </h2>
 
         {!readOnly && (
-          <>
+          <div className="flex gap-3">
             {!editMode ? (
               <button
                 onClick={() => setEditMode(true)}
-                className="px-4 py-1.5 rounded-md bg-red-500 text-white hover:bg-red-700"
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
+                  ? "bg-neutral-800 text-white hover:bg-neutral-700"
+                  : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
               >
-                Edit
+                Edit Details
               </button>
             ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-1.5 rounded-md bg-green-600 text-white"
-                >
-                  Save
-                </button>
-
+              <>
                 <button
                   onClick={() => {
                     setEditMode(false);
                     setLocal({ ...entreData }); // ✅ reset on cancel
                   }}
-                  className="px-4 py-1.5 rounded-md bg-neutral-600 text-white"
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
+                    ? "text-white hover:bg-neutral-800"
+                    : "text-black hover:bg-neutral-100"}`}
                 >
                   Cancel
                 </button>
-              </div>
+                <button
+                  onClick={handleSave}
+                  className="px-6 py-2 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20"
+                >
+                  Save Changes
+                </button>
+              </>
             )}
-          </>
+          </div>
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Field
-          label="Startup Name"
-          value={local.startup_name}
-          onChange={(v) => setLocal({ ...local, startup_name: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+      {/* GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-        <Field
-          label="One Liner"
-          value={local.one_liner}
-          onChange={(v) => setLocal({ ...local, one_liner: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+        <div className="md:col-span-2">
+          <label className={labelClass}>Startup Name</label>
+          <input
+            value={local.startup_name}
+            onChange={(v) => setLocal({ ...local, startup_name: v.target.value })}
+            disabled={!editMode}
+            className={`${inputClass(editMode)} text-2xl font-bold`}
+            placeholder="Startup Name"
+          />
+        </div>
 
-        <Field
-          label="Website"
-          value={local.website}
-          onChange={(v) => setLocal({ ...local, website: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+        <div className="md:col-span-2">
+          <label className={labelClass}>One Liner</label>
+          <input
+            value={local.one_liner}
+            onChange={(v) => setLocal({ ...local, one_liner: v.target.value })}
+            disabled={!editMode}
+            className={inputClass(editMode)}
+            placeholder="What do you do?"
+          />
+        </div>
 
-        <Textarea
-          label="Description"
-          value={local.description}
-          onChange={(v) => setLocal({ ...local, description: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
-
-        <Field
-          label="Industry"
-          value={local.industry}
-          onChange={(v) => setLocal({ ...local, industry: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
-
-        <Field
-          label="Location"
-          value={local.location}
-          onChange={(v) => setLocal({ ...local, location: v })}
-          editMode={editMode}
-          inputClass={inputClass}
-        />
+        <div className="md:col-span-2">
+          <label className={labelClass}>Description</label>
+          <textarea
+            rows={4}
+            value={local.description}
+            onChange={(v) => setLocal({ ...local, description: v.target.value })}
+            disabled={!editMode}
+            className={`${inputClass(editMode)} resize-none`}
+          />
+        </div>
 
         <div>
-          <label className="text-sm opacity-80">Funding Stage</label>
+          <label className={labelClass}>Industry</label>
+          <input
+            value={local.industry}
+            onChange={(v) => setLocal({ ...local, industry: v.target.value })}
+            disabled={!editMode}
+            className={inputClass(editMode)}
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Location</label>
+          <input
+            value={local.location}
+            onChange={(v) => setLocal({ ...local, location: v.target.value })}
+            disabled={!editMode}
+            className={inputClass(editMode)}
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Funding Stage</label>
           <select
             disabled={!editMode}
             value={local.funding_stage}
             onChange={(e) =>
               setLocal({ ...local, funding_stage: e.target.value })
             }
-            className={inputClass(editMode)}
+            className={`${inputClass(editMode)} bg-transparent`}
           >
             {fundingOptions.map(([value, label]) => (
-              <option key={value} value={value}>
+              <option key={value} value={value} className="text-black">
                 {label}
               </option>
             ))}
           </select>
         </div>
+
+        <div>
+          <label className={labelClass}>Website</label>
+          <input
+            value={local.website}
+            onChange={(v) => setLocal({ ...local, website: v.target.value })}
+            disabled={!editMode}
+            className={inputClass(editMode)}
+          />
+        </div>
+
       </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, editMode, inputClass }) {
-  return (
-    <div>
-      <label className="text-sm opacity-80">{label}</label>
-      <input
-        disabled={!editMode}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass(editMode)}
-      />
-    </div>
-  );
-}
-
-function Textarea({ label, value, onChange, editMode, inputClass }) {
-  return (
-    <div>
-      <label className="text-sm opacity-80">{label}</label>
-      <textarea
-        disabled={!editMode}
-        rows={4}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass(editMode)}
-      />
     </div>
   );
 }

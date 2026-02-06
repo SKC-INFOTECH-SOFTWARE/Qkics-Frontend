@@ -38,7 +38,7 @@ export default function Steps(props) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      
+
       {/* LEFT SIDEBAR */}
       <div className={`${isDark ? "text-white" : "text-black"} md:col-span-1`}>
         <nav className="space-y-2 sticky top-28">
@@ -102,16 +102,17 @@ export default function Steps(props) {
 /* ----------------------------------------------
    NAV ITEM
 ---------------------------------------------- */
-function NavItem({ title, stepNum, active, onClick }) {
+function NavItem({ title, stepNum, active, onClick, isDark }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-3 rounded-md ${
-        active ? "bg-blue-600 text-white" : "border"
-      }`}
+      className={`w-full text-left p-4 rounded-2xl transition-all duration-300 ${active
+          ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+          : `${isDark ? "bg-white/5 border-white/5 text-neutral-400 hover:bg-white/10" : "bg-neutral-50 border-neutral-100 text-neutral-500 hover:bg-neutral-100"}`
+        }`}
     >
-      <div className="font-semibold">{title}</div>
-      <div className="text-xs opacity-70">Step {stepNum}</div>
+      <div className="font-bold text-sm uppercase tracking-wider">{title}</div>
+      <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mt-1">Step {stepNum}</div>
     </button>
   );
 }
@@ -161,19 +162,23 @@ function Step1({ profile, setProfile, isEditable, isDark, saving, next, handleSa
       </div>
 
       {/* Buttons */}
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-8 flex items-center gap-4 border-t border-white/5 pt-6">
         <button
           onClick={handleSaveProfile}
           disabled={saving || !isEditable}
-          className={`px-4 py-2 rounded-md font-semibold ${
-            isEditable ? "bg-green-500 text-white" : "bg-neutral-600 text-white/80 cursor-not-allowed"
-          }`}
+          className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isEditable
+              ? "bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700"
+              : "bg-neutral-50 dark:bg-neutral-900 border border-white/5 text-neutral-500 cursor-not-allowed"
+            }`}
         >
           {saving ? "Saving..." : "Save Draft"}
         </button>
 
-        <button onClick={next} className="px-4 py-2 rounded-md  bg-blue-600 text-white">
-          Next
+        <button
+          onClick={next}
+          className="px-8 py-3 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
+        >
+          Next Step
         </button>
       </div>
     </div>
@@ -198,9 +203,8 @@ function Step2({
 }) {
   return (
     <div
-      className={`p-6 rounded-xl shadow mb-6 min-h-[75vh] ${
-        isDark ? "bg-neutral-900" : "bg-white"
-      }`}
+      className={`p-6 rounded-xl shadow mb-6 min-h-[75vh] ${isDark ? "bg-neutral-900" : "bg-white"
+        }`}
     >
       <h2 className="text-xl font-semibold mb-4">Credentials</h2>
 
@@ -268,22 +272,30 @@ function Step2({
       </div>
 
       {/* Buttons */}
-      <div className="mt-6 flex items-center gap-3">
-        <button onClick={prev} className="px-4 py-2 rounded-md border">
+      <div className="mt-8 flex items-center gap-4 border-t border-white/5 pt-6">
+        <button
+          onClick={prev}
+          className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isDark ? "bg-white/5 text-white hover:bg-white/10" : "bg-neutral-100 text-black hover:bg-neutral-200"
+            }`}
+        >
           Back
         </button>
         <button
           onClick={handleSaveProfile}
           disabled={saving || !isEditable}
-          className={`px-4 py-2 rounded-md ${
-            isEditable ? "bg-green-500 text-white" : "bg-neutral-600 text-white/60 cursor-not-allowed"
-          }`}
+          className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isEditable
+              ? "bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700"
+              : "bg-neutral-50 dark:bg-neutral-900 border border-white/5 text-neutral-500 cursor-not-allowed"
+            }`}
         >
           {saving ? "Saving..." : "Save Draft"}
         </button>
 
-        <button onClick={next} className="px-4 py-2 rounded-md bg-blue-600 text-white">
-          Next
+        <button
+          onClick={next}
+          className="px-8 py-3 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
+        >
+          Review Application
         </button>
       </div>
     </div>
@@ -332,8 +344,12 @@ function Step3({
       </div>
 
       {/* Bottom Buttons */}
-      <div className="mt-6 flex items-center gap-3">
-        <button onClick={prev} className="px-4 py-2 rounded-md border">
+      <div className="mt-8 flex items-center gap-4 border-t border-white/5 pt-6">
+        <button
+          onClick={prev}
+          className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isDark ? "bg-white/5 text-white hover:bg-white/10" : "bg-neutral-100 text-black hover:bg-neutral-200"
+            }`}
+        >
           Back
         </button>
 
@@ -341,9 +357,10 @@ function Step3({
         <button
           onClick={handleSaveProfile}
           disabled={saving || !isEditable}
-          className={`px-4 py-2 rounded-md ${
-            isEditable ? "bg-green-500 text-white" : "bg-neutral-600 text-white/60 cursor-not-allowed"
-          }`}
+          className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isEditable
+              ? "bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700"
+              : "bg-neutral-50 dark:bg-neutral-900 border border-white/5 text-neutral-500 cursor-not-allowed"
+            }`}
         >
           {saving ? "Saving..." : "Save Draft"}
         </button>
@@ -352,21 +369,20 @@ function Step3({
         <button
           onClick={() => setShowSubmitNoteModal(true)}
           disabled={submitDisabled}
-          className={`px-4 py-2 rounded-md ${
-            applicationStatus === "approved"
+          className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg ${applicationStatus === "approved"
               ? "bg-green-600 text-white cursor-not-allowed"
               : applicationStatus === "pending"
-              ? "bg-gray-500 text-white cursor-not-allowed"
-              : "bg-blue-600 text-white"
-          }`}
+                ? "bg-neutral-700 text-white/50 cursor-not-allowed"
+                : "bg-red-600 text-white hover:bg-red-700 hover:scale-105 active:scale-95 shadow-red-600/20"
+            }`}
         >
           {applicationStatus === "approved"
             ? "Verified"
             : applicationStatus === "pending"
-            ? "Pending Review"
-            : submitting
-            ? "Submitting..."
-            : "Submit for Review"}
+              ? "Pending Review"
+              : submitting
+                ? "Submitting..."
+                : "Finalize & Submit"}
         </button>
       </div>
     </div>
@@ -376,31 +392,45 @@ function Step3({
 /* ----------------------------------------------
    SMALL COMPONENTS
 ---------------------------------------------- */
-function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
+function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false, isDark }) {
+  const inputClass = (enabled) =>
+    `w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium ${isDark
+      ? enabled
+        ? "border-red-600 text-white placeholder-white/30"
+        : "border-white/10 text-white/50"
+      : enabled
+        ? "border-red-600 text-black placeholder-black/30"
+        : "border-black/10 text-black/50"
+    }`;
+
+  const labelClass = "text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block";
+
   return (
     <div>
-      <label className="text-sm opacity-80">{label}</label>
+      <label className={labelClass}>{label}</label>
       <input
         type={type}
         value={value}
         placeholder={placeholder}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full mt-1 px-3 py-2 rounded border ${
-          disabled ? "bg-neutral-100/50 cursor-not-allowed" : ""
-        }`}
+        className={inputClass(!disabled)}
       />
     </div>
   );
 }
 
-function CredentialCard({ title, items, onAdd, renderItem }) {
+function CredentialCard({ title, items, onAdd, renderItem, isDark }) {
   return (
-    <div className="p-4 rounded-xl border">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold">{title}</h3>
-        <button onClick={onAdd} className="text-sm px-3 py-1 rounded-md border">
-          Add
+    <div className={`p-6 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-neutral-50 border-neutral-100"}`}>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-sm font-black uppercase tracking-widest opacity-60">{title}</h3>
+        <button
+          onClick={onAdd}
+          className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDark ? "bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white" : "bg-red-600 text-white hover:bg-red-700"
+            }`}
+        >
+          Add New
         </button>
       </div>
 
@@ -409,7 +439,7 @@ function CredentialCard({ title, items, onAdd, renderItem }) {
       ) : (
         <div className="space-y-3">
           {items.map((it) => (
-            <div key={it.id} className="p-3 rounded-md bg-white/5 border">
+            <div key={it.id} className={`p-4 rounded-2xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5"}`}>
               {renderItem(it)}
             </div>
           ))}

@@ -20,12 +20,12 @@ function ModalOverlay({ children, isDark, onClose }) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"}
-          rounded-xl shadow-xl w-full max-w-2xl p-6`}
+        className={`${isDark ? "bg-neutral-900 border border-white/10 text-white" : "bg-white text-black"}
+          rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full max-w-2xl p-8 md:p-12 overflow-y-auto max-h-[90vh]`}
       >
         {children}
       </div>
@@ -43,18 +43,30 @@ function Input({
   type = "text",
   placeholder = "",
   disabled = false,
+  isDark
 }) {
+  const inputClass = (enabled) =>
+    `w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium ${isDark
+      ? enabled
+        ? "border-red-600 text-white placeholder-white/30"
+        : "border-white/10 text-white/50"
+      : enabled
+        ? "border-red-600 text-black placeholder-black/30"
+        : "border-black/10 text-black/50"
+    }`;
+
+  const labelClass = "text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block";
+
   return (
     <div>
-      <label className="text-sm opacity-80">{label}</label>
+      <label className={labelClass}>{label}</label>
       <input
         type={type}
         value={value}
         placeholder={placeholder}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full mt-1 px-3 py-2 rounded border ${disabled ? "bg-neutral-100/50 cursor-not-allowed" : ""
-          }`}
+        className={inputClass(!disabled)}
       />
     </div>
   );
@@ -110,18 +122,18 @@ function AddExperienceModal({ onClose, onCreate }) {
 
         {/* Employment Type */}
         <div>
-          <label className="text-sm opacity-80">Employment Type</label>
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block">Employment Type</label>
           <select
-            className="w-full mt-1 px-3 py-2 rounded border"
+            className={`w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium ${isDark ? "border-white/10 text-white" : "border-black/10 text-black"}`}
             value={form.employment_type}
             onChange={(e) =>
               setForm((p) => ({ ...p, employment_type: e.target.value }))
             }
           >
-            <option value="full_time">Full Time</option>
-            <option value="part_time">Part Time</option>
-            <option value="contract">Contract</option>
-            <option value="internship">Internship</option>
+            <option value="full_time" className="text-black">Full Time</option>
+            <option value="part_time" className="text-black">Part Time</option>
+            <option value="contract" className="text-black">Contract</option>
+            <option value="internship" className="text-black">Internship</option>
           </select>
         </div>
 
@@ -147,9 +159,9 @@ function AddExperienceModal({ onClose, onCreate }) {
 
         {/* Description */}
         <div className="md:col-span-2">
-          <label className="text-sm opacity-80">Description</label>
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block">Description</label>
           <textarea
-            className="w-full mt-1 px-3 py-2 rounded border"
+            className={`w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium resize-none ${isDark ? "border-white/10 text-white" : "border-black/10 text-black"}`}
             rows={4}
             value={form.description}
             onChange={(e) =>
@@ -159,15 +171,18 @@ function AddExperienceModal({ onClose, onCreate }) {
         </div>
       </div>
 
-      <div className="mt-6 flex gap-3">
+      <div className="mt-10 flex gap-4">
         <button
           onClick={submit}
           disabled={saving}
-          className="px-4 py-2 rounded-md bg-blue-600 text-white"
+          className="flex-1 py-4 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:bg-red-700 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-red-600/20"
         >
           {saving ? "Adding..." : "Add Experience"}
         </button>
-        <button onClick={onClose} className="px-4 py-2 rounded-md border">
+        <button
+          onClick={onClose}
+          className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isDark ? "bg-white/5 text-white hover:bg-white/10" : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
+        >
           Cancel
         </button>
       </div>

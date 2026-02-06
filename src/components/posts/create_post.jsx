@@ -9,11 +9,11 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState("");
   useEffect(() => {
-  if (!post) return;
+    if (!post) return;
 
-  // Backend already sends full content if this is your post
-  setContent(post.content || "");
-}, [post]);
+    // Backend already sends full content if this is your post
+    setContent(post.content || "");
+  }, [post]);
 
 
 
@@ -72,12 +72,12 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
     setLoading(true);
 
     const PREVIEW_LIMIT = 500;
-const FULL_LIMIT = 10000;
+    const FULL_LIMIT = 10000;
 
-const normalizedContent = content.slice(0, FULL_LIMIT);
+    const normalizedContent = content.slice(0, FULL_LIMIT);
 
-const preview_content = normalizedContent.slice(0, PREVIEW_LIMIT);
-const full_content = normalizedContent; // REQUIRED by backend
+    const preview_content = normalizedContent.slice(0, PREVIEW_LIMIT);
+    const full_content = normalizedContent; // REQUIRED by backend
 
 
 
@@ -167,111 +167,154 @@ const full_content = normalizedContent; // REQUIRED by backend
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-3xl max-h-[85vh] overflow-y-auto p-4 md:p-6 rounded-2xl shadow-xl ${bg} border ${border}`}
+        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-10 rounded-[2.5rem] shadow-2xl ${bg} border ${border} transition-all duration-300 mx-auto`}
       >
-        <h2 className="text-xl font-semibold mb-4">
-          {post ? "Edit Post" : "Create a Post"}
-        </h2>
-
-        {/* ---------------- TITLE ---------------- */}
-        <h3 className="text-sm font-semibold mb-2">Title :</h3>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={200}
-          className={`w-full px-3 py-2 mb-1 rounded border ${border} ${inputBg}`}
-          placeholder="Post title..."
-        />
-        <p className="text-xs opacity-60 mb-3">{title.length}/200</p>
-
-        {/* ---------------- CONTENT ---------------- */}
-        <h3 className="text-sm font-semibold mb-2">Content :</h3>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={8}
-          maxLength={10000}
-          className={`w-full px-3 py-2 mb-1 rounded border ${border} ${inputBg}`}
-          placeholder="Write your post content..."
-        />
-
-        <p className="text-xs opacity-60 mb-3">{content.length}/10000</p>
-
-
-        {/* ---------------- TAGS ---------------- */}
-        <h3 className="text-sm font-semibold mb-2">Tags (max 5):</h3>
-
-        {loadingTags ? (
-          <p className="text-xs opacity-70 mb-4">Loading tags...</p>
-        ) : (
-          <div className="flex flex-wrap gap-2 mb-4 max-h-40 overflow-y-auto">
-            {tags.map((tag) => {
-              const active = selectedTags.includes(tag.id);
-              return (
-                <button
-                  key={tag.id}
-                  onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full border text-sm transition ${active
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : `${border} ${inputBg} hover:bg-neutral-200/50`
-                    }`}
-                >
-                  {tag.name}
-                </button>
-              );
-            })}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h2 className="text-3xl font-black tracking-tighter uppercase">
+              {post ? "Edit Post" : "Discovery"}
+            </h2>
+            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mt-1">
+              Share your thoughts with the community
+            </p>
           </div>
-        )}
-
-        {/* ---------------- IMAGE ---------------- */}
-        <h3 className="text-sm font-semibold mb-2">Image :</h3>
-
-        {image ? (
-          <div className="mb-4 relative">
-            <img
-              src={image}
-              alt="Preview"
-              className="max-h-60 w-full object-cover rounded-xl border"
-            />
-
-            <button
-              onClick={() => {
-                setImage(null);
-                setNewImageFile(null);
-                setRemoveImage(true);
-              }}
-              className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full"
-            >
-              Remove
-            </button>
-          </div>
-        ) : (
-          <input
-            id="post-image-input"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className={`w-full px-3 py-2 rounded border mb-4 ${border} ${inputBg}`}
-          />
-        )}
-
-        {/* ---------------- BUTTONS ---------------- */}
-        <div className="flex justify-end gap-3 mt-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded bg-neutral-500 text-white"
-          >
-            Cancel
-          </button>
+            className={`h-10 w-10 rounded-2xl flex items-center justify-center transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-neutral-400" : "bg-black/5 hover:bg-black/10 text-neutral-500"
+              }`}
+          >✕</button>
+        </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2 rounded bg-red-600 text-white"
-          >
-            {loading ? "Saving..." : post ? "Update" : "Post"}
-          </button>
+        <div className="space-y-6">
+          {/* ---------------- TITLE ---------------- */}
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block">Post Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={200}
+              className={`w-full px-4 py-3.5 rounded-2xl border transition-all outline-none focus:ring-2 focus:ring-red-600/20 ${isDark ? "bg-neutral-800 border-white/5 focus:border-red-600/50" : "bg-neutral-50 border-black/5 focus:border-red-600/30"
+                }`}
+              placeholder="e.g. The future of AI in 2026..."
+            />
+            <div className="flex justify-end mt-1">
+              <span className="text-[10px] font-bold opacity-40">{title.length}/200</span>
+            </div>
+          </div>
+
+          {/* ---------------- CONTENT ---------------- */}
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block">Content</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={6}
+              maxLength={10000}
+              className={`w-full px-4 py-3.5 rounded-2xl border transition-all outline-none focus:ring-2 focus:ring-red-600/20 resize-none ${isDark ? "bg-neutral-800 border-white/5 focus:border-red-600/50" : "bg-neutral-50 border-black/5 focus:border-red-600/30"
+                }`}
+              placeholder="What's on your mind?..."
+            />
+            <div className="flex justify-end mt-1">
+              <span className="text-[10px] font-bold opacity-40">{content.length}/10000</span>
+            </div>
+          </div>
+
+
+          {/* ---------------- TAGS ---------------- */}
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block">Tags (max 5)</label>
+
+            {loadingTags ? (
+              <div className="animate-pulse flex gap-2">
+                {[1, 2, 3].map(i => <div key={i} className="h-8 w-20 bg-neutral-800 rounded-full" />)}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                {tags.map((tag) => {
+                  const active = selectedTags.includes(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      onClick={() => toggleTag(tag)}
+                      className={`px-4 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${active
+                        ? "bg-red-600 text-white border-red-600 shadow-lg shadow-red-600/20"
+                        : isDark ? "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20" : "bg-black/5 text-neutral-500 border-black/5 hover:border-black/20"
+                        }`}
+                    >
+                      {tag.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ---------------- IMAGE ---------------- */}
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block">Media attachment</label>
+
+            {image ? (
+              <div className="relative rounded-[2rem] overflow-hidden border border-white/5 group">
+                <img
+                  src={image}
+                  alt="Preview"
+                  className="w-full h-auto max-h-[300px] object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                  <button
+                    onClick={() => {
+                      setImage(null);
+                      setNewImageFile(null);
+                      setRemoveImage(true);
+                    }}
+                    className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                  >
+                    Delete Artwork
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label
+                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-[2rem] cursor-pointer transition-all ${isDark ? "border-white/10 hover:border-red-500/50 bg-white/5" : "border-black/10 hover:border-red-600/50 bg-black/5"
+                  }`}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-xl mb-1">📸</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Upload Media</span>
+                </div>
+                <input
+                  id="post-image-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+
+          {/* ---------------- BUTTONS ---------------- */}
+          <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
+            <button
+              onClick={onClose}
+              className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDark ? "text-neutral-400 hover:text-white" : "text-neutral-500 hover:text-black"
+                }`}
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className={`px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${loading
+                  ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
+                  : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
+                }`}
+            >
+              {loading ? "Discovering..." : post ? "Update" : "Publish"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

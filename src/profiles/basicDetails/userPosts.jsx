@@ -15,7 +15,8 @@ import useClickOutside from "../../components/hooks/useClickOutside";
 
 import { updatePost, addPost, setEditingPost, setCreateModalOpen, removePost } from "../../redux/slices/postsSlice";
 
-// 🌟 NEW — import TokenManager
+import PostCard from "../../components/posts/PostCard";
+import ModalOverlay from "../../components/ui/ModalOverlay";
 import { getAccessToken } from "../../redux/store/tokenManager";
 
 export default function UserPosts() {
@@ -134,185 +135,54 @@ export default function UserPosts() {
       </div>
 
       {!posts || posts.length === 0 ? (
-        <p>No posts yet.</p>
+        <div className="py-20 text-center opacity-30">
+          <p className="font-bold tracking-widest text-sm uppercase">No posts yet</p>
+        </div>
       ) : (
-        posts.map((post) => {
-          const author = post.author || {};
-
-          return (
-            <article
+        <div className="space-y-6">
+          {posts.map((post) => (
+            <PostCard
               key={post.id}
-              className={`rounded-2xl overflow-hidden shadow mb-4 ${cardBg} border ${borderColor}`}
-            >
-              {/* HEADER */}
-              <header className="p-5 flex items-start gap-4 relative">
-                {/* AVATAR */}
-                <img
-                  src={
-                    author.profile_picture ||
-                    `https://ui-avatars.com/api/?name=${author.username || "User"}`
-                  }
-                  className="rounded-full object-cover h-10 w-10"
-                  alt="author"
-                />
-
-                {/* TITLE SECTION */}
-                <div>
-                  <div
-                    className={`text-xs ${isDark ? "text-[#eaeaea]/70" : "text-[#111111]/70"
-                      }`}
-                  >
-                    <span className="font-bold">{author.username}</span> •{" "}
-                    {formatDate(post.created_at)}
-                  </div>
-
-                  {post.title && (
-                    <h2 className={`mt-2 text-lg font-bold ${text}`}>
-                      {post.title.length > 60
-                        ? post.title.substring(0, 60) + "..."
-                        : post.title}
-                    </h2>
-                  )}
-                </div>
-
-                {/* MENU BUTTON */}
-                {!readOnly && (
-                  <div className="ml-auto relative" ref={menuOpen === post.id ? menuRef : null}>
-                    <button
-                      onClick={() =>
-                        setMenuOpen(menuOpen === post.id ? null : post.id)
-                      }
-                      className="p-2 rounded-full hover:bg-gray-200/20"
-                    >
-                      <FaEllipsisH />
-                    </button>
-
-                    {/* MENU DROPDOWN */}
-                    {menuOpen === post.id && (
-                      <div
-                        className={`absolute right-0 mt-2 w-10 rounded shadow-md border ${isDark ? "bg-[#2c2c2c]" : "bg-white"
-                          }`}
-                      >
-                        {/* EDIT */}
-                        <button
-                          onClick={() => {
-                            handleSetEditingPost(post);
-                            handleSetOpenCreate(true);
-                          }}
-                          className="px-1 py-1 hover:bg-gray-200/30 w-full flex justify-center"
-                        >
-                          <HiPencilAlt className="text-xl" />
-
-                        </button>
-
-                        {/* DELETE */}
-                        <button
-                          onClick={() => internalHandleDelete(post.id)}
-                          className="px-1 py-1 hover:bg-red-200/30 w-full flex justify-center"
-                        >
-                          <HiTrash className="text-xl text-red-400" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </header>
-
-              {/* CONTENT */}
-              <div className={`px-6 pb-6 ${text}`}>
-                <div>
-                  {expandedPost === post.id
-                    ? post.content
-                    : post.content?.length > 200
-                      ? post.content.substring(0, 200) + "..."
-                      : post.content}
-
-                  {post.content?.length > 200 && (
-                    <button
-                      onClick={() =>
-                        setExpandedPost(
-                          expandedPost === post.id ? null : post.id
-                        )
-                      }
-                      className="text-blue-500 text-sm ml-2"
-                    >
-                      {expandedPost === post.id ? "See less" : "See more"}
-                    </button>
-                  )}
-                </div>
-
-                {/* TAGS */}
-                {(post.tags || []).length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {post.tags.map((tag) => (
-                      <span
-                        key={tag.id}
-                        className={`text-sm px-3 py-1 rounded-full border border-blue-400/40 ${isDark
-                          ? "bg-blue-900/30"
-                          : "bg-blue-100/40 text-blue-600"
-                          }`}
-                      >
-                        #{tag.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* IMAGE */}
-                {post.image && (
-                  <img
-                    src={post.image}
-                    className="w-full max-h-96 object-contain rounded-xl mt-4"
-                    alt="post"
-                  />
-                )}
-
-                {/* LIKE + COMMENT */}
-                <div className="mt-5 flex items-center gap-4 text-sm font-medium">
-                  {/* LIKE BUTTON */}
-                  <button
-                    onClick={() => handleLike(post.id)}
-                    className={`flex items-center gap-2 px-4 py-1 rounded border ${borderColor}`}
-                  >
-                    {post.is_liked ? (
-                      <BiSolidLike className="text-blue-500" />
-                    ) : (
-                      <BiLike />
-                    )}
-                    <span>{post.total_likes || 0}</span>
-                  </button>
-
-                  {/* COMMENTS BUTTON */}
-                  <button
-                    onClick={() => handleOpenPost(post.id)}
-                    className={`flex items-center gap-2 px-4 py-1 rounded border ${borderColor}`}
-                  >
-                    💬 {post.total_comments ?? 0}
-                  </button>
-                </div>
-              </div>
-            </article>
-          );
-        })
+              post={{ ...post, author: post.author || profileUser }} // Ensure author exists
+              loggedUser={loggedUser}
+              isDark={isDark}
+              onLike={(id) => handleLike(id)}
+              onDelete={internalHandleDelete}
+              onEdit={(p) => {
+                handleSetEditingPost(p);
+                handleSetOpenCreate(true);
+              }}
+              onCommentClick={(p) => handleOpenPost(p.id)}
+              onTagClick={(tag) => navigate(`/search?q=${tag}&type=posts`)}
+              onProfileClick={() => { }} // Already on profile
+              showMenu={!readOnly}
+            />
+          ))}
+        </div>
       )}
 
       {/* POST MODAL */}
       {openCreate && (
-        <CreatePostModal
-          isDark={isDark}
-          post={editingPost}
-          onClose={() => {
-            handleSetOpenCreate(false);
-            handleSetEditingPost(null);
-          }}
-          onSuccess={(updated) => {
-            if (editingPost) {
-              dispatch(updatePost(updated));
-            } else {
-              dispatch(addPost(updated));
-            }
-          }}
-        />
+        <ModalOverlay close={() => {
+          handleSetOpenCreate(false);
+          handleSetEditingPost(null);
+        }}>
+          <CreatePostModal
+            isDark={isDark}
+            post={editingPost}
+            onClose={() => {
+              handleSetOpenCreate(false);
+              handleSetEditingPost(null);
+            }}
+            onSuccess={(updated) => {
+              if (editingPost) {
+                dispatch(updatePost(updated));
+              } else {
+                dispatch(addPost(updated));
+              }
+            }}
+          />
+        </ModalOverlay>
       )}
     </div>
   );

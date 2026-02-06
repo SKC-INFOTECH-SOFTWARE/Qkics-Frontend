@@ -21,26 +21,25 @@ export default function DocumentList({ theme }) {
     fetchDocuments();
   }, []);
 
+  const text = isDark ? "text-white" : "text-black";
+
   return (
-    <div className="max-w-6xl mx-auto px-4">
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {documents.map((doc) => (
           <div
             key={doc.uuid}
-            className={`group relative p-6 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 ${isDark
-                ? "bg-neutral-800 border border-neutral-700 hover:border-blue-500/50 shadow-lg shadow-black/20"
-                : "bg-white border border-gray-100 hover:border-blue-200 shadow-sm hover:shadow-xl"
-              }`}
+            className={`group relative p-8 premium-card transition-all duration-500 hover:shadow-2xl animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}
           >
             {/* Icon & Access Badge */}
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-xl ${isDark ? "bg-neutral-700" : "bg-blue-50"}`}>
-                <FaFileAlt className={`text-xl ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <div className="flex justify-between items-start mb-8">
+              <div className="h-14 w-14 rounded-2xl bg-red-600/10 flex items-center justify-center text-red-500 shadow-inner group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
+                <FaFileAlt size={24} />
               </div>
               <span
-                className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${doc.access_type === "PREMIUM"
-                    ? "bg-amber-100 text-amber-700 border border-amber-200"
-                    : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                className={`text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-full border shadow-sm transition-all duration-500 ${doc.access_type === "PREMIUM"
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                  : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                   }`}
               >
                 {doc.access_type}
@@ -48,25 +47,33 @@ export default function DocumentList({ theme }) {
             </div>
 
             {/* Content */}
-            <h3 className={`font-bold text-lg leading-tight mb-2 group-hover:text-blue-500 transition-colors ${isDark ? "text-white" : "text-gray-900"}`}>
-              {doc.title}
-            </h3>
-            <p className={`text-sm line-clamp-3 mb-6 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-              {doc.description}
-            </p>
+            <div className="mb-8">
+              <h3 className={`font-black text-xl leading-tight mb-3 group-hover:text-red-500 transition-colors ${text}`}>
+                {doc.title}
+              </h3>
+              <p className={`text-sm font-medium leading-relaxed opacity-50 line-clamp-3 ${text}`}>
+                {doc.description}
+              </p>
+            </div>
+
+            <div className={`w-full h-px mb-6 ${isDark ? "bg-white/5" : "bg-black/5"}`} />
 
             {/* Footer */}
-            <div className="flex justify-between items-center pt-4 border-t border-dashed border-gray-200 dark:border-neutral-700">
-              <span className={`text-xs font-medium ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                Updated {new Date(doc.updated_at || doc.created_at).toLocaleDateString()}
-              </span>
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-0.5">Updated</span>
+                <span className={`text-[11px] font-bold ${text}`}>
+                  {new Date(doc.updated_at || doc.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
               <button
                 onClick={() => setSelectedDoc(doc.uuid)}
-                className={`flex items-center gap-2 text-sm font-semibold transition-colors ${isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
-                  }`}
+                className={`flex items-center gap-3 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDark
+                  ? "bg-white/5 text-white hover:bg-neutral-800"
+                  : "bg-black/5 text-black hover:bg-neutral-900 hover:text-white"}`}
               >
-                <FaEye className="text-base" />
-                <span>View Details</span>
+                <FaEye size={14} />
+                <span>Analyze</span>
               </button>
             </div>
           </div>

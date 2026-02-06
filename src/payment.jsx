@@ -1,9 +1,22 @@
 import { FaCreditCard, FaLock } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function PaymentPage() {
   const { theme } = useSelector((state) => state.user);
+  const location = useLocation();
+  const navigate = useNavigate();
   const isDark = theme === "dark";
+
+  // Get plan from navigation state, OR fallback
+  const plan = location.state?.plan;
+
+  // Fallback defaults if accessed directly or for booking
+  const title = plan ? `Subscription: ${plan.name}` : "Expert Session Booking";
+  const price = plan ? plan.price : 499;
+  const description = plan
+    ? `Generic secure payment for ${plan.duration_days} days access`
+    : "Secure payment powered by your platform";
 
   const bg = isDark ? "bg-neutral-900 text-white" : "bg-gray-50 text-black";
   const card = isDark ? "bg-neutral-800" : "bg-white";
@@ -20,7 +33,7 @@ export default function PaymentPage() {
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold">Complete Your Payment</h1>
           <p className="text-sm opacity-70 mt-1">
-            Secure payment powered by your platform
+            {description}
           </p>
         </div>
 
@@ -29,11 +42,11 @@ export default function PaymentPage() {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm opacity-70">Selected Plan</p>
-              <p className="font-semibold">Expert Session Booking</p>
+              <p className="font-semibold">{title}</p>
             </div>
             <div className="text-right">
               <p className="text-sm opacity-70">Amount</p>
-              <p className="text-lg font-bold text-green-500">₹499</p>
+              <p className="text-lg font-bold text-green-500">₹{price}</p>
             </div>
           </div>
         </div>
@@ -90,9 +103,13 @@ export default function PaymentPage() {
           className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
                      bg-red-600 text-white font-semibold hover:bg-red-700 transition
                      whitespace-nowrap"
+          onClick={() => {
+            alert("Payment successful (Mock)!");
+            navigate(-1);
+          }}
         >
           <FaLock />
-          Pay ₹499 Securely
+          Pay ₹{price} Securely
         </button>
 
         {/* FOOTER */}

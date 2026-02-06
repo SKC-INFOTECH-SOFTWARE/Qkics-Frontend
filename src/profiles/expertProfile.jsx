@@ -325,46 +325,49 @@ export default function ExpertProfile({
   /* ---------- LOADING ---------- */
   if (!expertData || !user) {
     return (
-      <div className={`mt-20 text-center ${isDark ? "text-white" : "text-black"}`}>
-        Loading...
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className={`text-[10px] font-black uppercase tracking-[0.3em] opacity-30 ${isDark ? "text-white" : "text-black"}`}>Loading Profile...</span>
+        </div>
       </div>
     );
   }
 
   /* ===============================
-      UI — UNCHANGED BELOW
+      UI 
   =============================== */
+  const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div
-      className={`min-h-screen pt-20 px-4 pb-20 md:pb-0 ${isDark ? "bg-neutral-950 text-white" : "bg-neutral-100 text-black"
-        }`}
-    >
-      <div className="max-w-4xl mx-auto">
-        {/* HEADER */}
-        <div
-          className={`p-6 rounded-xl shadow flex flex-col md:flex-row items-center justify-between gap-4 mb-6 ${isDark ? "bg-neutral-900 text-white" : "bg-white text-black"
-            }`}
-        >
-          {/* LEFT — PROFILE INFO */}
-          <div className="flex flex-col md:flex-row gap-6 items-center text-center md:text-left w-full">
-            <div className="relative w-28 h-28 mx-auto md:mx-0">
-              {user.profile_picture ? (
-                <img
-                  src={`${user.profile_picture}?t=${Date.now()}`}
-                  alt="Profile"
-                  className="w-28 h-28 rounded-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setShowImageModal(true)}
-                />
-              ) : (
-                <div className="w-28 h-28 bg-red-600 text-white rounded-full flex items-center justify-center text-5xl font-bold">
-                  {user.username.charAt(0)}
-                </div>
-              )}
+    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+      <div className="max-w-7xl mx-auto">
 
+        {/* HEADER */}
+        <div className={`premium-card p-8 md:p-12 mb-12 animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+
+            {/* PROFILE PICTURE */}
+            <div className="relative group">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-transparent group-hover:ring-red-500/20 transition-all duration-700">
+                {user.profile_picture ? (
+                  <img
+                    src={`${user.profile_picture}?t=${Date.now()}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-700 cursor-pointer"
+                    onClick={() => setShowImageModal(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-red-600 flex items-center justify-center text-5xl font-black text-white">
+                    {user.username.charAt(0)}
+                  </div>
+                )}
+              </div>
+
+              {/* EDIT BUTTON */}
               {!readOnly && (
-                <label className="absolute bottom-1 right-1 bg-black/70 text-white w-8 h-8 flex items-center justify-center rounded-full cursor-pointer hover:bg-black">
-                  <MdEdit />
+                <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-black text-white rounded-xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-red-600 transition-colors z-20">
+                  <MdEdit size={16} />
                   <input
                     type="file"
                     accept="image/*"
@@ -375,119 +378,107 @@ export default function ExpertProfile({
               )}
             </div>
 
-            <div>
-              <h1 className="text-3xl font-bold">
-                {user.first_name || user.last_name
-                  ? `${user.first_name} ${user.last_name}`
-                  : user.username}
-              </h1>
-
-              <p className="text-neutral-400 mt-2 mb-2">
-                <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium border border-blue-400 bg-blue-400/10 text-blue-500">
-                  @{user?.username}
-                </span>
-                &nbsp;—&nbsp;
-                <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium border border-purple-400 bg-purple-400/10 text-purple-500">
-                  <FaGraduationCap /> &nbsp;Expert
-                </span>
-              </p>
-
-              {expertData.verified_by_admin && (
-                <div className="mt-1 text-green-500 text-sm font-semibold">
-                  Verified Expert
+            {/* INFO */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
+                <div>
+                  <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-2 ${text}`}>
+                    {user.first_name || user.last_name ? `${user.first_name} ${user.last_name}` : user.username}
+                  </h1>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                      @{user?.username}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                      <FaGraduationCap size={14} /> Expert
+                    </span>
+                    {expertData.verified_by_admin && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-500/10 text-green-500 border border-green-500/20">
+                        Verified
+                      </span>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                {/* ACTION BUTTON */}
+                <div className="flex-shrink-0">
+                  {readOnly ? (
+                    <button
+                      onClick={() => navigate(`/book-session/${user.uuid}`)}
+                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
+                    >
+                      <MdOutlineEventAvailable size={18} />
+                      Book Slots
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/expert/slots")}
+                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
+                    >
+                      <MdOutlineEventAvailable size={18} />
+                      Manage Slots
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* RIGHT — ACTION BUTTON */}
-          {readOnly ? (
-            // 👤 Public / Readonly Profile → Book Slots
-            <button
-              onClick={() => navigate(`/book-session/${user.uuid}`)}
-              className="flex items-center gap-2 px-4 py-2 rounded text-sm font-semibold
-             bg-red-600 text-white hover:bg-red-700 transition
-             whitespace-nowrap"
-            >
-              <MdOutlineEventAvailable size={20} />
-              Book Slots
-            </button>
-
-          ) : (
-            // 👨‍⚕️ Own Profile → Manage Slots
-            <button
-              onClick={() => navigate("/expert/slots")}
-              className="flex items-center gap-2 px-4 py-2 rounded text-sm font-semibold
-             bg-red-600 text-white hover:bg-red-700 transition
-             whitespace-nowrap"
-            >
-              <MdOutlineEventAvailable size={20} />
-              Manage Slots
-            </button>
-
-          )}
-
         </div>
 
 
-        {/* TOP NAV */}
-        <div className="flex justify-center gap-10 border-b pb-2">
-          <button
-            onClick={() => setActiveTab("about")}
-            className={`pb-2 text-lg font-medium ${activeTab === "about"
-              ? "text-red-500 border-b-2 border-red-500"
-              : "text-neutral-500"
-              }`}
-          >
-            About
-          </button>
-
-          <button
-            onClick={() => setActiveTab("posts")}
-            className={`pb-2 text-lg font-medium ${activeTab === "posts"
-              ? "text-red-500 border-b-2 border-red-500"
-              : "text-neutral-500"
-              }`}
-          >
-            Posts
-          </button>
+        {/* TABS */}
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex flex-wrap justify-center p-1.5 rounded-2xl glass transition-all shadow-xl">
+            {['about', 'posts'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab
+                  ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
+                  : "text-neutral-500 hover:text-black dark:hover:text-white"
+                  }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* CONTENT */}
-        <div className="mt-6">
+        <div className="animate-fadeIn">
           {activeTab === "about" && (
-            <div className="flex flex-col md:flex-row gap-6 relative">
-              {/* LEFT */}
-              <div
-                className={`hidden md:block w-full md:w-1/4 md:sticky md:top-24 h-auto md:h-[39vh] pt-5 px-3 rounded-xl shadow overflow-x-auto md:overflow-y-auto ${isDark ? "bg-neutral-900" : "bg-white"
-                  }`}
-              >
-                {[
-                  { key: "user-details", label: "User Details", icon: <MdOutlineManageAccounts />, ref: userRef },
-                  { key: "expert-details", label: "Expert Details", icon: <HiOutlineIdentification />, ref: expertRef },
-                  { key: "experience", label: "Experience", icon: <MdWorkOutline />, ref: experienceRef },
-                  { key: "education", label: "Education", icon: <PiBookOpenTextLight />, ref: educationRef },
-                  { key: "certification", label: "Certification", icon: <PiCertificateLight />, ref: certRef },
-                  { key: "honors", label: "Honors & Awards", icon: <PiMedalLight />, ref: honorRef },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => scrollToSection(item.ref, item.key)}
-                    className={`flex-shrink-0 md:flex-shrink flex items-center gap-2 w-auto md:w-full text-left py-2 px-3 rounded-lg mb-1 transition-all whitespace-nowrap ${leftActive === item.key
-                      ? "bg-red-600 text-white shadow"
-                      : isDark
-                        ? "text-neutral-400 hover:bg-neutral-800"
-                        : "text-neutral-600 hover:bg-neutral-200"
-                      }`}
-                  >
-                    {item.icon} {item.label}
-                  </button>
-                ))}
+            <div className="flex flex-col lg:flex-row gap-8 relative">
+              {/* SIDEBAR NAVIGATION */}
+              <div className="hidden lg:block w-72 flex-shrink-0">
+                <div className={`sticky top-32 p-4 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl"}`}>
+                  {[
+                    { key: "user-details", label: "User Details", icon: <MdOutlineManageAccounts size={18} />, ref: userRef },
+                    { key: "expert-details", label: "Expert Details", icon: <HiOutlineIdentification size={18} />, ref: expertRef },
+                    { key: "experience", label: "Experience", icon: <MdWorkOutline size={18} />, ref: experienceRef },
+                    { key: "education", label: "Education", icon: <PiBookOpenTextLight size={18} />, ref: educationRef },
+                    { key: "certification", label: "Certification", icon: <PiCertificateLight size={18} />, ref: certRef },
+                    { key: "honors", label: "Honors", icon: <PiMedalLight size={18} />, ref: honorRef },
+                  ].map((item) => {
+                    const isActive = leftActive === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => scrollToSection(item.ref, item.key)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all mb-1 ${isActive
+                          ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                          : "text-neutral-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white"
+                          }`}
+                      >
+                        {item.icon} {item.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
-              {/* RIGHT */}
-              <div className="w-full md:w-3/4 min-w-0 space-y-10 ">
-                <div ref={userRef} className="scroll-mt-24">
+              {/* MAIN CONTENT AREA */}
+              <div className="flex-1 space-y-12 min-w-0">
+                <div ref={userRef} className="scroll-mt-32">
                   <UserDetails
                     editMode={!readOnly && editUser}
                     setEditMode={readOnly ? () => { } : setEditUser}
@@ -497,7 +488,7 @@ export default function ExpertProfile({
                   />
                 </div>
 
-                <div ref={expertRef} className="scroll-mt-24">
+                <div ref={expertRef} className="scroll-mt-32">
                   <ExpertDetails
                     expertData={expertData}
                     setExpertData={setExpertData}
@@ -507,28 +498,28 @@ export default function ExpertProfile({
                   />
                 </div>
 
-                <div ref={experienceRef} className="scroll-mt-24">
+                <div ref={experienceRef} className="scroll-mt-32">
                   <ExperiencePage
                     experiences={expertData.experiences || []}
                     setExpertData={setExpertData}
                   />
                 </div>
 
-                <div ref={educationRef} className="scroll-mt-24">
+                <div ref={educationRef} className="scroll-mt-32">
                   <EducationPage
                     education={expertData.educations || []}
                     setExpertData={setExpertData}
                   />
                 </div>
 
-                <div ref={certRef} className="scroll-mt-24">
+                <div ref={certRef} className="scroll-mt-32">
                   <CertificationPage
                     certifications={expertData.certifications || []}
                     setExpertData={setExpertData}
                   />
                 </div>
 
-                <div ref={honorRef} className="scroll-mt-24">
+                <div ref={honorRef} className="scroll-mt-32">
                   <HonorsPage
                     honors_awards={expertData.honors_awards || []}
                     setExpertData={setExpertData}
@@ -543,13 +534,14 @@ export default function ExpertProfile({
           )}
         </div>
       </div>
+
       {/* PROFILE PICTURE MODAL */}
       {showImageModal && (
         <ModalOverlay close={() => setShowImageModal(false)}>
-          <div className={`relative p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
+          <div className={`relative p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center animate-pop ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
             <button
               onClick={() => setShowImageModal(false)}
-              className={`absolute top-2 right-2 p-2 rounded-full transition-all ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"
+              className={`absolute top-4 right-4 p-2 rounded-full transition-all ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"
                 }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -559,7 +551,7 @@ export default function ExpertProfile({
             <img
               src={`${user.profile_picture}?t=${Date.now()}`}
               alt="Profile Large"
-              className="w-80 h-80 md:w-96 md:h-96 rounded-full object-cover shadow-lg"
+              className="w-80 h-80 md:w-96 md:h-96 rounded-2xl object-cover shadow-2xl ring-4 ring-white/10"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
