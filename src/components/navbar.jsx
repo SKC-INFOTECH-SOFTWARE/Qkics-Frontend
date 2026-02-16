@@ -91,7 +91,7 @@ function Navbar({ theme, onToggleTheme, user }) {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isDark ? "bg-[#0a0a0a]/80 border-b border-white/5" : "bg-white/80 border-b border-black/5"
-          } backdrop-blur-xl supports-[backdrop-filter]:bg-opacity-60`}
+          } backdrop-blur-xl supports-backdrop-filter:bg-opacity-60`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-6">
 

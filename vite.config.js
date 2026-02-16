@@ -7,17 +7,17 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://192.168.0.114:1000",
+        target: "https://qkicsbackend.matchb.online",
         changeOrigin: true,
         secure: false,
       },
       "/media": {
-        target: "http://192.168.0.114:1000",
+        target: "https://qkicsbackend.matchb.online",
         changeOrigin: true,
         secure: false,
       },
       "/ws": {
-        target: "ws://192.168.0.114:1000",
+        target: "https://qkicsbackend.matchb.online",
         ws: true,                 // 🔥 THIS IS THE KEY
         changeOrigin: true,
         secure: false,
