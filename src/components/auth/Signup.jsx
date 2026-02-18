@@ -153,7 +153,7 @@ function SignupModal({ onClose, openLogin, isDark }) {
         user_type: "normal", // REQUIRED
       };
 
-      await axios.post(`${API_BASE_URL}v1/auth/register/`, payload);
+      await axios.post(`${API_BASE_URL}/v1/auth/register/`, payload);
 
 
       const result = await dispatch(loginUser({ username, password }));

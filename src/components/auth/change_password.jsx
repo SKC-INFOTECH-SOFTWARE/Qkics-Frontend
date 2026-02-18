@@ -22,7 +22,7 @@ function ChangePasswordModal({ onClose, isDark }) {
       };
 
       const res = await axiosSecure.post(
-        `v1/auth/me/change-password/`,
+        `/v1/auth/me/change-password/`,
         payload,
         {
           headers: {
