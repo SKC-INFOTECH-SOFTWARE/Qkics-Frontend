@@ -6,11 +6,11 @@ import { Outlet, Navigate } from "react-router-dom";
 export default function AdminLayout({ user, status, theme, role, onToggleTheme }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // 1. WHILE LOADING or IDLE - Don't show anything or redirect
+  // 1. WHILE LOADING or IDLE
   if (status === "loading" || status === "idle") {
     return (
-      <div className={`h-screen w-screen flex items-center justify-center ${theme === "dark" ? "bg-neutral-950 text-white" : "bg-white text-black"}`}>
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className={`h-screen w-screen flex items-center justify-center transition-colors duration-200 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -21,22 +21,21 @@ export default function AdminLayout({ user, status, theme, role, onToggleTheme }
   }
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
   const isDark = theme === "dark";
 
   return (
     <div className={isDark ? "dark" : ""}>
-      <div className={`h-screen flex overflow-hidden ${isDark ? "bg-neutral-950" : "bg-white"}`}>
-        {/* LEFT SIDEBAR - Fixed height, spans full height */}
+      <div className={`
+        h-screen flex overflow-hidden font-sans transition-colors duration-200
+        ${isDark ? "bg-[#0a0a0a] text-gray-200" : "bg-[#f8fafc] text-gray-800"}
+      `}>
+
+        {/* LEFT SIDEBAR */}
         <AdminSidebar role={role} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} theme={theme} />
 
-        {/* RIGHT SIDE AREA - Navbar + Main Content */}
-        <div className={`
-          flex flex-col flex-1 min-w-0 transition-all duration-300
-          ${isDark ? "bg-neutral-950 text-neutral-100" : "bg-neutral-50 text-neutral-900"}
-        `}>
-
-          {/* TOP NAVBAR - Sticky, full width of the right area */}
+        {/* RIGHT SIDE AREA */}
+        <div className="flex flex-col flex-1 min-w-0 transition-all duration-200 relative z-10 w-full">
+          {/* TOP NAVBAR */}
           <AdminNavbar
             theme={theme}
             role={role}
@@ -46,12 +45,11 @@ export default function AdminLayout({ user, status, theme, role, onToggleTheme }
           />
 
           {/* MAIN CONTENT AREA */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 overflow-y-auto w-full p-6 md:p-8 custom-scrollbar">
+            <div className="max-w-[85rem] mx-auto w-full h-full animate-fadeIn">
               <Outlet />
             </div>
           </main>
-
         </div>
       </div>
     </div>

@@ -11,41 +11,43 @@ import Navbar from "./components/navbar";
 import ErrorBoundary from "./components/Errorboundary";
 
 // ─── Lazy-loaded pages ────────────────────────────────────────────────────────
-const Home               = lazy(() => import("./pages/home"));
-const Booking            = lazy(() => import("./pages/booking"));
-const Space              = lazy(() => import("./pages/space"));
-const Notification       = lazy(() => import("./pages/notification"));
-const DocumentsPage      = lazy(() => import("./pages/DocumentsPage"));
-const SearchResultsPage  = lazy(() => import("./pages/SearchResultsPage"));
+const Home = lazy(() => import("./pages/home"));
+const Booking = lazy(() => import("./pages/booking"));
+const Space = lazy(() => import("./pages/space"));
+const Notification = lazy(() => import("./pages/notification"));
+const DocumentsPage = lazy(() => import("./pages/DocumentsPage"));
+const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
 
-const Logout             = lazy(() => import("./components/auth/logout"));
-const Comments           = lazy(() => import("./components/posts/comment"));
-const Subscription       = lazy(() => import("./components/subscription/Subscription"));
-const MyBookings         = lazy(() => import("./components/myBookings/MyBookings"));
-const BookSession        = lazy(() => import("./components/profileFetch/expertBooking/BookSession"));
+const Logout = lazy(() => import("./components/auth/logout"));
+const Comments = lazy(() => import("./components/posts/comment"));
+const Subscription = lazy(() => import("./components/subscription/Subscription"));
+const MyBookings = lazy(() => import("./components/myBookings/MyBookings"));
+const BookSession = lazy(() => import("./components/profileFetch/expertBooking/BookSession"));
 
-const NormalProfile      = lazy(() => import("./profiles/normalProfile"));
-const EntrepreneurProfile= lazy(() => import("./profiles/entrepreneur"));
-const ExpertProfile      = lazy(() => import("./profiles/expertProfile"));
-const InvestorProfile    = lazy(() => import("./profiles/investorProfile"));
-const ProfileFetcher     = lazy(() => import("./profiles/ProfileFetcher"));
-const ExpertSlots        = lazy(() => import("./profiles/expertSlots/ExpertSlots"));
-const ExpertWizard       = lazy(() => import("./profiles/expertWizards/ExpertWizard"));
+const NormalProfile = lazy(() => import("./profiles/normalProfile"));
+const EntrepreneurProfile = lazy(() => import("./profiles/entrepreneur"));
+const ExpertProfile = lazy(() => import("./profiles/expertProfile"));
+const InvestorProfile = lazy(() => import("./profiles/investorProfile"));
+const ProfileFetcher = lazy(() => import("./profiles/ProfileFetcher"));
+const ExpertSlots = lazy(() => import("./profiles/expertSlots/ExpertSlots"));
+const ExpertWizard = lazy(() => import("./profiles/expertWizards/ExpertWizard"));
 const EntrepreneurWizard = lazy(() => import("./profiles/entreprenuerWizard/entreprenuerWizard"));
 
-const PaymentPage        = lazy(() => import("./payment"));
-const ChatPage           = lazy(() => import("./chat"));
-const Error              = lazy(() => import("./error"));
+const PaymentPage = lazy(() => import("./payment"));
+const ChatPage = lazy(() => import("./chat"));
+const Error = lazy(() => import("./error"));
 
 // ─── Admin (separate chunk — never downloaded by regular users) ───────────────
-const AdminLayout        = lazy(() => import("./admin/adminLayout"));
-const AdminDashboard     = lazy(() => import("./admin/adminPages/adminDashboard"));
-const AdminUsers         = lazy(() => import("./admin/adminPages/adminUsers"));
-const AdminPosts         = lazy(() => import("./admin/adminPages/adminPosts"));
-const AdminTags          = lazy(() => import("./admin/adminPages/adminTags"));
+const AdminLayout = lazy(() => import("./admin/adminLayout"));
+const AdminDashboard = lazy(() => import("./admin/adminPages/adminDashboard"));
+const AdminUsers = lazy(() => import("./admin/adminPages/adminUsers"));
+const AdminPosts = lazy(() => import("./admin/adminPages/adminPosts"));
+const AdminTags = lazy(() => import("./admin/adminPages/adminTags"));
 const AdminSubscriptions = lazy(() => import("./admin/adminPages/adminSubscriptions"));
-const AdminDocuments     = lazy(() => import("./admin/adminPages/adminDocuments"));
-const SystemLogs         = lazy(() => import("./admin/superadminPages/systemLogs"));
+const AdminDocuments = lazy(() => import("./admin/adminPages/adminDocuments"));
+const SystemLogs = lazy(() => import("./admin/superadminPages/systemLogs"));
+const AdminExpertApplications = lazy(() => import("./admin/adminPages/adminExpertApplications"));
+const AdminEntrepreneurApplications = lazy(() => import("./admin/adminPages/adminEntrepreneurApplications"));
 
 // ─── Simple full-screen loader shown while chunks download ───────────────────
 function PageLoader() {
@@ -131,55 +133,57 @@ function App() {
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-          <Route path="/"                       element={<Home />} />
-          <Route path="/booking"                element={<Booking />} />
-          <Route path="/spaces"                 element={<Space />} />
-          <Route path="/notifications"          element={<Notification />} />
-          <Route path="/document"               element={<DocumentsPage />} />
-          <Route path="/search"                 element={<SearchResultsPage />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/spaces" element={<Space />} />
+            <Route path="/notifications" element={<Notification />} />
+            <Route path="/document" element={<DocumentsPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
 
-          <Route path="/normal"                 element={<NormalProfile />} />
-          <Route path="/entrepreneur"           element={<EntrepreneurProfile />} />
-          <Route path="/expert"                 element={<ExpertProfile />} />
-          <Route path="/investor"               element={<InvestorProfile />} />
-          <Route path="/profile/:username"      element={<ProfileFetcher />} />
+            <Route path="/normal" element={<NormalProfile />} />
+            <Route path="/entrepreneur" element={<EntrepreneurProfile />} />
+            <Route path="/expert" element={<ExpertProfile />} />
+            <Route path="/investor" element={<InvestorProfile />} />
+            <Route path="/profile/:username" element={<ProfileFetcher />} />
 
-          <Route path="/upgrade/expert"         element={<ExpertWizard />} />
-          <Route path="/upgrade/entrepreneur"   element={<EntrepreneurWizard />} />
+            <Route path="/upgrade/expert" element={<ExpertWizard />} />
+            <Route path="/upgrade/entrepreneur" element={<EntrepreneurWizard />} />
 
-          <Route path="/expert/slots"           element={<ExpertSlots />} />
-          <Route path="/book-session/:expertUuid" element={<BookSession />} />
+            <Route path="/expert/slots" element={<ExpertSlots />} />
+            <Route path="/book-session/:expertUuid" element={<BookSession />} />
 
-          <Route path="/subscription"           element={<Subscription />} />
-          <Route path="/my-bookings"            element={<MyBookings />} />
-          <Route path="/payment"                element={<PaymentPage />} />
-          <Route path="/chat/:roomId?"          element={<ChatPage />} />
-          <Route path="/post/:id/comments"      element={<Comments />} />
-          <Route path="/logout"                 element={<Logout />} />
-          <Route path="/server-down"            element={<ServerDown />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/chat/:roomId?" element={<ChatPage />} />
+            <Route path="/post/:id/comments" element={<Comments />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/server-down" element={<ServerDown />} />
 
-          {/* Admin routes — downloaded only when an admin visits */}
-          <Route element={
-            <AdminLayout
-              user={user}
-              status={status}
-              theme={theme}
-              role={user?.user_type}
-              onToggleTheme={toggleTheme}
-            />
-          }>
-            <Route path="/admin"            element={<AdminDashboard theme={theme} />} />
-            <Route path="/superadmin"       element={<AdminDashboard theme={theme} />} />
-            <Route path="/admin-tags"       element={<AdminTags theme={theme} />} />
-            <Route path="/admin-users"      element={<AdminUsers theme={theme} />} />
-            <Route path="/admin-posts"      element={<AdminPosts theme={theme} />} />
-            <Route path="/system-logs"      element={<SystemLogs theme={theme} />} />
-            <Route path="/subscriptions"    element={<AdminSubscriptions theme={theme} />} />
-            <Route path="/admin-documents"  element={<AdminDocuments theme={theme} />} />
-          </Route>
+            {/* Admin routes — downloaded only when an admin visits */}
+            <Route element={
+              <AdminLayout
+                user={user}
+                status={status}
+                theme={theme}
+                role={user?.user_type}
+                onToggleTheme={toggleTheme}
+              />
+            }>
+              <Route path="/admin" element={<AdminDashboard theme={theme} />} />
+              <Route path="/superadmin" element={<AdminDashboard theme={theme} />} />
+              <Route path="/admin-tags" element={<AdminTags theme={theme} />} />
+              <Route path="/admin-users" element={<AdminUsers theme={theme} />} />
+              <Route path="/admin-posts" element={<AdminPosts theme={theme} />} />
+              <Route path="/system-logs" element={<SystemLogs theme={theme} />} />
+              <Route path="/subscriptions" element={<AdminSubscriptions theme={theme} />} />
+              <Route path="/admin-documents" element={<AdminDocuments theme={theme} />} />
+              <Route path="/admin-application/expert" element={<AdminExpertApplications theme={theme} />} />
+              <Route path="/admin-application/entrepreneur" element={<AdminEntrepreneurApplications theme={theme} />} />
+            </Route>
 
-          <Route path="*" element={<Error />} />
-        </Routes>
+            <Route path="*" element={<Error />} />
+          </Routes>
         </Suspense>
       </ErrorBoundary>
     </>

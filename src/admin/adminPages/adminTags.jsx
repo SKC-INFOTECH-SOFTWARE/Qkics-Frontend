@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosSecure from "../../components/utils/axiosSecure";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch, FaFilter, FaPlus, FaTags } from "react-icons/fa";
 import { useAlert } from "../../context/AlertContext";
 import { useConfirm } from "../../context/ConfirmContext";
 
@@ -10,7 +10,7 @@ export default function TagsTable({ theme }) {
   const { showConfirm } = useConfirm();
 
   const [tags, setTags] = useState([]);
-  const [filtered, setFiltered] = useState([]); // <- NEW
+  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -19,7 +19,7 @@ export default function TagsTable({ theme }) {
   const [tagName, setTagName] = useState("");
   const [editTag, setEditTag] = useState(null);
 
-  const [searchText, setSearchText] = useState(""); // <- NEW
+  const [searchText, setSearchText] = useState("");
 
   /* ----------------------------
         FETCH TAGS
@@ -28,8 +28,9 @@ export default function TagsTable({ theme }) {
     try {
       setLoading(true);
       const res = await axiosSecure.get("/v1/community/tags/");
-      setTags(res.data);
-      setFiltered(res.data); // <- Initialize filtered list
+      const data = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      setTags(data);
+      setFiltered(data);
     } catch (err) {
       console.error(err);
       showAlert("Failed to load tags", "error");
@@ -47,13 +48,11 @@ export default function TagsTable({ theme }) {
   ---------------------------- */
   useEffect(() => {
     const s = searchText.toLowerCase();
-
     const f = tags.filter(
       (t) =>
         t.name.toLowerCase().includes(s) ||
         t.slug.toLowerCase().includes(s)
     );
-
     setFiltered(f);
   }, [searchText, tags]);
 
@@ -139,45 +138,50 @@ export default function TagsTable({ theme }) {
 
     return (
       <div
-        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity"
         onMouseDown={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
-          className={`p-6 rounded-xl w-[350px] border shadow-lg ${
-            isDark
-              ? "bg-neutral-900 border-neutral-700 text-white"
-              : "bg-white border-neutral-300"
-          }`}
+          className={`p-6 rounded-xl w-full max-w-sm border shadow-xl ${isDark
+              ? "bg-[#111111] border-gray-800 text-gray-100"
+              : "bg-white border-gray-200 text-gray-900"
+            }`}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <h3 className="text-lg font-semibold mb-3">{title}</h3>
+          <h3 className="text-xl font-semibold tracking-tight mb-4">{title}</h3>
 
-          <input
-            type="text"
-            value={localName}
-            onChange={(e) => setLocalName(e.target.value)}
-            placeholder={placeholder}
-            className={`w-full px-3 py-2 rounded-lg border text-sm outline-none ${
-              isDark
-                ? "bg-neutral-800 border-neutral-700 text-white"
-                : "bg-neutral-100 border-neutral-300"
-            }`}
-          />
+          <div className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? "text-gray-400" : "text-gray-700"}`}>Tag Name</label>
+              <input
+                type="text"
+                value={localName}
+                onChange={(e) => setLocalName(e.target.value)}
+                placeholder={placeholder}
+                className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors duration-200 ${isDark
+                    ? "bg-[#0a0a0a] border-gray-800 text-gray-200 placeholder-gray-600 focus:border-blue-500"
+                    : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:border-blue-500"
+                  }`}
+                autoFocus
+              />
+            </div>
 
-          <div className="flex justify-end gap-3 mt-5">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm border border-grey-400 bg-grey-400/10 text-grey-700 dark:border-grey-500 dark:bg-grey-500/20 dark:text-grey-300"
-            >
-              Cancel
-            </button>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={onClose}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isDark ? "border-gray-800 text-gray-300 hover:bg-gray-800" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                  }`}
+              >
+                Cancel
+              </button>
 
-            <button
-              onClick={() => onSubmit(localName)}
-              className="px-4 py-2 rounded-lg text-sm border border-green-400 bg-green-400/10 text-green-700 dark:border-green-500 dark:bg-green-500/20 dark:text-green-300"
-            >
-              Save
-            </button>
+              <button
+                onClick={() => onSubmit(localName)}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -187,120 +191,109 @@ export default function TagsTable({ theme }) {
   /* =============================================================== */
 
   return (
-    <div
-      className={`p-6 rounded-xl shadow-md border ${
-        isDark
-          ? "bg-neutral-900/60 border-neutral-700 text-white"
-          : "bg-white/70 border-neutral-200 text-neutral-800"
-      }`}
-    >
-      {/* HEADER + SEARCH */}
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xl font-bold">Tags</h2>
-
-        {/* SEARCH BOX */}
-        <input
-          type="text"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)} // <- live search
-          placeholder="Search Tags . . ."
-          className={`
-            px-3 py-2 rounded-lg text-sm border w-52 mr-3
-            ${isDark ? "bg-neutral-800 border-neutral-700 text-white" : "bg-neutral-100 border-neutral-300"}
-          `}
-        />
-
-        {/* ADD BUTTON */}
+    <div className="space-y-6">
+      {/* Header Area */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <h1 className={`text-2xl font-semibold tracking-tight ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+            Tags Directory
+          </h1>
+        </div>
         <button
           onClick={() => {
             setTagName("");
             setShowAddModal(true);
           }}
-          className="px-4 py-2 rounded-lg font-medium border border-green-400 bg-green-400/10 text-green-700 dark:border-green-500 dark:bg-green-500/20 dark:text-green-300"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200"
         >
-          + Add Tag
+          <FaPlus /> Add Tag
         </button>
       </div>
 
-      {/* HEADER LINE */}
-      <div className={`w-full h-px mb-4 ${isDark ? "bg-neutral-700" : "bg-neutral-300"}`} />
-
-      {/* TABLE */}
-      {!loading ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr
-                className={`${
-                  isDark ? "text-neutral-400" : "text-neutral-600"
-                } text-xs uppercase`}
-              >
-                <th className="py-3 px-3 text-left">Sl No</th>
-                <th className="py-3 px-3 text-left">Tag Name</th>
-                <th className="py-3 px-3 text-left">Slug</th>
-                <th className="py-3 px-3 text-center">Actions</th>
-              </tr>
-
-              <tr>
-                <td colSpan="4">
-                  <div
-                    className={`w-full h-px ${
-                      isDark ? "bg-neutral-700" : "bg-neutral-300"
-                    }`}
-                  />
-                </td>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filtered.map((tag, index) => (
-                <tr
-                  key={tag.id}
-                  className={`border-b ${
-                    isDark
-                      ? "border-neutral-700 hover:bg-neutral-800/40"
-                      : "border-neutral-200 hover:bg-neutral-100"
-                  }`}
-                >
-                  <td className="py-3 px-3">{index + 1}</td>
-                  <td className="py-3 px-3 font-medium">{tag.name}</td>
-                  <td className="py-3 px-3">{tag.slug}</td>
-
-                  <td className="py-3 px-3 flex gap-3 justify-center">
-                    <button
-                      onClick={() => {
-                        setEditTag(tag);
-                        setTagName(tag.name);
-                        setShowEditModal(true);
-                      }}
-                      className="p-2 rounded-lg text-blue-600 border border-blue-400 bg-blue-400/10 hover:bg-blue-400/20 dark:text-blue-300 dark:border-blue-500 dark:bg-blue-500/20"
-                    >
-                      <FaEdit size={14} />
-                    </button>
-
-                    <button
-                      onClick={() => handleDeleteTag(tag.id)}
-                      className="p-2 rounded-lg text-red-600 border border-red-400 bg-red-400/10 hover:bg-red-400/20 dark:text-red-300 dark:border-red-500 dark:bg-red-500/20"
-                    >
-                      <FaTrash size={14} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="text-center py-6 opacity-60">
-                    No tags found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Filters Area */}
+      <div className={`p-4 rounded-xl border flex flex-col sm:flex-row gap-4 justify-between items-center ${isDark ? "bg-[#111111] border-gray-800" : "bg-white border-gray-200 shadow-sm"}`}>
+        <div className={`relative w-full sm:max-w-md flex items-center`}>
+          <FaSearch className={`absolute left-3 text-[0.8rem] ${isDark ? "text-gray-500" : "text-gray-400"}`} />
+          <input
+            type="text"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Search tags by name or slug..."
+            className={`w-full pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors duration-200 ${isDark ? "bg-[#0a0a0a] border-gray-800 text-gray-200 placeholder-gray-600 focus:border-blue-500" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:border-blue-500"
+              }`}
+          />
         </div>
-      ) : (
-        <p className="py-10 text-center opacity-70 text-sm">Loading tags...</p>
-      )}
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border rounded-lg font-medium text-sm transition-colors duration-200 ${isDark ? "border-gray-800 text-gray-300 hover:bg-gray-800" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+            }`}>
+            <FaFilter className="text-xs" /> Filter
+          </button>
+        </div>
+      </div>
+
+      {/* Table Area */}
+      <div className={`rounded-xl border overflow-hidden ${isDark ? "border-gray-800 bg-[#111111]" : "border-gray-200 bg-white shadow-sm"}`}>
+        {!loading ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className={`text-xs uppercase font-semibold ${isDark ? "bg-gray-800/50 text-gray-400 border-b border-gray-800" : "bg-gray-50 text-gray-600 border-b border-gray-200"}`}>
+                <tr>
+                  <th className="py-4 px-5">Name</th>
+                  <th className="py-4 px-5">Slug</th>
+                  <th className="py-4 px-5 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${isDark ? "divide-gray-800" : "divide-gray-200"}`}>
+                {filtered.map((tag) => (
+                  <tr key={tag.id} className={`transition-colors duration-200 ${isDark ? "hover:bg-gray-800/30" : "hover:bg-gray-50"}`}>
+                    <td className={`py-3 px-5 font-medium ${isDark ? "text-gray-200" : "text-gray-900"}`}>{tag.name}</td>
+                    <td className={`py-3 px-5 ${isDark ? "text-gray-400" : "text-gray-600"}`}>{tag.slug}</td>
+
+                    <td className="py-3 px-5 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => {
+                            setEditTag(tag);
+                            setTagName(tag.name);
+                            setShowEditModal(true);
+                          }}
+                          className={`p-1.5 rounded-md transition-colors ${isDark ? "text-blue-400 hover:bg-blue-400/10" : "text-blue-600 hover:bg-blue-50"}`}
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteTag(tag.id)}
+                          className={`p-1.5 rounded-md transition-colors ${isDark ? "text-red-400 hover:bg-red-400/10" : "text-red-600 hover:bg-red-50"}`}
+                          title="Delete"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan="3" className="py-10 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <FaTags className={`text-3xl mb-3 ${isDark ? "text-gray-700" : "text-gray-300"}`} />
+                        <p className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>No tags found.</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="py-16 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+            <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>Loading tags...</p>
+          </div>
+        )}
+      </div>
 
       {/* MODALS */}
       {showAddModal && (
