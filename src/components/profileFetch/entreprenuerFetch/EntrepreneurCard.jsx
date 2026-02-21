@@ -43,6 +43,7 @@ export default function EntrepreneurCard({
         <div className="flex items-center gap-5 mb-6">
           <div className={`h-20 w-20 rounded-2xl overflow-hidden shadow-lg border transition-transform duration-700 group-hover:scale-105 ${isDark ? "border-white/5" : "border-black/5"}`}>
             <img
+                loading="lazy"
               src={resolveProfileImage()}
               alt="logo"
               className="h-full w-full object-cover"

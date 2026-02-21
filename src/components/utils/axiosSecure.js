@@ -6,7 +6,7 @@ import { getAccessToken, setAccessToken } from "../../redux/store/tokenManager";
 
 const axiosSecure = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // ✅ sends httpOnly refresh cookie on every request
 });
 
 /* -------------------------------------------------------
@@ -29,12 +29,9 @@ const runQueue = (error, token) => {
 axiosSecure.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
-
-    // Do NOT attach token if custom flag is set
     if (token && !config._noAuth) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
   (err) => Promise.reject(err)
@@ -46,93 +43,111 @@ axiosSecure.interceptors.request.use(
 axiosSecure.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (!error.response) return Promise.reject(error);
+    // ✅ No response at all = network error, server down, or CORS block
+    if (!error.response) {
+      navigateTo("/server-down");
+      return Promise.reject(error);
+    }
 
     const original = error.config;
 
-    // If not 401 → normal error
+    // ✅ 502 Bad Gateway / 503 Service Unavailable / 504 Gateway Timeout
+    if ([502, 503, 504].includes(error.response.status)) {
+      navigateTo("/server-down");
+      return Promise.reject(error);
+    }
+
     if (error.response.status !== 401) return Promise.reject(error);
 
-    // Avoid infinite loop
+    // ✅ Skip refresh only if this was already a retry — prevents infinite loops.
+    // Do NOT skip based on token absence: the token may be missing because
+    // the tab just opened fresh. Let the refresh attempt proceed; if the
+    // cookie is also invalid, the catch block below will logout cleanly.
     if (original._retry) return Promise.reject(error);
     original._retry = true;
 
-    /* ------------------------------
-        Already refreshing? Queue it.
-    ------------------------------ */
     if (isRefreshing) {
       try {
         const newToken = await addToQueue();
-
-        // Apply new token to queued request
         if (!original.headers) original.headers = {};
         original.headers.Authorization = `Bearer ${newToken}`;
-
         return axiosSecure(original);
       } catch (e) {
         return Promise.reject(e);
       }
     }
 
-    /* ------------------------------
-        Start refresh process
-    ------------------------------ */
     isRefreshing = true;
 
     try {
-      console.log("🔥 401 INTERCEPTOR TRIGGERED");
+      // ✅ CRITICAL FIX: Use the FULL backend URL for the refresh call, not the
+      // relative path through Vite proxy. In production (Vercel) there is no proxy,
+      // so a relative URL would hit the Vercel edge and the httpOnly cookie
+      // (set by the backend domain) would never be sent.
+      //
+      // By using the absolute backend URL with withCredentials:true the browser
+      // sends the httpOnly cookie directly to the backend domain — which is the
+      // same origin that SET the cookie — so the backend accepts it.
+      const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-      const refreshResponse = await axiosSecure.post(
-        "/v1/auth/token/refresh/",
+      const refreshResponse = await axios.post(
+        `${BACKEND_URL}/api/v1/auth/token/refresh/`,
         {},
-        { _noAuth: true } // prevents sending old token
+        { withCredentials: true } // sends httpOnly refresh cookie
       );
 
-      console.log("🔥 REFRESH RESPONSE:", refreshResponse.data);
-
       const newToken = refreshResponse?.data?.access;
-      console.log("🔥 NEW TOKEN FROM SERVER:", newToken);
+      if (!newToken) throw new Error("No access token in refresh response");
 
-      if (!newToken) throw new Error("No new access token from refresh");
-
-      // Save token to memory
       setAccessToken(newToken);
-      console.log("🔥 STORED TOKEN IN MEMORY:", getAccessToken());
-
-      // Resolve queued requests
       runQueue(null, newToken);
 
-      /* -------------------------------------------------
-          MOST IMPORTANT FIX 🔥🔥🔥
-          FORCE CLEAR OLD TOKENS AND APPLY NEW ONE
-      -------------------------------------------------- */
       if (!original.headers) original.headers = {};
-
       original.headers.Authorization = `Bearer ${newToken}`;
-
-      // Remove outdated Axios header caches
-      if (original.headers.common?.Authorization)
-        delete original.headers.common.Authorization;
-
-      if (original.headers.get?.Authorization)
-        delete original.headers.get.Authorization;
-
-      if (original.headers.post?.Authorization)
-        delete original.headers.post.Authorization;
 
       return axiosSecure(original);
     } catch (refreshErr) {
-      // Refresh failed → clear token + reject queue
       setAccessToken(null);
       runQueue(refreshErr, null);
-
       navigateTo("/login");
-
       return Promise.reject(refreshErr);
     } finally {
       isRefreshing = false;
     }
   }
 );
+
+/* -------------------------------------------------------
+    SILENT REFRESH ON APP BOOT
+    Call this once in main.jsx / App.jsx on mount.
+    Since the access token lives in memory, it's gone on
+    every page refresh — this restores it silently using
+    the httpOnly cookie before the app renders.
+------------------------------------------------------- */
+export const silentRefresh = async () => {
+  // ✅ If a token is already in sessionStorage (same tab, page refresh),
+  // skip the network round-trip — we can trust it until it 401s naturally.
+  const existing = getAccessToken();
+  if (existing) return true;
+
+  try {
+    const BACKEND_URL = import.meta.env.VITE_API_URL;
+    const res = await axios.post(
+      `${BACKEND_URL}/api/v1/auth/token/refresh/`,
+      {},
+      { withCredentials: true }
+    );
+    const token = res?.data?.access;
+    if (token) {
+      setAccessToken(token);
+      return true; // ✅ valid session — App.jsx can now call fetchUserProfile
+    }
+    return false;
+  } catch {
+    // No valid refresh cookie — user is genuinely logged out
+    setAccessToken(null);
+    return false;
+  }
+};
 
 export default axiosSecure;

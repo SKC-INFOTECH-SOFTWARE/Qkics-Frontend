@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useThemeClasses from "../../utils/useThemeClasses";
 import { useSelector } from "react-redux";
+import { resolveProfileRoute } from "../../utils/getUserProfileRoute";
 
 
 export default function ExpertModal({
@@ -15,41 +16,10 @@ export default function ExpertModal({
   const navigate = useNavigate();
   const loggedUser = useSelector((state) => state.user.data);
 
+  // ✅ Use shared utility — no duplicate navigation logic
   const goToProfile = () => {
-    const author = expert.user;
-
-    // Close modal first
     onClose();
-
-    // Not logged in → public profile
-    if (!loggedUser) {
-      navigate(`/profile/${author.username}`);
-      return;
-    }
-
-    // Own profile
-    if (loggedUser.username === author.username) {
-      switch (loggedUser.user_type) {
-        case "expert":
-          navigate("/expert");
-          break;
-        case "entrepreneur":
-          navigate("/entrepreneur");
-          break;
-        case "admin":
-          navigate("/admin");
-          break;
-        case "superadmin":
-          navigate("/superadmin");
-          break;
-        default:
-          navigate("/normal");
-      }
-      return;
-    }
-
-    // Someone else → read-only
-    navigate(`/profile/${author.username}`);
+    navigate(resolveProfileRoute(expert.user, loggedUser));
   };
 
 
@@ -80,6 +50,7 @@ export default function ExpertModal({
         {/* HEADER */}
         <div className={`flex gap-3 md:gap-5 px-4 md:px-6 py-3 md:py-4 border-b ${border}`}>
           <img
+              loading="lazy"
             src={resolveProfileImage(expert)}
             alt="profile"
             className="h-24 w-24 rounded-full object-cover cursor-pointer"
@@ -137,7 +108,7 @@ export default function ExpertModal({
               <Info label="Other Expertise" value={expert.other_expertise} />
             )}
 
-            <Info label="Hourly Rate" value={`₹${expert.hourly_rate}`} />
+            {/* <Info label="Hourly Rate" value={`₹${expert.hourly_rate}`} />
             <Info
               label="Availability"
               value={expert.is_available ? "Available" : "Not Available"}
@@ -145,7 +116,7 @@ export default function ExpertModal({
             <Info
               label="Verified by Admin"
               value={expert.verified_by_admin ? "Yes" : "No"}
-            />
+            /> */}
             {/* <Info
               label="Application Status"
               value={expert.application_status}

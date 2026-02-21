@@ -84,6 +84,8 @@ const userSlice = createSlice({
     theme: localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
     // ✅ Profile viewer state
     activeProfileData: null,
+    // ✅ Increments on every profile picture upload — use as cache buster in img src
+    picVersion: 0,
   },
 
   reducers: {
@@ -122,6 +124,7 @@ const userSlice = createSlice({
       if (state.data) {
         state.data.profile_picture = action.payload;
       }
+      state.picVersion = (state.picVersion || 0) + 1;
     },
   },
 
@@ -145,9 +148,11 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.status = "error";
-        state.data = null;
-        state.role = null;
+        // ✅ Do NOT wipe state.data here.
+        // On page refresh the access token is gone from memory. If silentRefresh
+        // fails (expired cookie), fetchUserProfile will 401 — but that does NOT
+        // mean the user chose to log out. Only explicit logoutUser() clears data.
+        state.status = "idle";
         state.error =
           action.payload ||
           action.error?.message ||

@@ -169,12 +169,12 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
         onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-10 rounded-[2.5rem] shadow-2xl ${bg} border ${border} transition-all duration-300 mx-auto`}
       >
-        <div className="flex justify-between items-start mb-8">
-          <div>
-            <h2 className="text-3xl font-black tracking-tighter uppercase">
-              {post ? "Edit Post" : "Discovery"}
+        <div className="flex justify-between items-start mb-8 text-left">
+          <div className="text-left">
+            <h2 className="text-3xl font-black tracking-tighter uppercase text-left">
+              {post ? "Edit Post" : "Create Post"}
             </h2>
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mt-1">
+            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mt-1 text-left">
               Share your thoughts with the community
             </p>
           </div>
@@ -188,7 +188,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
         <div className="space-y-6">
           {/* ---------------- TITLE ---------------- */}
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block">Post Title</label>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block text-left">Post Title</label>
             <input
               type="text"
               value={title}
@@ -205,7 +205,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
 
           {/* ---------------- CONTENT ---------------- */}
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block">Content</label>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block text-left">Content</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -223,7 +223,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
 
           {/* ---------------- TAGS ---------------- */}
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block">Tags (max 5)</label>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block text-left">Tags (max 5)</label>
 
             {loadingTags ? (
               <div className="animate-pulse flex gap-2">
@@ -252,7 +252,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
 
           {/* ---------------- IMAGE ---------------- */}
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block">Media attachment</label>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block text-left">Media attachment</label>
 
             {image ? (
               <div className="relative rounded-[2rem] overflow-hidden border border-white/5 group">
@@ -308,8 +308,8 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
               onClick={handleSubmit}
               disabled={loading}
               className={`px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${loading
-                  ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
-                  : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
+                ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
+                : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
                 }`}
             >
               {loading ? "Discovering..." : post ? "Update" : "Publish"}

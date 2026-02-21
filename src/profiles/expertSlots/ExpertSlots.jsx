@@ -119,14 +119,14 @@ export default function ExpertSlots({ theme: propTheme }) {
       UI
   ----------------------------- */
   return (
-    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
         <div className={`premium-card p-8 md:p-12 mb-8 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h1 className={`text-3xl md:text-4xl font-black uppercase tracking-tight mb-2 ${isDark ? "text-white" : "text-black"}`}>
+              <h1 className={`text-3xl md:text-4xl font-black tracking-tight mb-2 ${isDark ? "text-white" : "text-black"}`}>
                 Manage <span className="text-red-600">Booking Slots</span>
               </h1>
               <p className={`text-sm ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
@@ -163,18 +163,22 @@ export default function ExpertSlots({ theme: propTheme }) {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedSlots.map((slot) => (
-              <SlotCard
-                key={slot.uuid}
-                slot={slot}
-                isDark={isDark}
-                onEdit={() => {
-                  setEditingSlot(slot);
-                  setShowModal(true);
-                }}
-                onDelete={() => handleDelete(slot.uuid)}
-              />
-            ))}
+            {sortedSlots.map((slot) => {
+              // ✅ Normalize: API may return 'uuid' or 'id' as the primary key.
+              const slotId = slot.uuid ?? slot.id;
+              return (
+                <SlotCard
+                  key={slotId}
+                  slot={{ ...slot, uuid: slotId }}
+                  isDark={isDark}
+                  onEdit={() => {
+                    setEditingSlot({ ...slot, uuid: slotId });
+                    setShowModal(true);
+                  }}
+                  onDelete={() => handleDelete(slotId)}
+                />
+              );
+            })}
           </div>
         )}
 

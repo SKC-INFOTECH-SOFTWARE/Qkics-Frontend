@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosSecure from "../utils/axiosSecure";
 import useCommentLike from "../hooks/useCommentLike";
+import { getAccessToken } from "../../redux/store/tokenManager";
 
 import { BiLike, BiSolidLike } from "react-icons/bi";
 import { FaReply, FaTrash } from "react-icons/fa";
@@ -108,7 +109,7 @@ export default function Comments() {
   --------------------------------------------------------- */
   const { handleCommentLike } = useCommentLike(
     setComments,
-    () => localStorage.getItem("access_token"),
+    () => getAccessToken(),
     () => alert("Please log in.")
   );
 

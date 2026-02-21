@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const ConfirmationAlert = ({
   title,
@@ -9,6 +10,11 @@ const ConfirmationAlert = ({
   onConfirm,
   onCancel,
 }) => {
+  // ✅ isDark was previously an undefined free variable — caused ReferenceError crash every time
+  // the confirm dialog rendered. Now correctly read from Redux.
+  const theme = useSelector((state) => state.user.theme);
+  const isDark = theme === "dark";
+
   // Close on ESC
   useEffect(() => {
     const handleEsc = (e) => e.key === "Escape" && onCancel();

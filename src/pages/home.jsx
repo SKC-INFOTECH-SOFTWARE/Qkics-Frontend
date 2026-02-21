@@ -19,6 +19,7 @@ import LoginModal from "../components/auth/login";
 import SignupModal from "../components/auth/Signup";
 import ModalOverlay from "../components/ui/ModalOverlay";
 import PostCard from "../components/posts/PostCard";
+import AdCard from "../components/ui/AdCard";
 
 function Home() {
   const { theme, data: loggedUser } = useSelector((state) => state.user);
@@ -125,7 +126,7 @@ function Home() {
 
         {/* LEFT SIDEBAR */}
         <aside className="hidden lg:block lg:col-span-3">
-          <div className="sticky top-28 space-y-6">
+          <div className="sticky top-24 space-y-6">
             {/* Create Post Button */}
             <button
               onClick={() => {
@@ -138,7 +139,7 @@ function Home() {
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 group-hover:bg-white/30 transition-colors">
                 <FaPlus size={18} />
               </span>
-              <span className="text-sm tracking-wide uppercase">New Discovery</span>
+              <span className="text-sm tracking-wide uppercase">Add New Post</span>
             </button>
 
             {/* Tags Card */}
@@ -187,7 +188,7 @@ function Home() {
         </aside>
 
         {/* MAIN FEED */}
-        <main className="col-span-12 lg:col-span-6 space-y-6">
+        <main className="col-span-12 lg:col-span-6 py-4 space-y-6">
           {/* MOBILE TAGS */}
           <div className="lg:hidden relative group mb-2">
             <div className="overflow-x-auto pb-4 flex gap-3 no-scrollbar pr-14">
@@ -217,7 +218,7 @@ function Home() {
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-2">
             {posts.map((post) => (
               <PostCard
                 key={post.id}
@@ -252,7 +253,7 @@ function Home() {
 
         {/* RIGHT SIDEBAR */}
         <aside className="hidden lg:block lg:col-span-3">
-          <div className="sticky top-28 space-y-8">
+          <div className="space-y-8 py-4">
             <AdCard isDark={isDark} />
             <AdCard isDark={isDark} featured />
 
@@ -312,26 +313,6 @@ function Home() {
       <button onClick={() => { if (!loggedUser) return setShowLogin(true); setEditingPost(null); setShowCreatePost(true); }} className="lg:hidden fixed bottom-24 right-6 z-40 bg-red-600 text-white h-14 w-14 rounded-2xl shadow-2xl shadow-red-600/30 flex items-center justify-center text-xl hover:bg-red-700 active:scale-90 transition-all">
         <FaPlus />
       </button>
-    </div>
-  );
-}
-
-function AdCard({ isDark, featured }) {
-  return (
-    <div className={`premium-card overflow-hidden group ${isDark ? "bg-neutral-900" : "bg-white"}`}>
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Featured Partner</p>
-        </div>
-        <div className="relative overflow-hidden rounded-xl mb-6">
-          <img src="https://skcinfotech.in/images/banner/ban1.png" alt="ads" className="w-full aspect-video object-cover transition-transform duration-500 group-hover:scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
-        <h4 className="font-bold text-lg leading-tight mb-2">Grow your business with PayPal Vision</h4>
-        <p className="opacity-60 text-sm mb-6 leading-relaxed">Unlock global payments and secure transactions with our next-gen API integration.</p>
-        <button className={`w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-600 hover:text-white transition-all ${isDark ? "bg-white/5 text-white" : "bg-neutral-100 text-black"}`}>Learn More</button>
-      </div>
     </div>
   );
 }

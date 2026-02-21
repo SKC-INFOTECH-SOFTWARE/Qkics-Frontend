@@ -54,6 +54,13 @@ const postsSlice = createSlice({
     setCreateModalOpen(state, action) {
       state.isCreateModalOpen = action.payload;
     },
+    // ✅ Called on logout to wipe stale post/author data (including old profile pics)
+    clearPosts(state) {
+      state.items = [];
+      state.loading = false;
+      state.error = null;
+      state.editingPost = null;
+    },
   },
 
   extraReducers: (builder) => {
@@ -72,5 +79,5 @@ const postsSlice = createSlice({
   },
 });
 
-export const { updatePost, addPost, removePost, setEditingPost, setCreateModalOpen } = postsSlice.actions;
+export const { updatePost, addPost, removePost, setEditingPost, setCreateModalOpen, clearPosts } = postsSlice.actions;
 export default postsSlice.reducer;

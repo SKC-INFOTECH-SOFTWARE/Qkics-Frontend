@@ -32,11 +32,12 @@ import UserBadge from "../components/ui/UserBadge";
 import ModalOverlay from "../components/ui/ModalOverlay";
 
 export default function NormalProfile({
+  profile: propProfile,
   readOnly = false,
   disableSelfFetch = false,
 }) {
   const { theme, activeProfileData } = useSelector((state) => state.user);
-  const profile = activeProfileData?.profile;
+  const profile = activeProfileData?.profile || propProfile;
 
   const isDark = theme === "dark";
   const { showAlert } = useAlert();
@@ -140,16 +141,16 @@ export default function NormalProfile({
         ...(editData.phone ? { phone: editData.phone } : {}),
       });
 
-      setProfileUser(res.data.user);
+      const savedUser = res.data.user ?? res.data;
+      setProfileUser(savedUser);
 
-      // ✅ SYNC ACTIVE PROFILE DATA
-      dispatch(setActiveProfileData({ role: "normal", profile: res.data.user }));
+      dispatch(setActiveProfileData({ role: "normal", profile: savedUser }));
 
       setEditData({
-        first_name: res.data.user.first_name || "",
-        last_name: res.data.user.last_name || "",
-        email: res.data.user.email || "",
-        phone: res.data.user.phone || "",
+        first_name: savedUser.first_name || "",
+        last_name: savedUser.last_name || "",
+        email: savedUser.email || "",
+        phone: savedUser.phone || "",
       });
 
       // ✅ ADD THIS LINE
@@ -174,22 +175,18 @@ export default function NormalProfile({
     formData.append("profile_picture", file);
 
     try {
-      const res = await axiosSecure.patch("/v1/auth/me/update/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axiosSecure.patch("/v1/auth/me/update/", formData);
 
-      const updatedUser = res.data.user;
+      const updatedUser = res.data.user ?? res.data;
       setProfileUser(updatedUser);
 
-      // Sync active profile so the profile page re-renders immediately
       dispatch(setActiveProfileData({ role: "normal", profile: updatedUser }));
-
-      // ✅ Instantly update navbar profile pic — no second API call needed
       dispatch(updateProfilePicture(updatedUser.profile_picture));
+      dispatch(fetchUserProfile());
 
       showAlert("Profile picture updated!", "success");
     } catch (err) {
-      console.log("Profile pic upload error:", err);
+      console.error("Normal profile pic upload error:", err?.response?.data || err);
       showAlert("Upload failed!", "error");
     }
   };
@@ -255,11 +252,11 @@ export default function NormalProfile({
   const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className={`premium-card p-8 md:p-12 mb-12 animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+        <div className={`premium-card p-8 md:p-12 mb-12  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
 
             {/* PROFILE PICTURE */}
@@ -267,6 +264,7 @@ export default function NormalProfile({
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-transparent group-hover:ring-red-500/20 transition-all duration-700">
                 {profileUser.profile_picture ? (
                   <img
+                    loading="lazy"
                     src={`${resolveMedia(profileUser.profile_picture)}?t=${Date.now()}`}
                     alt="Profile"
                     className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-700 cursor-pointer"
@@ -326,7 +324,7 @@ export default function NormalProfile({
         </div>
 
         {/* TABS */}
-        <div className="flex justify-center mb-12">
+        <div className={`sticky top-16 z-40 flex justify-center mb-8 py-4 transition-all duration-300 ${isDark ? 'bg-[#0a0a0a]/90 border-white/5' : 'bg-[#f8f9fa]/90 border-black/5'} backdrop-blur-xl border-b -mx-4 px-4 sm:-mx-8 sm:px-8`}>
           <div className="inline-flex flex-wrap justify-center p-1.5 rounded-2xl glass transition-all shadow-xl">
             {['details', 'posts'].map((tab) => (
               <button
@@ -388,6 +386,7 @@ export default function NormalProfile({
               </svg>
             </button>
             <img
+              loading="lazy"
               src={`${resolveMedia(profileUser.profile_picture)}?t=${Date.now()}`}
               className="w-80 h-80 md:w-96 md:h-96 rounded-2xl object-cover shadow-2xl ring-4 ring-white/10"
               onClick={(e) => e.stopPropagation()}

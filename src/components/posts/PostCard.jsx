@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { BiLike, BiSolidLike } from "react-icons/bi";
 import { FaEllipsisH } from "react-icons/fa";
 import { HiPencilAlt, HiTrash } from "react-icons/hi";
@@ -39,6 +40,7 @@ export default function PostCard({
     onImageClick,
     onProfileClick,
 }) {
+    const picVersion = useSelector((state) => state.user.picVersion || 0);
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
     useClickOutside(menuRef, () => setMenuOpen(false));
@@ -57,7 +59,17 @@ export default function PostCard({
                         onClick={() => onProfileClick?.(post.author)}
                     >
                         <img
-                            src={resolveAvatar(post.author.profile_picture, post.author.username)}
+                            src={(() => {
+                                const isOwnPost = loggedUser && loggedUser.id === post.author.id;
+                                // For own posts use live Redux pic so it updates immediately after upload
+                                const pic = isOwnPost
+                                    ? loggedUser.profile_picture
+                                    : post.author.profile_picture;
+                                const base = resolveAvatar(pic, post.author.username);
+                                // Always cache-bust when a picture exists — fixes stale images
+                                // after profile-picture changes and after logout (picVersion resets to 0)
+                                return pic ? `${base}?v=${picVersion}` : base;
+                            })()}
                             className="h-full w-full object-cover"
                             alt="profile"
                             loading="lazy"
@@ -118,7 +130,7 @@ export default function PostCard({
             {/* CONTENT */}
             <div className={`px-6 pb-6 ${text}`}>
                 {post.title && (
-                    <h2 className="text-xl font-extrabold mb-3 leading-tight tracking-tight">
+                    <h2 className="text-xl font-extrabold mb-1 leading-tight tracking-tight">
                         {post.title}
                     </h2>
                 )}
@@ -131,7 +143,7 @@ export default function PostCard({
                     {post.content.length > 200 && (
                         <button
                             onClick={() => setExpanded(!expanded)}
-                            className="mt-3 text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
+                            className="mt-1 text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
                         >
                             {expanded ? "READ LESS ▲" : "READ MORE ▼"}
                         </button>
@@ -140,7 +152,7 @@ export default function PostCard({
 
                 {/* TAGS */}
                 {Array.isArray(post.tags) && post.tags.length > 0 && (
-                    <div className="mt-6 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                         {post.tags.map((tag) => (
                             <span
                                 key={tag.id}
@@ -159,23 +171,27 @@ export default function PostCard({
 
                 {/* IMAGE */}
                 {post.image && (
-                    <div className="mt-6 overflow-hidden rounded-2xl group relative cursor-zoom-in" onClick={() => onImageClick?.(post.image)}>
+                    <div className="mt-3 overflow-hidden rounded-2xl group relative cursor-zoom-in bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" onClick={() => onImageClick?.(post.image)}>
+                        <div
+                            className="absolute inset-0 bg-cover bg-center blur-xl opacity-40 scale-110"
+                            style={{ backgroundImage: `url(${post.image})` }}
+                        />
                         <img
                             src={post.image}
                             alt="post"
-                            className="w-full h-auto object-cover block transition-transform duration-700 group-hover:scale-[1.03]"
+                            className="relative z-10 w-full max-h-[500px] object-contain block transition-transform duration-700 group-hover:scale-[1.03]"
                             loading="lazy"
                         />
                     </div>
                 )}
 
                 {/* ACTION BAR */}
-                <div className="mt-8 flex items-center gap-3">
+                <div className="mt-3 flex items-center gap-3">
                     <button
                         onClick={() => onLike?.(post.id)}
                         className={`group flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all ${post.is_liked
-                                ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20"
-                                : `border-black/5 dark:border-white/5 hover:border-red-500/50`
+                            ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20"
+                            : `border-black/5 dark:border-white/5 hover:border-red-500/50`
                             }`}
                     >
                         {post.is_liked ? <BiSolidLike size={18} /> : <BiLike size={18} className="group-hover:text-red-500 transition-colors" />}

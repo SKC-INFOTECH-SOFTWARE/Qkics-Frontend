@@ -473,15 +473,17 @@ function SubmitNoteModal({ onClose, onSubmit }) {
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
 
+  // ✅ Note is optional — removed the required check that blocked submission.
+  // Admin review note is just extra context, not mandatory.
   const submit = async () => {
-    if (note.trim().length === 0) {
-      alert("Please enter a note for admin.");
-      return;
-    }
     setSending(true);
     try {
       await onSubmit(note);
+      // onClose is called by handleSubmitForReview via setShowSubmitNoteModal(false)
+      // but we also call it here as a safety net in case the parent doesn't
       onClose();
+    } catch (err) {
+      console.error("Submission error:", err);
     } finally {
       setSending(false);
     }
@@ -491,7 +493,7 @@ function SubmitNoteModal({ onClose, onSubmit }) {
     <>
       <h2 className="text-xl font-semibold mb-4">Submit Application for Verification</h2>
 
-      <label className="text-sm opacity-80">Admin Review Note</label>
+      <label className="text-sm opacity-80">Admin Review Note <span className="opacity-50">(optional)</span></label>
       <textarea
         rows={4}
         className="w-full mt-2 px-3 py-2 rounded border"

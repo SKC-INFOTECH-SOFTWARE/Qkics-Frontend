@@ -60,7 +60,9 @@ export const updateExpertSlot = createAsyncThunk(
       return { slotUuid, data: res.data };
     } catch (err) {
       console.error(err);
-      return rejectWithValue("Failed to update slot");
+      return rejectWithValue(
+        err.response?.data || "Failed to update slot"
+      );
     }
   }
 );
@@ -120,11 +122,13 @@ const expertSlotsSlice = createSlice({
         state.error = null;
       })
       .addCase(createExpertSlot.fulfilled, (state, action) => {
-        // Ensure the new slot defaults to available and active for immediate UI consistency
+        // ✅ Normalize uuid: some API responses use 'id' — ensure uuid is always present
+        const payload = action.payload || {};
         const newSlot = {
           is_available: true,
           status: "ACTIVE",
-          ...action.payload,
+          ...payload,
+          uuid: payload.uuid ?? payload.id,
         };
         state.items.unshift(newSlot);
       })
@@ -139,7 +143,7 @@ const expertSlotsSlice = createSlice({
       .addCase(updateExpertSlot.fulfilled, (state, action) => {
         const { slotUuid, data } = action.payload;
         const index = state.items.findIndex(
-          (slot) => slot.uuid === slotUuid
+          (slot) => (slot.uuid ?? slot.id) === slotUuid
         );
 
         if (index !== -1) {
@@ -159,7 +163,7 @@ const expertSlotsSlice = createSlice({
       })
       .addCase(deleteExpertSlot.fulfilled, (state, action) => {
         state.items = state.items.filter(
-          (slot) => slot.uuid !== action.payload
+          (slot) => (slot.uuid ?? slot.id) !== action.payload
         );
       })
       .addCase(deleteExpertSlot.rejected, (state, action) => {

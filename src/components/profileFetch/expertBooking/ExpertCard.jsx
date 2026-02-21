@@ -25,6 +25,7 @@ export default function ExpertCard({ expert, onClick, resolveProfileImage, isDar
         <div className="relative mb-4">
           <div className="h-28 w-28 rounded-2xl overflow-hidden ring-4 ring-transparent group-hover:ring-red-500/20 transition-all duration-700 shadow-xl">
             <img
+                loading="lazy"
               src={resolveProfileImage(expert)}
               alt="profile"
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"

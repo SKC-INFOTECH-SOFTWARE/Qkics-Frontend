@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { MdOutlineFileDownload, MdFilterList } from "react-icons/md";
 import { FaSearch, FaTimes } from "react-icons/fa";
+import { FiArrowLeft } from "react-icons/fi";
+
 
 import useSearchPosts from "../components/hooks/useSearch";
 import useSearchProfiles from "../components/hooks/useSearchProfiles";
@@ -140,11 +142,17 @@ export default function SearchResultsPage() {
     };
 
     return (
-        <div className={`min-h-screen ${bg} transition-colors duration-300`}>
+        <div className={`min-h-screen ${bg} py-4 transition-colors duration-300`}>
             <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-12 gap-8">
 
                 {/* SIDEBAR: TAGS (Hidden on mobile) */}
                 <aside className="hidden md:block md:col-span-3 lg:col-span-3">
+                    <button
+                            onClick={goBack}
+                           className={`p-3 m-3 rounded-full mt-1 transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white" : "bg-black/5 hover:bg-black/10 text-black"}`}
+                                       >
+                                         <FiArrowLeft size={20} />
+                        </button>
                     <div className={`sticky top-32 p-6 rounded-3xl border ${borderColor} ${cardBg} shadow-xl`}>
                         <div className="space-y-6">
 
@@ -195,13 +203,8 @@ export default function SearchResultsPage() {
 
                     {/* SEARCH RESULTS HEADER */}
                     <div className="space-y-4">
-                        <button
-                            onClick={goBack}
-                            className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest ${mutedText} hover:text-red-500 transition-colors mb-2 ml-1`}
-                        >
-                            ← Back
-                        </button>
-                        <h1 className={`text-3xl md:text-5xl font-black tracking-tighter ${text}`}>
+                        
+                        <h1 className={`text-3xl  md:text-5xl font-black tracking-tighter ${text}`}>
                             Results for <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-600">“{query}”</span>
                         </h1>
                     </div>
@@ -317,7 +320,7 @@ export default function SearchResultsPage() {
                         </p>
                         <button
                             onClick={() => navigate('/booking')}
-                            className="w-full py-3 rounded-xl bg-neutral-100 dark:bg-white/10 text-xs font-black uppercase tracking-widest hover:bg-neutral-200 dark:hover:bg-white/20 transition-all text-center"
+                            className="w-full py-3 rounded-xl bg-neutral-100 dark:bg-white/10 text-xs text-neutral-700  uppercase tracking-widest hover:bg-neutral-200 dark:hover:bg-white/20 transition-all text-center"
                         >
                             Explore Network
                         </button>

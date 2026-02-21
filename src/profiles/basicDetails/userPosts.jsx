@@ -17,6 +17,7 @@ import { updatePost, addPost, setEditingPost, setCreateModalOpen, removePost } f
 
 import PostCard from "../../components/posts/PostCard";
 import ModalOverlay from "../../components/ui/ModalOverlay";
+import AdCard from "../../components/ui/AdCard";
 import { getAccessToken } from "../../redux/store/tokenManager";
 
 export default function UserPosts() {
@@ -114,52 +115,61 @@ export default function UserPosts() {
   };
 
   return (
-    <div>
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">My Posts</h2>
+    <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {/* LEFT: Posts */}
+      <div className="lg:col-span-8 w-full max-w-2xl mx-auto">
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">My Posts</h2>
 
-        {!readOnly && (
-          <button
-            onClick={() => {
-              if (!token) return navigate("/login");
-              handleSetEditingPost(null);
-              handleSetOpenCreate(true);
-            }}
-            className="px-4 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700"
-          >
-            Create Post
-          </button>
-        )}
-
-      </div>
-
-      {!posts || posts.length === 0 ? (
-        <div className="py-20 text-center opacity-30">
-          <p className="font-bold tracking-widest text-sm uppercase">No posts yet</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={{ ...post, author: post.author || profileUser }} // Ensure author exists
-              loggedUser={loggedUser}
-              isDark={isDark}
-              onLike={(id) => handleLike(id)}
-              onDelete={internalHandleDelete}
-              onEdit={(p) => {
-                handleSetEditingPost(p);
+          {!readOnly && (
+            <button
+              onClick={() => {
+                if (!token) return navigate("/login");
+                handleSetEditingPost(null);
                 handleSetOpenCreate(true);
               }}
-              onCommentClick={(p) => handleOpenPost(p.id)}
-              onTagClick={(tag) => navigate(`/search?q=${tag}&type=posts`)}
-              onProfileClick={() => { }} // Already on profile
-              showMenu={!readOnly}
-            />
-          ))}
+              className="px-4 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700"
+            >
+              Create Post
+            </button>
+          )}
+
         </div>
-      )}
+
+        {!posts || posts.length === 0 ? (
+          <div className="py-20 text-center opacity-30">
+            <p className="font-bold tracking-widest text-sm uppercase">No posts yet</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={{ ...post, author: post.author || profileUser }} // Ensure author exists
+                loggedUser={loggedUser}
+                isDark={isDark}
+                onLike={(id) => handleLike(id)}
+                onDelete={internalHandleDelete}
+                onEdit={(p) => {
+                  handleSetEditingPost(p);
+                  handleSetOpenCreate(true);
+                }}
+                onCommentClick={(p) => handleOpenPost(p.id)}
+                onTagClick={(tag) => navigate(`/search?q=${tag}&type=posts`)}
+                onProfileClick={() => { }} // Already on profile
+                showMenu={!readOnly}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* RIGHT: Ads */}
+      <aside className="hidden lg:block lg:col-span-4 space-y-8 pt-12">
+        <AdCard isDark={isDark} />
+        <AdCard isDark={isDark} featured />
+      </aside>
 
       {/* POST MODAL */}
       {openCreate && (

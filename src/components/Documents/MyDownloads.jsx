@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosSecure from "../utils/axiosSecure";
 import { FaDownload, FaHistory } from "react-icons/fa";
 
 export default function MyDownloads({ theme }) {
   const isDark = theme === "dark";
   const [downloads, setDownloads] = useState([]);
+  const [next, setNext] = useState(null);
+  const loaderRef = useRef(null);
 
   const fetchDownloads = async () => {
     try {
       const res = await axiosSecure.get("/v1/documents/my-downloads/");
-      setDownloads(res.data.results);
+      const data = res.data;
+      setDownloads(Array.isArray(data) ? data : (data?.results || []));
+      setNext(data?.next || null);
     } catch (err) {
       console.error(err);
     }
@@ -18,6 +22,31 @@ export default function MyDownloads({ theme }) {
   useEffect(() => {
     fetchDownloads();
   }, []);
+
+  const loadMore = async () => {
+    if (!next) return;
+    try {
+      const res = await axiosSecure.get(next);
+      const data = res.data;
+      const newItems = Array.isArray(data) ? data : (data?.results || []);
+      setDownloads((prev) => [...prev, ...newItems]);
+      setNext(data?.next || null);
+    } catch (err) {
+      console.error("Failed to load more downloads", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [next]);
 
   return (
     <div className={`premium-card overflow-hidden animate-fadeIn `}>
@@ -88,6 +117,12 @@ export default function MyDownloads({ theme }) {
           </tbody>
         </table>
       </div>
+
+      {next && (
+        <div ref={loaderRef} className="py-8 flex justify-center w-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-red-500 border-black/10 dark:border-white/10" />
+        </div>
+      )}
     </div>
   );
 }

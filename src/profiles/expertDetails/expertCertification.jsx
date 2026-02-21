@@ -34,11 +34,11 @@ export default function CertificationPage({
   const [openModal, setOpenModal] = useState(false);
 
   const inputClass = `w-full bg-transparent border-b-2 font-medium focus:outline-none transition-all pb-2 ${isDark
-      ? "border-white/20 focus:border-red-500 text-white placeholder-neutral-600"
-      : "border-black/10 focus:border-red-500 text-black placeholder-neutral-400"
+    ? "border-white/20 focus:border-red-500 text-white placeholder-neutral-600"
+    : "border-black/10 focus:border-red-500 text-black placeholder-neutral-400"
     }`;
 
-  const labelClass = `block text-xs font-black uppercase tracking-widest mb-3 ${isDark ? "text-neutral-500" : "text-neutral-400"}`;
+  const labelClass = `block text-left text-xs font-black uppercase tracking-widest mb-3 ${isDark ? "text-neutral-500" : "text-neutral-400"}`;
 
   /* OPEN ADD MODAL */
   const openAddModal = () => {
@@ -215,10 +215,10 @@ export default function CertificationPage({
       {/* MODAL */}
       {!readOnly && openModal && (
         <ModalOverlay close={() => setOpenModal(false)}>
-          <div className={`w-full max-w-2xl p-8 rounded-3xl shadow-2xl relative ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
+          <div className={`w-full max-w-2xl p-8 rounded-3xl shadow-2xl relative ${isDark ? "bg-[#171717] border border-neutral-800" : "bg-white"}`}>
 
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
-              <h2 className="text-2xl font-black uppercase tracking-tight">
+              <h2 className="text-2xl font-black uppercase tracking-tight text-left">
                 {editingId ? "Edit" : "Add"} <span className="text-red-600">Certification</span>
               </h2>
               <button

@@ -6,9 +6,9 @@ import { normalizeCommentLike } from "../utils/normalizePost";
 export default function useCommentLike(setComments, tokenGetter, openLoginModal) {
   const getToken = () => {
     if (typeof tokenGetter === "function") {
-      return tokenGetter() || localStorage.getItem("access_token") || getAccessToken();
+      return tokenGetter() || getAccessToken();
     }
-    return tokenGetter || localStorage.getItem("access_token") || getAccessToken();
+    return tokenGetter || getAccessToken();
   };
 
   const handleCommentLike = async (commentId) => {

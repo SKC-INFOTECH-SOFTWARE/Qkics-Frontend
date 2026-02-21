@@ -8,7 +8,7 @@ export default function DocumentsPage({ theme }) {
 
 
   return (
-    <div className={`min-h-screen px-4 max-w-7xl mx-auto `}>
+    <div className={`min-h-screen px-4 py-8 max-w-7xl mx-auto `}>
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 animate-fadeIn">
         <div className="max-w-xl">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">

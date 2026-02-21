@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { getAccessToken } from "./redux/store/tokenManager";
 
 import {
   MdSend,
@@ -30,7 +31,7 @@ export default function ChatPage() {
 
   const messagesEndRef = useRef(null);
   const typingTimeout = useRef(null);
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
 
   /* ---------------- helpers ---------------- */
   const getOtherParticipant = (room) => {
@@ -209,7 +210,7 @@ export default function ChatPage() {
   /* ============================ UI ============================ */
 
   return (
-    <div className={`flex h-[calc(100vh-152px)] md:h-[calc(100vh-96px)] overflow-hidden max-w-7xl mx-auto w-full ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`flex h-[calc(100vh-136px)] md:h-[calc(100vh-80px)] overflow-hidden max-w-7xl mx-auto w-full ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       {/* ================= LEFT SIDEBAR ================= */}
       <aside className={`w-full md:w-80 lg:w-[400px] flex flex-col border-r transition-all duration-500 ${isDark ? "border-white/5 bg-[#0a0a0a]" : "border-black/5 bg-white"
         } ${selectedRoom && "hidden md:flex"}`}>

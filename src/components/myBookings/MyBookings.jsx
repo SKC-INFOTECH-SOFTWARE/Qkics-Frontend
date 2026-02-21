@@ -90,7 +90,7 @@ export default function MyBookings() {
   }
 
   return (
-    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-8  md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 animate-fadeIn">
           <div className="max-w-xl">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axiosSecure from "../utils/axiosSecure";
-
+import { getAccessToken } from "../../redux/store/tokenManager";
 import { useAlert } from "../../context/AlertContext";
 
 function ChangePasswordModal({ onClose, isDark }) {
@@ -13,7 +13,7 @@ function ChangePasswordModal({ onClose, isDark }) {
 
   const handleChangePassword = async () => {
     try {
-      const token = localStorage.getItem("access");
+      const token = getAccessToken();
 
       const payload = {
         old_password: oldPassword,

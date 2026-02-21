@@ -1,5 +1,6 @@
 // src/components/navbar.jsx
 import { useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaUser, FaKey, FaSignOutAlt, FaSearch, FaTimes, FaFileAlt, FaAddressBook, FaBars } from "react-icons/fa";
@@ -24,6 +25,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 function Navbar({ theme, onToggleTheme, user }) {
+  const picVersion = useSelector((state) => state.user.picVersion || 0);
   const isDark = theme === "dark";
   const navigate = useNavigate();
   const location = useLocation();
@@ -223,7 +225,7 @@ function Navbar({ theme, onToggleTheme, user }) {
                       }`}
                   >
                     <img
-                      src={resolveAvatar(user?.profile_picture, user?.username)}
+                      src={`${resolveAvatar(user?.profile_picture, user?.username)}${user?.profile_picture ? `?v=${picVersion}` : ""}`}
                       alt="profile"
                       className="h-full w-full object-cover"
                     />
@@ -332,7 +334,7 @@ function Navbar({ theme, onToggleTheme, user }) {
       />
 
       {/* Spacer for fixed header */}
-      <div className="h-24"></div>
+      <div className="h-20"></div>
     </>
   );
 }

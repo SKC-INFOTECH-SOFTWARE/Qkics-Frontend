@@ -21,8 +21,9 @@ export default function AdminDocuments({ theme }) {
     try {
       setLoading(true);
       const res = await axiosSecure.get("/v1/documents/admin/list/");
-      setDocuments(res.data.results);
-      setFiltered(res.data.results);
+      const data = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      setDocuments(data);
+      setFiltered(data);
     } catch (err) {
       console.error("Failed to fetch documents", err);
     } finally {
@@ -38,11 +39,11 @@ export default function AdminDocuments({ theme }) {
   useEffect(() => {
     const s = searchText.toLowerCase();
     setFiltered(
-      documents.filter(
+      documents?.filter(
         (d) =>
           d.title.toLowerCase().includes(s) ||
           d.access_type.toLowerCase().includes(s)
-      )
+      ) || []
     );
   }, [searchText, documents]);
 
@@ -60,38 +61,37 @@ export default function AdminDocuments({ theme }) {
   };
 
   const handleDownload = async (doc) => {
-  try {
-    const res = await fetch(doc.file);
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
+    try {
+      const res = await fetch(doc.file);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
 
-    const safeName =
-      (doc.title || "document")
-        .replace(/[^a-z0-9]/gi, "_")
-        .toLowerCase();
+      const safeName =
+        (doc.title || "document")
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase();
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${safeName}.pdf`;
-    document.body.appendChild(a);
-    a.click();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safeName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
 
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Download failed", err);
-  }
-};
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed", err);
+    }
+  };
 
 
 
   return (
     <div
-      className={`p-6 rounded-xl shadow-md border ${
-        isDark
+      className={`p-6 rounded-xl shadow-md border ${isDark
           ? "bg-neutral-900/60 border-neutral-700 text-white"
           : "bg-white/70 border-neutral-200 text-neutral-800"
-      }`}
+        }`}
     >
       {/* HEADER */}
       <div className="flex flex-col items-center justify-between md:flex-row md:items-center md:justify-between gap-3 mb-3">
@@ -103,11 +103,10 @@ export default function AdminDocuments({ theme }) {
             placeholder="Search documents..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className={`px-3 py-2 rounded-lg text-sm border w-56 outline-none ${
-              isDark
+            className={`px-3 py-2 rounded-lg text-sm border w-56 outline-none ${isDark
                 ? "bg-neutral-800 border-neutral-700 text-white"
                 : "bg-neutral-100 border-neutral-300"
-            }`}
+              }`}
           />
         </div>
 
@@ -131,11 +130,10 @@ export default function AdminDocuments({ theme }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className={`text-xs uppercase border-b ${
-                    isDark
-                      ? "border-neutral-700 hover:bg-neutral-800/40"
-                      : "border-neutral-200 hover:bg-neutral-100"
-                  }`}>
+              <tr className={`text-xs uppercase border-b ${isDark
+                  ? "border-neutral-700 hover:bg-neutral-800/40"
+                  : "border-neutral-200 hover:bg-neutral-100"
+                }`}>
                 <th className="py-3 px-3 text-left">Title</th>
                 <th className="py-3 px-3 text-left">Description</th>
                 {/* <th className="py-3 px-3 text-left">File</th> */}
@@ -146,14 +144,13 @@ export default function AdminDocuments({ theme }) {
             </thead>
 
             <tbody>
-              {filtered.map((doc) => (
+              {filtered?.map((doc) => (
                 <tr
                   key={doc.uuid}
-                  className={`border-b ${
-                    isDark
+                  className={`border-b ${isDark
                       ? "border-neutral-700 hover:bg-neutral-800/40"
                       : "border-neutral-200 hover:bg-neutral-100"
-                  }`}
+                    }`}
                 >
                   <td className="py-3 px-3 font-medium">{doc.title}</td>
                   <td className="py-3 px-3 max-w-xs truncate">{doc.description}</td>
@@ -206,7 +203,7 @@ export default function AdminDocuments({ theme }) {
                 </tr>
               ))}
 
-              {filtered.length === 0 && (
+              {(!filtered || filtered.length === 0) && (
                 <tr>
                   <td colSpan="6" className="text-center py-6 opacity-60">
                     No documents found

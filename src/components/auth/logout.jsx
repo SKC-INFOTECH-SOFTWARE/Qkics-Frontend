@@ -5,6 +5,7 @@ import axiosSecure from "../utils/axiosSecure";
 import { useAlert } from "../../context/AlertContext";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/slices/userSlice";
+import { clearPosts } from "../../redux/slices/postsSlice";
 import { setAccessToken } from "../../redux/store/tokenManager";
 
 function Logout() {
@@ -25,8 +26,9 @@ function Logout() {
           { withCredentials: true }
         );
 
-        // 🔥 Clear Redux user state
+        // 🔥 Clear Redux user state + stale post cache
         dispatch(logoutUser());
+        dispatch(clearPosts());
 
         localStorage.removeItem("user_uuid"); // ✅ clear persisted uuid
 

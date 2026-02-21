@@ -222,23 +222,20 @@ export default function EntrepreneurProfile({
     formData.append("profile_picture", file);
 
     try {
-      const res = await axiosSecure.patch("/v1/auth/me/update/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axiosSecure.patch("/v1/auth/me/update/", formData);
 
       const updated = {
         ...entreData,
-        user: res.data.user,
+        user: res.data.user ?? res.data,
       };
       setEntreData(updated);
       dispatch(setActiveProfileData({ role: "entrepreneur", profile: updated }));
-
-      // ✅ Instantly update navbar profile pic
-      dispatch(updateProfilePicture(res.data.user.profile_picture));
+      dispatch(updateProfilePicture(updated.user.profile_picture));
+      dispatch(fetchUserProfile());
 
       showAlert("Profile picture updated!", "success");
     } catch (error) {
-      console.error("PROFILE PIC ERROR:", error.response?.data || error);
+      console.error("Entrepreneur profile pic upload error:", error?.response?.data || error);
       showAlert("Failed to upload profile picture", "error");
     }
   };
@@ -273,11 +270,11 @@ export default function EntrepreneurProfile({
   const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className={`premium-card p-8 md:p-12 mb-12 animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+        <div className={`premium-card p-8 md:p-12 mb-12  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
 
             {/* PROFILE PICTURE */}
@@ -285,6 +282,7 @@ export default function EntrepreneurProfile({
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-transparent group-hover:ring-red-500/20 transition-all duration-700">
                 {user.profile_picture ? (
                   <img
+                    loading="lazy"
                     src={`${resolveMedia(user.profile_picture)}?t=${Date.now()}`}
                     alt="Profile"
                     className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-700 cursor-pointer"
@@ -340,7 +338,7 @@ export default function EntrepreneurProfile({
         </div>
 
         {/* TABS */}
-        <div className="flex justify-center mb-12">
+        <div className={`sticky top-16 z-40 flex justify-center mb-8 py-4 transition-all duration-300 ${isDark ? 'bg-[#0a0a0a]/90 border-white/5' : 'bg-[#f8f9fa]/90 border-black/5'} backdrop-blur-xl border-b -mx-4 px-4 sm:-mx-8 sm:px-8`}>
           <div className="inline-flex flex-wrap justify-center p-1.5 rounded-2xl glass transition-all shadow-xl">
             {['about', 'posts'].map((tab) => (
               <button
@@ -364,7 +362,7 @@ export default function EntrepreneurProfile({
 
               {/* SIDEBAR NAVIGATION */}
               <div className="hidden lg:block w-72 flex-shrink-0">
-                <div className={`sticky top-32 p-4 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl"}`}>
+                <div className={`sticky top-44 p-4 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl"}`}>
                   {[
                     { key: "user-details", label: "User Details", icon: <MdOutlineManageAccounts size={18} />, ref: userRef },
                     { key: "entre-details", label: "Startup Details", icon: <IoIosRocket size={18} />, ref: entreRef },
@@ -428,6 +426,7 @@ export default function EntrepreneurProfile({
               </svg>
             </button>
             <img
+              loading="lazy"
               src={`${resolveMedia(user.profile_picture)}?t=${Date.now()}`}
               alt="Profile Large"
               className="w-80 h-80 md:w-96 md:h-96 rounded-2xl object-cover shadow-2xl ring-4 ring-white/10"

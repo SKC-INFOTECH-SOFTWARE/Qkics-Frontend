@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosSecure from "../components/utils/axiosSecure";
 import { FaEye, FaFileAlt } from "react-icons/fa";
 import DocumentDetailsModal from "../components/Documents/DocumentDetailsModal";
@@ -7,11 +7,15 @@ export default function DocumentList({ theme }) {
   const isDark = theme === "dark";
   const [documents, setDocuments] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState(null);
+  const [next, setNext] = useState(null);
+  const loaderRef = useRef(null);
 
   const fetchDocuments = async () => {
     try {
       const res = await axiosSecure.get("/v1/documents/");
-      setDocuments(res.data.results);
+      const data = res.data;
+      setDocuments(Array.isArray(data) ? data : (data?.results || []));
+      setNext(data?.next || null);
     } catch (err) {
       console.error(err);
     }
@@ -21,12 +25,37 @@ export default function DocumentList({ theme }) {
     fetchDocuments();
   }, []);
 
+  const loadMore = async () => {
+    if (!next) return;
+    try {
+      const res = await axiosSecure.get(next);
+      const data = res.data;
+      const newItems = Array.isArray(data) ? data : (data?.results || []);
+      setDocuments((prev) => [...prev, ...newItems]);
+      setNext(data?.next || null);
+    } catch (err) {
+      console.error("Failed to load more documents", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [next]);
+
   const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl py-8 mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {documents.map((doc) => (
+        {documents?.map((doc) => (
           <div
             key={doc.uuid}
             className={`group relative p-8 premium-card transition-all duration-500 hover:shadow-2xl animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}
@@ -79,6 +108,12 @@ export default function DocumentList({ theme }) {
           </div>
         ))}
       </div>
+
+      {next && (
+        <div ref={loaderRef} className="py-8 flex justify-center w-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-red-500 border-black/10 dark:border-white/10" />
+        </div>
+      )}
 
       {selectedDoc && (
         <DocumentDetailsModal

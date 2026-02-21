@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosSecure from "../../components/utils/axiosSecure";
 import { useAlert } from "../../context/AlertContext";
-import { useConfirm } from "../../context/ConfirmContext";
 
 import Steps from "./EntrepreneurWizardSteps";
 
@@ -18,7 +17,6 @@ export default function EntrepreneurWizard({ theme }) {
   const navigate = useNavigate();
 
   const { showAlert } = useAlert();
-  const { showConfirm } = useConfirm();
 
   /* ---------------------- STATE ---------------------- */
   const [step, setStep] = useState(1);
@@ -164,45 +162,42 @@ export default function EntrepreneurWizard({ theme }) {
   };
 
   /* ---------------------- SUBMIT FOR REVIEW ---------------------- */
+  // ✅ Removed nested showConfirm() — SubmitNoteModal IS the confirmation step.
+  // Having showConfirm() fire inside onSubmit opened ConfirmationAlert on top of
+  // SubmitNoteModal, stacked two overlapping modals, and crashed due to the isDark bug.
   const handleSubmitForReview = async (note = "") => {
     if (!profileMeta?.id) {
       showAlert("Please save a draft before submitting.", "error");
-      return setShowSubmitNoteModal(false);
+      setShowSubmitNoteModal(false);
+      return;
     }
 
     const errors = validate();
     if (errors.length) {
       showAlert(errors.join(". "), "error");
-      return setShowSubmitNoteModal(false);
+      setShowSubmitNoteModal(false);
+      return;
     }
 
-    showConfirm({
-      title: "Submit for Review?",
-      message: "You cannot resubmit until the admin responds.",
-      confirmText: "Submit",
-      cancelText: "Cancel",
-      async onConfirm() {
-        setSubmitting(true);
-        try {
-          await axiosSecure.post("/v1/entrepreneurs/me/submit/", { note });
+    setSubmitting(true);
+    try {
+      await axiosSecure.post("/v1/entrepreneurs/me/submit/", { note });
 
-          setProfileMeta((p) => ({
-            ...p,
-            application_status: "pending",
-            admin_review_note: note,
-          }));
+      setProfileMeta((p) => ({
+        ...p,
+        application_status: "pending",
+        admin_review_note: note,
+      }));
 
-          showAlert("Application submitted!", "success");
-          setShowSubmitNoteModal(false);
-          setStep(3);
-        } catch (err) {
-          console.error("Submit failed:", err);
-          showAlert("Submission failed.", "error");
-        } finally {
-          setSubmitting(false);
-        }
-      },
-    });
+      showAlert("Application submitted!", "success");
+      setShowSubmitNoteModal(false);
+      setStep(3);
+    } catch (err) {
+      console.error("Submit failed:", err);
+      showAlert("Submission failed.", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   /* ---------------------- START OVER ---------------------- */

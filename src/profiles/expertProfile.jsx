@@ -301,23 +301,21 @@ export default function ExpertProfile({
     formData.append("profile_picture", file);
 
     try {
-      const res = await axiosSecure.patch("/v1/auth/me/update/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axiosSecure.patch("/v1/auth/me/update/", formData);
 
       const updated = {
         ...expertData,
-        user: res.data.user,
+        user: res.data.user ?? res.data,
       };
       setExpertData(updated);
 
       dispatch(setActiveProfileData({ role: "expert", profile: updated }));
-
-      // ✅ Instantly update navbar profile pic
-      dispatch(updateProfilePicture(res.data.user.profile_picture));
+      dispatch(updateProfilePicture(updated.user.profile_picture));
+      dispatch(fetchUserProfile());
 
       showAlert("Profile picture updated!", "success");
-    } catch {
+    } catch (err) {
+      console.error("Expert profile pic upload error:", err?.response?.data || err);
       showAlert("Upload failed!", "error");
     }
   };
@@ -342,21 +340,22 @@ export default function ExpertProfile({
   const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className={`min-h-screen px-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className={`premium-card p-8 md:p-12 mb-12 animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+        <div className={`premium-card p-8 md:p-12 mb-12  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
 
             {/* PROFILE PICTURE */}
             <div className="relative group">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-transparent group-hover:ring-red-500/20 transition-all duration-700">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl">
                 {user.profile_picture ? (
                   <img
+                    loading="lazy"
                     src={`${resolveMedia(user.profile_picture)}?t=${Date.now()}`}
                     alt="Profile"
-                    className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-700 cursor-pointer"
+                    className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-200 cursor-pointer"
                     onClick={() => setShowImageModal(true)}
                   />
                 ) : (
@@ -368,7 +367,7 @@ export default function ExpertProfile({
 
               {/* EDIT BUTTON */}
               {!readOnly && (
-                <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-black text-white rounded-xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-red-600 transition-colors z-20">
+                <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-black text-white rounded-xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-red-600 z-20">
                   <MdEdit size={16} />
                   <input
                     type="file"
@@ -391,7 +390,7 @@ export default function ExpertProfile({
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500 border border-blue-500/20">
                       @{user?.username}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-violet-500/10 text-violet-500 border border-violet-500/20">
                       <FaGraduationCap size={14} /> Expert
                     </span>
                     {expertData.verified_by_admin && (
@@ -407,7 +406,7 @@ export default function ExpertProfile({
                   {readOnly ? (
                     <button
                       onClick={() => navigate(`/book-session/${user.uuid}`)}
-                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
+                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-600/20"
                     >
                       <MdOutlineEventAvailable size={18} />
                       Book Slots
@@ -415,7 +414,7 @@ export default function ExpertProfile({
                   ) : (
                     <button
                       onClick={() => navigate("/expert/slots")}
-                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
+                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-600/20"
                     >
                       <MdOutlineEventAvailable size={18} />
                       Manage Slots
@@ -429,7 +428,7 @@ export default function ExpertProfile({
 
 
         {/* TABS */}
-        <div className="flex justify-center mb-12">
+        <div className={`sticky top-16 z-40 flex justify-center mb-8 py-4 transition-all duration-300 ${isDark ? 'bg-[#0a0a0a]/90 border-white/5' : 'bg-[#f8f9fa]/90 border-black/5'} backdrop-blur-xl border-b -mx-4 px-4 sm:-mx-8 sm:px-8`}>
           <div className="inline-flex flex-wrap justify-center p-1.5 rounded-2xl glass transition-all shadow-xl">
             {['about', 'posts'].map((tab) => (
               <button
@@ -452,7 +451,7 @@ export default function ExpertProfile({
             <div className="flex flex-col lg:flex-row gap-8 relative">
               {/* SIDEBAR NAVIGATION */}
               <div className="hidden lg:block w-72 flex-shrink-0">
-                <div className={`sticky top-32 p-4 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl"}`}>
+                <div className={`sticky top-44 p-4 rounded-3xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl"}`}>
                   {[
                     { key: "user-details", label: "User Details", icon: <MdOutlineManageAccounts size={18} />, ref: userRef },
                     { key: "expert-details", label: "Expert Details", icon: <HiOutlineIdentification size={18} />, ref: expertRef },
@@ -551,6 +550,7 @@ export default function ExpertProfile({
               </svg>
             </button>
             <img
+              loading="lazy"
               src={`${resolveMedia(user.profile_picture)}?t=${Date.now()}`}
               alt="Profile Large"
               className="w-80 h-80 md:w-96 md:h-96 rounded-2xl object-cover shadow-2xl ring-4 ring-white/10"

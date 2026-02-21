@@ -43,6 +43,7 @@ export default function InvestorCard({
         <div className="relative mb-6">
           <div className="h-24 w-24 rounded-full overflow-hidden ring-4 ring-black/5 dark:ring-white/5 group-hover:ring-red-500/20 transition-all duration-700 shadow-xl mx-auto">
             <img
+                loading="lazy"
               src={resolveProfileImage()}
               alt="profile"
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"

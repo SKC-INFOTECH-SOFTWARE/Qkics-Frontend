@@ -4,8 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useAlert } from "./context/AlertContext";
 
 import { fetchUserProfile, setTheme } from "./redux/slices/userSlice";
+import { silentRefresh } from "./components/utils/axiosSecure";
+import ServerDown from "./components/Serverdown";
 
 import Navbar from "./components/navbar";
+import ErrorBoundary from "./components/Errorboundary";
 
 // ─── Lazy-loaded pages ────────────────────────────────────────────────────────
 const Home               = lazy(() => import("./pages/home"));
@@ -60,7 +63,17 @@ function App() {
   const { data: user, status, theme } = useSelector((state) => state.user);
 
   useEffect(() => {
-    dispatch(fetchUserProfile());
+    // ✅ On every page load/refresh: silently restore the access token from the
+    // httpOnly refresh cookie FIRST, then fetch the user profile.
+    // Without this, the memory-only access token is gone after a page refresh
+    // and fetchUserProfile() would 401 before the token is restored.
+    // ✅ Only fetch profile if we successfully restored an access token.
+    // If silentRefresh fails (no cookie / expired), the user is genuinely
+    // logged out — don't call fetchUserProfile which would 401 and cause
+    // the 401 interceptor to re-run a broken refresh cycle.
+    silentRefresh().then((gotToken) => {
+      if (gotToken) dispatch(fetchUserProfile());
+    });
   }, [dispatch]);
 
   useEffect(() => {
@@ -92,7 +105,9 @@ function App() {
   const location = useLocation();
 
   const shouldShowNavbar = () => {
-    if (status === "loading" || status === "idle") return false;
+    // ✅ Only hide navbar during the initial loading splash.
+    // "idle" is now the resting state for logged-out users — don't hide on it.
+    if (status === "loading") return false;
     if (
       location.pathname.startsWith("/admin") ||
       location.pathname.startsWith("/superadmin") ||
@@ -113,8 +128,9 @@ function App() {
         />
       )}
 
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
+      <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
           <Route path="/"                       element={<Home />} />
           <Route path="/booking"                element={<Booking />} />
           <Route path="/spaces"                 element={<Space />} />
@@ -140,6 +156,7 @@ function App() {
           <Route path="/chat/:roomId?"          element={<ChatPage />} />
           <Route path="/post/:id/comments"      element={<Comments />} />
           <Route path="/logout"                 element={<Logout />} />
+          <Route path="/server-down"            element={<ServerDown />} />
 
           {/* Admin routes — downloaded only when an admin visits */}
           <Route element={
@@ -163,7 +180,8 @@ function App() {
 
           <Route path="*" element={<Error />} />
         </Routes>
-      </Suspense>
+        </Suspense>
+      </ErrorBoundary>
     </>
   );
 }
