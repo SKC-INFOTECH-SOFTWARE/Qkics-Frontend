@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FaUser, FaKey, FaSignOutAlt, FaSearch, FaTimes, FaFileAlt, FaAddressBook, FaBars } from "react-icons/fa";
+import { FaHome, FaUser, FaKey, FaSignOutAlt, FaSearch, FaTimes, FaFileAlt, FaAddressBook, FaBars, FaHandshake } from "react-icons/fa";
 import { FaUsersGear, FaCrown } from "react-icons/fa6";
 import { IoChatboxEllipses } from "react-icons/io5";
 import { MdNotificationsActive } from "react-icons/md";
@@ -57,6 +57,13 @@ function Navbar({ theme, onToggleTheme, user }) {
   const isLoggedIn = !!user;
 
   const [searchMobile, setSearchMobile] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const searchInputRef = useRef(null);
+  const desktopSearchRef = useRef(null);
+
+  useClickOutside(desktopSearchRef, () => {
+    if (!searchQuery) setIsSearchExpanded(false);
+  });
 
   const clearSearch = () => setSearchQuery("");
 
@@ -105,36 +112,50 @@ function Navbar({ theme, onToggleTheme, user }) {
           </Link>
 
           {/* MIDDLE: NAVIGATION (Desktop) */}
-          <nav className={`hidden lg:flex items-center gap-2 p-1.5 rounded-3xl border backdrop-blur-md ${isDark ? "bg-neutral-900/50 border-white/5" : "bg-neutral-100/50 border-black/5"}`}>
+          <nav className={`hidden lg:flex items-center p-1.5 rounded-3xl border backdrop-blur-md transition-all duration-300 ${isDark ? "bg-neutral-900/50 border-white/5" : "bg-neutral-100/50 border-black/5"}`}>
             <Link to="/">
-              <button className={getNavClass("/")}>
-                <FontAwesomeIcon icon={faHouse} className="text-sm mb-0.5" />
-                <span>Home</span>
+              <button className={getNavClass("/")}
+                title="Home"
+              >
+                <FaHome className="text-sm mb-0.5" />
+                {!isSearchExpanded && <span className="animate-fadeIn">Home</span>}
               </button>
             </Link>
 
             <button
               onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/booking")}
               className={getNavClass("/booking")}
+              title="Network"
             >
               <FaUsersGear className="text-sm mb-0.5" />
-              <span>Network</span>
+              {!isSearchExpanded && <span className="animate-fadeIn">Experts</span>}
             </button>
 
             <button
+              onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/entrepreneur-connect")}
+              className={getNavClass("/entrepreneur-connect")}
+              title="Entrepreneur Connect"
+            >
+              <FaHandshake className="text-sm mb-0.5" />
+              {!isSearchExpanded && <span className="animate-fadeIn">Entreprenuer Connect</span>}
+            </button>
+
+            {/* <button
               onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/notifications")}
               className={getNavClass("/notifications")}
+              title="Notifications"
             >
               <MdNotificationsActive className="text-sm mb-0.5" />
               <span>Alerts</span>
-            </button>
+            </button> */}
 
             <button
               onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/document")}
               className={getNavClass("/document")}
+              title="Documents"
             >
               <FaFileAlt className="text-sm mb-0.5" />
-              <span>Library</span>
+              {!isSearchExpanded && <span className="animate-fadeIn">Documents</span>}
             </button>
           </nav>
 
@@ -151,23 +172,42 @@ function Navbar({ theme, onToggleTheme, user }) {
             </button>
 
             {/* SEARCH BAR (Desktop) */}
-            <div className="hidden lg:flex flex-1 max-w-sm relative group">
-              <div className={`flex items-center w-full gap-3 rounded-2xl px-4 py-2.5 transition-all duration-300 border ${isDark
-                ? "bg-neutral-900 border-white/5 group-focus-within:border-red-500/50 group-focus-within:shadow-[0_0_20px_rgba(220,38,38,0.2)]"
-                : "bg-neutral-100 border-transparent group-focus-within:bg-white group-focus-within:shadow-xl"
-                }`}>
-                <FaSearch className={`transition-colors ${isDark ? "text-neutral-500 group-focus-within:text-red-500" : "text-neutral-400 group-focus-within:text-red-600"}`} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  onFocus={handleSearchFocus}
-                  placeholder="Search discovery..."
-                  className={`bg-transparent outline-none w-full text-sm font-medium placeholder:font-normal placeholder:text-neutral-500 ${isDark ? "text-white" : "text-black"}`}
-                />
-                {searchQuery && (
-                  <button onClick={clearSearch} className="hover:text-red-500 transition-colors">
+            <div className="hidden lg:flex flex-1 justify-end max-w-sm relative group" ref={desktopSearchRef}>
+              <div
+                onClick={() => setIsSearchExpanded(true)}
+                className={`flex items-center transition-all duration-300 overflow-hidden cursor-pointer border ${isSearchExpanded
+                  ? `w-full max-w-sm gap-3 rounded-2xl px-4 py-2.5 ${isDark
+                    ? "bg-neutral-900 border-white/5 shadow-[0_0_20px_rgba(220,38,38,0.2)]"
+                    : "bg-white border-transparent shadow-xl"}`
+                  : `w-11 h-11 rounded-xl justify-center ${isDark ? "bg-neutral-800 border-transparent text-neutral-400 hover:bg-neutral-700" : "bg-neutral-100 border-transparent text-neutral-500 hover:bg-neutral-200"}`
+                  }`}>
+                <FaSearch className={`transition-colors flex-shrink-0 ${isSearchExpanded ? (isDark ? "text-red-500" : "text-red-600") : "text-inherit"}`} />
+
+                {isSearchExpanded && (
+                  <input
+                    ref={searchInputRef}
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder="Search discovery..."
+                    className={`bg-transparent outline-none w-full text-sm font-medium placeholder:font-normal placeholder:text-neutral-500 ${isDark ? "text-white" : "text-black"}`}
+                  />
+                )}
+
+                {isSearchExpanded && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (searchQuery) {
+                        clearSearch();
+                      } else {
+                        setIsSearchExpanded(false);
+                      }
+                    }}
+                    className="hover:text-red-500 transition-colors flex-shrink-0"
+                  >
                     <FaTimes />
                   </button>
                 )}
@@ -178,11 +218,20 @@ function Navbar({ theme, onToggleTheme, user }) {
             <div className="flex items-center gap-2 md:gap-3">
               {/* PREMIUM BUTTON */}
               <button
-                className="hidden xl:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-red-600/30 hover:scale-105 transition-all active:scale-95"
+                className="hidden xl:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-linear-to-r from-red-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-red-600/30 hover:scale-105 transition-all active:scale-95"
                 onClick={() => navigate("/subscription")}
               >
                 <FaCrown size={12} />
                 <span>Premium</span>
+              </button>
+
+              <button
+                onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/notifications")}
+                className={getNavClass("/notifications")}
+                title="Notifications"
+              >
+                <MdNotificationsActive size={22} />
+                {/* <span>Alerts</span> */}
               </button>
 
               {/* THEME TOGGLE */}
@@ -232,7 +281,7 @@ function Navbar({ theme, onToggleTheme, user }) {
                   </button>
 
                   {dropdown && (
-                    <div className={`absolute right-0 mt-4 w-72 rounded-3xl shadow-2xl border p-2 animate-pop origin-top-right z-[100] ${isDark
+                    <div className={`absolute right-0 mt-4 w-72 rounded-3xl shadow-2xl border p-2 animate-pop origin-top-right z-100 ${isDark
                       ? "bg-[#111] border-neutral-800 shadow-black/80"
                       : "bg-white border-black/5 shadow-xl"
                       }`}>
@@ -266,7 +315,7 @@ function Navbar({ theme, onToggleTheme, user }) {
 
         {/* MOBILE SEARCH OVERLAY */}
         {searchMobile && (
-          <div className={`lg:hidden absolute inset-0 z-[60] flex items-center px-4 animate-fadeIn ${isDark ? "bg-[#0a0a0a]" : "bg-white"
+          <div className={`lg:hidden absolute inset-0 z-60 flex items-center px-4 animate-fadeIn ${isDark ? "bg-[#0a0a0a]" : "bg-white"
             }`}>
             <div className={`flex items-center w-full gap-3 rounded-2xl px-4 py-3 border ${isDark ? "bg-neutral-900 border-white/10" : "bg-neutral-100 border-black/5"
               }`}>

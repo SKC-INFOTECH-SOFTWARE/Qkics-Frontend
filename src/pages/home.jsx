@@ -139,7 +139,7 @@ function Home() {
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 group-hover:bg-white/30 transition-colors">
                 <FaPlus size={18} />
               </span>
-              <span className="text-sm tracking-wide uppercase">Add New Post</span>
+              <span className="text-sm tracking-wide uppercase">Create Post</span>
             </button>
 
             {/* Tags Card */}

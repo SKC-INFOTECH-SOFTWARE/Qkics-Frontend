@@ -17,6 +17,7 @@ const Space = lazy(() => import("./pages/space"));
 const Notification = lazy(() => import("./pages/notification"));
 const DocumentsPage = lazy(() => import("./pages/DocumentsPage"));
 const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
+const EntrepreneurConnect = lazy(() => import("./pages/entrepreneurConnect"));
 
 const Logout = lazy(() => import("./components/auth/logout"));
 const Comments = lazy(() => import("./components/posts/comment"));
@@ -139,6 +140,7 @@ function App() {
             <Route path="/notifications" element={<Notification />} />
             <Route path="/document" element={<DocumentsPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
+            <Route path="/entrepreneur-connect" element={<EntrepreneurConnect />} />
 
             <Route path="/normal" element={<NormalProfile />} />
             <Route path="/entrepreneur" element={<EntrepreneurProfile />} />

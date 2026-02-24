@@ -1,6 +1,6 @@
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaHome, FaPlus, FaBell, FaFileAlt } from "react-icons/fa";
+import { FaHome, FaPlus, FaBell, FaFileAlt, FaHandshake } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 
@@ -16,12 +16,12 @@ function MobileBottomNav({ theme, isLoggedIn, setShowLogin, onAction }) {
 
         if (isDark) {
             return isActive
-                ? `${ base } text - red - 500`
-                : `${ base } text - neutral - 500 hover: text - neutral - 200`;
+                ? `${base} text - red - 500`
+                : `${base} text - neutral - 500 hover: text - neutral - 200`;
         } else {
             return isActive
-                ? `${ base } text - red - 600`
-                : `${ base } text - neutral - 400 hover: text - black`;
+                ? `${base} text - red - 600`
+                : `${base} text - neutral - 400 hover: text - black`;
         }
     };
 
@@ -44,7 +44,7 @@ function MobileBottomNav({ theme, isLoggedIn, setShowLogin, onAction }) {
     return (
         <div
             className={`md:hidden fixed bottom - 0 left - 0 right - 0 z - 50 border - t backdrop - blur - 3xl supports - [backdrop - filter]: bg - opacity - 95 shadow - [0_ - 10px_40px_ - 15px_rgba(0, 0, 0, 0.3)]
-        ${ isDark ? "bg-[#0a0a0a] border-white/5" : "bg-white border-black/5" }
+        ${isDark ? "bg-[#0a0a0a] border-white/5" : "bg-white border-black/5"}
 `}
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
@@ -70,6 +70,20 @@ function MobileBottomNav({ theme, isLoggedIn, setShowLogin, onAction }) {
                         <FaUsersGear size={22} className={location.pathname === "/booking" ? "scale-110" : ""} />
                         <span className="text-[8px] font-black uppercase tracking-[0.1em]">Network</span>
                         {location.pathname === "/booking" && (
+                            <div className="absolute -bottom-1 w-1 h-1 rounded-full bg-red-600" />
+                        )}
+                    </div>
+                </button>
+
+                {/* ENTREPRENEUR CONNECT */}
+                <button
+                    onClick={() => handleAuthNavigation("/entrepreneur-connect")}
+                    className="flex-1 h-full"
+                >
+                    <div className={getNavClass("/entrepreneur-connect")}>
+                        <FaHandshake size={22} className={location.pathname === "/entrepreneur-connect" ? "scale-110" : ""} />
+                        <span className="text-[8px] font-black uppercase tracking-[0.1em]">Connect</span>
+                        {location.pathname === "/entrepreneur-connect" && (
                             <div className="absolute -bottom-1 w-1 h-1 rounded-full bg-red-600" />
                         )}
                     </div>

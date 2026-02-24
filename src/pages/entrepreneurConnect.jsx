@@ -1,14 +1,11 @@
-// src/pages/booking.jsx
+// src/pages/entrepreneurConnect.jsx
 import { useEffect, useState, useRef } from "react";
 import axiosSecure from "../components/utils/axiosSecure";
-
-import ExpertCard from "../components/profileFetch/expertBooking/ExpertCard";
-import ExpertModal from "../components/profileFetch/expertBooking/ExpertModal";
-
+import InvestorCard from "../components/profileFetch/investorFetch/InvestorCard";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-export default function Booking() {
+export default function EntrepreneurConnect() {
   const { theme, data: loggedUser } = useSelector((state) => state.user);
   const isDark = theme === "dark";
   const navigate = useNavigate();
@@ -16,25 +13,24 @@ export default function Booking() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedExpert, setSelectedExpert] = useState(null);
   const [next, setNext] = useState(null);
   const loaderRef = useRef(null);
 
   useEffect(() => {
-    fetchExperts();
+    fetchInvestors();
   }, []);
 
-  const fetchExperts = async () => {
+  const fetchInvestors = async () => {
     try {
       setLoading(true);
       setError("");
-      const res = await axiosSecure.get("/v1/experts/");
+      const res = await axiosSecure.get("/v1/investors/");
       const data = res.data;
       setItems(Array.isArray(data) ? data : (data?.results || []));
       setNext(data?.next || null);
     } catch (err) {
       console.error(err);
-      setError("Failed to load experts");
+      setError("Failed to load investors");
     } finally {
       setLoading(false);
     }
@@ -65,18 +61,31 @@ export default function Booking() {
     return () => observer.disconnect();
   }, [next]);
 
-  const resolveProfileImage = (expert) => {
-    const url = expert.profile_picture || expert.user?.profile_picture;
-    const name = expert.user?.first_name || expert.user?.username || "User";
-    if (!url) return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&length=1`;
-    return `${url}?t=${Date.now()}`;
+  const goToUserProfile = (user) => {
+    if (!loggedUser) {
+      navigate(`/profile/${user.username}`);
+      return;
+    }
+
+    if (loggedUser.username === user.username) {
+      switch (loggedUser.user_type) {
+        case "expert": navigate("/expert"); break;
+        case "entrepreneur": navigate("/entrepreneur"); break;
+        case "investor": navigate("/investor"); break;
+        case "admin": navigate("/admin"); break;
+        case "superadmin": navigate("/superadmin"); break;
+        default: navigate("/normal");
+      }
+      return;
+    }
+    navigate(`/profile/${user.username}`);
   };
 
   if (loading) {
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center gap-4 ${isDark ? "bg-[#0a0a0a] text-white" : "bg-[#f8f9fa] text-black"}`}>
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-red-500 border-white/10" />
-        <p className="text-xs font-bold tracking-[0.2em] opacity-40 uppercase">Mapping Talent...</p>
+        <p className="text-xs font-bold tracking-[0.2em] opacity-40 uppercase">Mapping Investors...</p>
       </div>
     );
   }
@@ -94,10 +103,10 @@ export default function Booking() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-            Our <span className="text-red-600">Professionals</span>
+            Connect with <span className="text-red-600">Investors</span>
           </h1>
           <p className="opacity-50 font-medium max-w-xl leading-relaxed">
-            Connect with verified experts in the global QKICS community.
+            Connect with strategic investors in the global QKICS community.
           </p>
         </div>
       </div>
@@ -105,18 +114,17 @@ export default function Booking() {
       {(!Array.isArray(items) || items.length === 0) ? (
         <div className="py-20 text-center opacity-30">
           <p className="text-sm font-black tracking-widest uppercase">
-            No experts discovered yet.
+            No investors discovered yet.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-fadeIn">
-          {items?.map((expert) => (
-            <ExpertCard
-              key={expert.id}
-              expert={expert}
+          {items?.map((item) => (
+            <InvestorCard
+              key={item.id}
+              investor={item}
               isDark={isDark}
-              onClick={() => setSelectedExpert(expert)}
-              resolveProfileImage={resolveProfileImage}
+              onClick={(investor) => goToUserProfile(investor.user)}
             />
           ))}
         </div>
@@ -126,15 +134,6 @@ export default function Booking() {
         <div ref={loaderRef} className="py-8 flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-red-500 border-white/10" />
         </div>
-      )}
-
-      {selectedExpert && (
-        <ExpertModal
-          expert={selectedExpert}
-          onClose={() => setSelectedExpert(null)}
-          resolveProfileImage={resolveProfileImage}
-          isDark={isDark}
-        />
       )}
     </div>
   );
