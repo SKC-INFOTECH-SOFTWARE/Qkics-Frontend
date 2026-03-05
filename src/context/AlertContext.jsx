@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import Alert from '../components/ui/Alert';
 
 const AlertContext = createContext();
@@ -18,6 +18,25 @@ export const AlertProvider = ({ children }) => {
     type: 'info', // 'success', 'error', 'info', 'warning'
     title: '',
   });
+
+  useEffect(() => {
+    const pending = sessionStorage.getItem('pending_alert');
+    if (pending) {
+      try {
+        const { message, type, title } = JSON.parse(pending);
+        setAlert({
+          isOpen: true,
+          message,
+          type: type || 'info',
+          title: title || type.charAt(0).toUpperCase() + type.slice(1) || 'Info',
+        });
+      } catch (e) {
+        console.error('Failed to parse pending alert', e);
+      } finally {
+        sessionStorage.removeItem('pending_alert');
+      }
+    }
+  }, []);
 
   const showAlert = useCallback((message, type = 'info', title = '') => {
     setAlert({

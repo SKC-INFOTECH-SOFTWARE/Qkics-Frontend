@@ -8,6 +8,8 @@ import axiosSecure from "../components/utils/axiosSecure";
 import { useAlert } from "../context/AlertContext";
 import { useConfirm } from "../context/ConfirmContext";
 import { FaBriefcase } from "react-icons/fa";
+import { MdOutlineEventAvailable } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 import { useDispatch, useSelector } from "react-redux";
 import { loadUserPosts } from "../redux/slices/postsSlice";
@@ -42,6 +44,7 @@ export default function InvestorProfile({
 
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+  const navigate = useNavigate();
 
   /* --------------------------
       USER + INVESTOR DATA
@@ -313,12 +316,32 @@ export default function InvestorProfile({
                     </span>
                   </div>
                 </div>
+
+                {/* ACTION BUTTON */}
+                <div className="flex-shrink-0">
+                  {readOnly ? (
+                    <button
+                      onClick={() => navigate(`/book-session/investor/${user.uuid}`)}
+                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-600/20"
+                    >
+                      <MdOutlineEventAvailable size={18} />
+                      Book Slots
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/investor/slots")}
+                      className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-600/20"
+                    >
+                      <MdOutlineEventAvailable size={18} />
+                      Manage Slots
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* TABS */}
         <div className={`sticky top-16 z-40 flex justify-center mb-8 py-4 transition-all duration-300 ${isDark ? 'bg-[#0a0a0a]/90 border-white/5' : 'bg-[#f8f9fa]/90 border-black/5'} backdrop-blur-xl border-b -mx-4 px-4 sm:-mx-8 sm:px-8`}>
           <div className="inline-flex flex-wrap justify-center p-1.5 rounded-2xl glass transition-all shadow-xl">
             {['about', 'posts'].map((tab) => (

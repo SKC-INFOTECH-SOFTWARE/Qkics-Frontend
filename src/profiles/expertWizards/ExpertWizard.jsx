@@ -255,8 +255,8 @@ export default function ExpertWizard({ theme }) {
     };
 
     const handleStartOver = () => {
-    setStep(1);
-  };
+        setStep(1);
+    };
 
     /* ------------------------------
        WIZARD NAVIGATION
@@ -284,9 +284,9 @@ export default function ExpertWizard({ theme }) {
 
                         <div className="ml-auto text-right">
                             <div className="text-sm opacity-80">Step {step} of 3</div>
-                           <div className="mt-2 flex gap-2"> 
-                            <button onClick={() => navigate(-1)} className="px-3 py-1 rounded-md border">Back</button> 
-                            <button onClick={handleStartOver} className="px-3 py-1 rounded-md border">Start Over</button>
+                            <div className="mt-2 flex gap-2">
+                                <button onClick={() => navigate(-1)} className="px-3 py-1 rounded-md border">Back</button>
+                                <button onClick={handleStartOver} className="px-3 py-1 rounded-md border">Start Over</button>
                             </div>
 
                         </div>
@@ -297,13 +297,12 @@ export default function ExpertWizard({ theme }) {
                 {banner && !hideBanner && (
                     <div className="mb-6 relative">
                         <div
-                            className={`p-3 rounded-md pr-10 ${
-                                banner.tone === "info"
+                            className={`p-3 rounded-md pr-10 ${banner.tone === "info"
                                     ? "bg-blue-50 text-blue-800"
                                     : banner.tone === "success"
-                                    ? "bg-green-50 text-green-800"
-                                    : "bg-red-50 text-red-800"
-                            }`}
+                                        ? "bg-green-50 text-green-800"
+                                        : "bg-red-50 text-red-800"
+                                }`}
                         >
                             {banner.text}
                             <button
@@ -344,25 +343,25 @@ export default function ExpertWizard({ theme }) {
                 {/* MODALS */}
                 {showAddModal === "experience" && (
                     <ModalOverlay isDark={isDark} onClose={() => setShowAddModal(null)}>
-                        <AddExperienceModal onClose={() => setShowAddModal(null)} onCreate={createExperience} />
+                        <AddExperienceModal onClose={() => setShowAddModal(null)} onCreate={createExperience} isDark={isDark} />
                     </ModalOverlay>
                 )}
 
                 {showAddModal === "education" && (
                     <ModalOverlay isDark={isDark} onClose={() => setShowAddModal(null)}>
-                        <AddEducationModal onClose={() => setShowAddModal(null)} onCreate={createEducation} />
+                        <AddEducationModal onClose={() => setShowAddModal(null)} onCreate={createEducation} isDark={isDark} />
                     </ModalOverlay>
                 )}
 
                 {showAddModal === "cert" && (
                     <ModalOverlay isDark={isDark} onClose={() => setShowAddModal(null)}>
-                        <AddCertificationModal onClose={() => setShowAddModal(null)} onCreate={createCertification} />
+                        <AddCertificationModal onClose={() => setShowAddModal(null)} onCreate={createCertification} isDark={isDark} />
                     </ModalOverlay>
                 )}
 
                 {showAddModal === "honor" && (
                     <ModalOverlay isDark={isDark} onClose={() => setShowAddModal(null)}>
-                        <AddHonorModal onClose={() => setShowAddModal(null)} onCreate={createHonor} />
+                        <AddHonorModal onClose={() => setShowAddModal(null)} onCreate={createHonor} isDark={isDark} />
                     </ModalOverlay>
                 )}
 
@@ -371,6 +370,7 @@ export default function ExpertWizard({ theme }) {
                         <SubmitNoteModal
                             onClose={() => setShowSubmitNoteModal(false)}
                             onSubmit={handleSubmitForReview}
+                            isDark={isDark}
                         />
                     </ModalOverlay>
                 )}

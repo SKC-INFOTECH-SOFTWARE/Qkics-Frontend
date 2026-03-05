@@ -110,7 +110,7 @@ const expertSlotsSlice = createSlice({
       })
       .addCase(fetchExpertSlots.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = Array.isArray(action.payload) ? action.payload : (action.payload?.results || []);
       })
       .addCase(fetchExpertSlots.rejected, (state, action) => {
         state.loading = false;

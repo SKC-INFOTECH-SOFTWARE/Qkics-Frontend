@@ -182,8 +182,18 @@ function Home() {
                     )}
                   </>
                 )}
+                
               </div>
+              
             </div>
+            <footer className="px-10 text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] space-y-2">
+              <div className="flex gap-4">
+                <a href="#" className="hover:text-red-500 transition-colors">Privacy</a>
+                <a href="#" className="hover:text-red-500 transition-colors">Terms</a>
+                <a href="#" className="hover:text-red-500 transition-colors">Safety</a>
+              </div>
+              <p className="px-3">© 2026 QKICS GLOBAL</p>
+            </footer>
           </div>
         </aside>
 
@@ -219,25 +229,27 @@ function Home() {
           </div>
 
           <div className="space-y-2">
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                loggedUser={loggedUser}
-                isDark={isDark}
-                onLike={handleLike}
-                onDelete={handleDelete}
-                onEdit={(p) => { setEditingPost(p); setShowCreatePost(true); }}
-                onCommentClick={(p) => {
-                  if (!loggedUser) return setShowLogin(true);
-                  sessionStorage.setItem("scrollY", window.scrollY);
-                  navigate(`/post/${p.id}/comments`);
-                }}
-                onTagClick={applySearch}
-                onImageClick={setPreviewImage}
-                onProfileClick={goToProfile}
-              />
-            ))}
+            {posts
+              .filter((post) => !post.knowledge_hub)
+              .map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  loggedUser={loggedUser}
+                  isDark={isDark}
+                  onLike={handleLike}
+                  onDelete={handleDelete}
+                  onEdit={(p) => { setEditingPost(p); setShowCreatePost(true); }}
+                  onCommentClick={(p) => {
+                    if (!loggedUser) return setShowLogin(true);
+                    sessionStorage.setItem("scrollY", window.scrollY);
+                    navigate(`/post/${p.id}/comments`);
+                  }}
+                  onTagClick={applySearch}
+                  onImageClick={setPreviewImage}
+                  onProfileClick={goToProfile}
+                />
+              ))}
           </div>
 
           <div ref={loaderRef} className="py-20 flex flex-col items-center justify-center opacity-30 gap-4">
@@ -255,16 +267,15 @@ function Home() {
         <aside className="hidden lg:block lg:col-span-3">
           <div className="space-y-8 py-4">
             <AdCard isDark={isDark} />
-            <AdCard isDark={isDark} featured />
 
-            <footer className="px-6 text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] space-y-2">
+            {/* <footer className="px-6 text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] space-y-2">
               <div className="flex gap-4">
                 <a href="#" className="hover:text-red-500 transition-colors">Privacy</a>
                 <a href="#" className="hover:text-red-500 transition-colors">Terms</a>
                 <a href="#" className="hover:text-red-500 transition-colors">Safety</a>
               </div>
               <p>© 2026 QKICS GLOBAL</p>
-            </footer>
+            </footer> */}
           </div>
         </aside>
       </div>

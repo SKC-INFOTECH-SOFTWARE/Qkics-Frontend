@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { BiLike, BiSolidLike } from "react-icons/bi";
-import { FaEllipsisH } from "react-icons/fa";
+import { FaEllipsisH, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { HiPencilAlt, HiTrash } from "react-icons/hi";
 import UserBadge from "../ui/UserBadge";
 import useClickOutside from "../hooks/useClickOutside";
@@ -45,6 +45,7 @@ export default function PostCard({
     const menuRef = useRef(null);
     useClickOutside(menuRef, () => setMenuOpen(false));
     const [expanded, setExpanded] = useState(false);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
     const text = isDark ? "text-neutral-100" : "text-neutral-900";
     const borderColor = isDark ? "border-white/5" : "border-black/5";
@@ -169,8 +170,72 @@ export default function PostCard({
                     </div>
                 )}
 
-                {/* IMAGE */}
-                {post.image && (
+                {/* MEDIA */}
+                {post.media && post.media.length > 0 ? (
+                    <div className="relative mt-3 overflow-hidden rounded-2xl group bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center min-h-[300px] max-h-[500px]">
+                        {/* Page Indicator Top Right */}
+                        {post.media.length > 1 && (
+                            <div className="absolute top-4 right-4 z-30 bg-black/60 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full backdrop-blur-md">
+                                {currentMediaIndex + 1} / {post.media.length}
+                            </div>
+                        )}
+
+                        <div className="w-full h-full relative flex items-center justify-center cursor-pointer" onClick={() => (post.media[currentMediaIndex].media_type === "image" ? onImageClick?.(post.media[currentMediaIndex].file) : null)}>
+                            {/* Blurred Background for image to maintain aspect ratio look */}
+                            {post.media[currentMediaIndex].media_type === "image" && (
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center blur-xl opacity-40 scale-110"
+                                    style={{ backgroundImage: `url(${post.media[currentMediaIndex].file})` }}
+                                />
+                            )}
+
+                            {post.media[currentMediaIndex].media_type === "video" ? (
+                                <video
+                                    src={post.media[currentMediaIndex].file}
+                                    controls
+                                    className="relative z-10 w-full h-full block max-h-[500px] object-contain bg-black"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <img
+                                    src={post.media[currentMediaIndex].file}
+                                    alt={`post media ${currentMediaIndex}`}
+                                    className="relative z-10 w-full h-full block transition-transform duration-700 max-h-[500px] object-contain"
+                                    loading="lazy"
+                                />
+                            )}
+                        </div>
+
+                        {/* Navigation Arrows */}
+                        {post.media.length > 1 && (
+                            <>
+                                {currentMediaIndex > 0 && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentMediaIndex(prev => prev - 1);
+                                        }}
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
+                                    >
+                                        <FaChevronLeft size={14} />
+                                    </button>
+                                )}
+                                {currentMediaIndex < post.media.length - 1 && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentMediaIndex(prev => prev + 1);
+                                        }}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
+                                    >
+                                        <FaChevronRight size={14} />
+                                    </button>
+                                )}
+                            </>
+                        )}
+
+                    </div>
+                ) : post.image && (
                     <div className="mt-3 overflow-hidden rounded-2xl group relative cursor-zoom-in bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" onClick={() => onImageClick?.(post.image)}>
                         <div
                             className="absolute inset-0 bg-cover bg-center blur-xl opacity-40 scale-110"

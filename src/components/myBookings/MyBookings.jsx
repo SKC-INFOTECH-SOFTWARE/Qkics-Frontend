@@ -15,6 +15,7 @@ export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("expert");
 
   const text = isDark ? "text-white" : "text-black";
 
@@ -22,13 +23,20 @@ export default function MyBookings() {
   useEffect(() => {
     if (!user) return;
     fetchBookings();
-  }, [user]);
+  }, [user, activeTab]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
       setError("");
-      const url = user.user_type === "expert" ? "/v1/bookings/?as_expert=true" : "/v1/bookings/";
+
+      let url = "";
+      if (activeTab === "expert") {
+        url = user.user_type === "expert" ? "/v1/bookings/?as_expert=true" : "/v1/bookings/";
+      } else {
+        url = user.user_type === "investor" ? "/v1/bookings/investor-bookings/list/?as_investor=true" : "/v1/bookings/investor-bookings/list/";
+      }
+
       const res = await axiosSecure.get(url);
       const sorted = [...res.data].sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime));
       setBookings(sorted);
@@ -92,10 +100,10 @@ export default function MyBookings() {
   return (
     <div className={`min-h-screen px-4 py-8  md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 animate-fadeIn">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-8 animate-fadeIn">
           <div className="max-w-xl">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-              {user.user_type === "expert" ? <>Consultation <span className="text-red-600">Feed</span></> : <>My <span className="text-red-600">Sessions</span></>}
+              My <span className="text-red-600">Sessions</span>
             </h1>
             <p className="opacity-50 font-medium leading-relaxed">
               Strategic scheduling for high-impact professional collaborations. Track and manage your expert intelligence exchange.
@@ -107,6 +115,22 @@ export default function MyBookings() {
               <span className={`text-[10px] font-black uppercase tracking-widest ${text}`}>{bookings.length} Registered Sessions</span>
             </div>
           </div>
+        </div>
+
+        {/* TABS FOR EXPERT / INVESTOR */}
+        <div className="flex border-b border-black/10 dark:border-white/10 mb-8 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setActiveTab("expert")}
+            className={`px-8 py-4 text-sm font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === "expert" ? "border-b-2 border-red-600 text-red-600" : "text-neutral-500 hover:text-black dark:hover:text-white"}`}
+          >
+            Expert Sessions
+          </button>
+          <button
+            onClick={() => setActiveTab("investor")}
+            className={`px-8 py-4 text-sm font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === "investor" ? "border-b-2 border-red-600 text-red-600" : "text-neutral-500 hover:text-black dark:hover:text-white"}`}
+          >
+            Investor Pitch Sessions
+          </button>
         </div>
 
         {bookings.length === 0 ? (
@@ -123,6 +147,14 @@ export default function MyBookings() {
               const status = getStatusConfig(booking);
               const startDate = new Date(booking.start_datetime);
               const endDate = new Date(booking.end_datetime);
+              const durationMins = booking.duration_minutes || Math.floor((endDate - startDate) / 60000);
+
+              let otherPersonName = "";
+              if (activeTab === "expert") {
+                otherPersonName = user.user_type === "expert" ? booking.user_name : booking.expert_name;
+              } else {
+                otherPersonName = user.user_type === "investor" ? booking.user_name : booking.investor_name;
+              }
 
               return (
                 <div
@@ -136,7 +168,7 @@ export default function MyBookings() {
                       </div>
                       <div>
                         <h4 className={`font-black text-lg tracking-tight mb-2 group-hover:text-red-500 transition-colors ${text}`}>
-                          {user.user_type === "expert" ? booking.user_name : booking.expert_name}
+                          {otherPersonName}
                         </h4>
                         <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] uppercase font-black tracking-widest border shadow-sm transition-all duration-500 ${status.color}`}>
                           {status.label}
@@ -167,14 +199,14 @@ export default function MyBookings() {
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-1">Duration</p>
                         <div className="flex items-center gap-2">
                           <MdOutlineTimer className="text-red-500" size={16} />
-                          <span className={`text-[11px] font-black ${text}`}>{booking.duration_minutes}m</span>
+                          <span className={`text-[11px] font-black ${text}`}>{durationMins}m</span>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-1">Fee</p>
                         <div className="flex items-center justify-end gap-2">
                           <MdOutlinePayments className="text-red-500" size={16} />
-                          <span className={`text-[11px] font-black ${text}`}>₹{booking.price}</span>
+                          <span className={`text-[11px] font-black ${text}`}>{booking.price !== undefined ? `₹${booking.price}` : "Free"}</span>
                         </div>
                       </div>
                     </div>

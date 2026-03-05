@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axiosSecure from "../../components/utils/axiosSecure";
 import { useAlert } from "../../context/AlertContext";
+import { FaSearch, FaCheck } from "react-icons/fa";
 
 import { useSelector } from "react-redux";
 
@@ -30,10 +31,19 @@ export default function InvestorDetails({
   const [allStages, setAllStages] = useState([]);
 
   useEffect(() => {
-    axiosSecure.get("/v1/investors/meta/").then((res) => {
-      setAllIndustries(res.data?.industries || []);
-      setAllStages(res.data?.stages || []);
-    });
+    const fetchOptions = async () => {
+      try {
+        const [indRes, stageRes] = await Promise.all([
+          axiosSecure.get("/v1/investors/industries/"),
+          axiosSecure.get("/v1/investors/stages/")
+        ]);
+        setAllIndustries(indRes.data || []);
+        setAllStages(stageRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch industries/stages", error);
+      }
+    };
+    fetchOptions();
   }, []);
 
   useEffect(() => {
@@ -281,6 +291,28 @@ export default function InvestorDetails({
 }
 
 function MultiSelect({ label, items, selected, editMode, onToggle, labelClass }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const dropdownRef = useRef(null);
+  const theme = useSelector((state) => state.user.theme);
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const filteredOptions = items.filter((opt) =>
+    opt.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
     <div>
       <label className={labelClass}>{label}</label>
@@ -301,19 +333,93 @@ function MultiSelect({ label, items, selected, editMode, onToggle, labelClass })
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => onToggle(item)}
-              className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg border transition-all text-left ${selected.find((s) => s.id === item.id)
-                ? "bg-red-600 text-white border-red-600"
-                : "border-white/10 hover:bg-white/5 opacity-60 hover:opacity-100"
+        <div className="relative mt-2" ref={dropdownRef}>
+          <div
+            className={`w-full p-2 rounded-lg border text-sm cursor-pointer flex justify-between items-center ${isDark
+              ? "bg-[#0a0a0a] border-gray-800 text-gray-200"
+              : "bg-gray-50 border-gray-200 text-gray-900"
+              }`}
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <span className="truncate pr-4 font-medium">
+              {selected.length > 0
+                ? selected.map((opt) => opt.name).join(", ")
+                : `Select ${label}`}
+            </span>
+            <span className="shrink-0">&#9662;</span>
+          </div>
+
+          {isOpen && (
+            <div
+              className={`absolute z-10 mt-1 w-full rounded-lg border shadow-lg max-h-60 flex flex-col ${isDark ? "bg-[#111111] border-gray-800" : "bg-white border-gray-200"
                 }`}
             >
-              {item.name}
-            </button>
-          ))}
+              <div
+                className={`p-2 border-b ${isDark ? "border-gray-800" : "border-gray-200"
+                  }`}
+              >
+                <div
+                  className={`flex items-center rounded px-2 py-1 ${isDark ? "bg-[#0a0a0a]" : "bg-gray-100"
+                    }`}
+                >
+                  <FaSearch
+                    className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"
+                      }`}
+                  />
+                  <input
+                    type="text"
+                    className={`w-full bg-transparent border-none text-sm px-2 focus:outline-none ${isDark ? "text-gray-200" : "text-gray-900"
+                      }`}
+                    placeholder={`Search ${label}...`}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="overflow-y-auto custom-scrollbar flex-1 p-1">
+                {filteredOptions.length > 0 ? (
+                  filteredOptions.map((opt) => {
+                    const isSelected = selected.some((s) => s.id === opt.id);
+                    return (
+                      <div
+                        key={opt.id}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer text-sm font-medium ${isSelected
+                          ? isDark
+                            ? "bg-red-900/30 text-red-400"
+                            : "bg-red-50 text-red-600"
+                          : isDark
+                            ? "hover:bg-gray-800 text-gray-300"
+                            : "hover:bg-gray-100 text-gray-700"
+                          }`}
+                        onClick={() => onToggle(opt)}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected
+                            ? "bg-red-600 border-red-600"
+                            : isDark
+                              ? "border-gray-600"
+                              : "border-gray-300"
+                            }`}
+                        >
+                          {isSelected && (
+                            <FaCheck className="text-white text-[0.6rem]" />
+                          )}
+                        </div>
+                        {opt.name}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div
+                    className={`p-3 text-center text-sm ${isDark ? "text-gray-500" : "text-gray-400"
+                      }`}
+                  >
+                    No matching {label.toLowerCase()} found.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

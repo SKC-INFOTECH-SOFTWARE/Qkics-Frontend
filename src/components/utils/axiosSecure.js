@@ -72,7 +72,7 @@ axiosSecure.interceptors.response.use(
       clearAllTokens();
       runQueue(error, null);
       isRefreshing = false;
-      navigateTo("/login");
+      navigateTo("/");
       return Promise.reject(error);
     }
 
@@ -101,22 +101,19 @@ axiosSecure.interceptors.response.use(
       if (!refreshToken) {
         clearAllTokens();
         runQueue(new Error("No refresh token"), null);
-        navigateTo("/login");
+        navigateTo("/");
         return Promise.reject(new Error("No refresh token"));
       }
 
-      const BACKEND_URL = import.meta.env.VITE_API_URL;
-
       // ✅ Backend expects refresh token in the request body
       const refreshResponse = await axios.post(
-        `${BACKEND_URL}/api/v1/auth/token/refresh/`,
-        { refresh: refreshToken },
-        { withCredentials: true }
+        `${API_BASE_URL}/v1/auth/token/refresh/`,
+        { refresh: refreshToken }
       );
 
-      const newAccessToken = refreshResponse?.data?.access;
+      const newAccessToken = refreshResponse?.data?.tokens?.access;
       // Backend may rotate the refresh token on each use — save it if provided
-      const newRefreshToken = refreshResponse?.data?.refresh;
+      const newRefreshToken = refreshResponse?.data?.tokens?.refresh;
 
       if (!newAccessToken) throw new Error("No access token in refresh response");
 
@@ -132,7 +129,7 @@ axiosSecure.interceptors.response.use(
     } catch (refreshErr) {
       clearAllTokens();
       runQueue(refreshErr, null);
-      navigateTo("/login");
+      navigateTo("/");
       return Promise.reject(refreshErr);
     } finally {
       isRefreshing = false;
@@ -152,15 +149,13 @@ export const silentRefresh = async () => {
   if (!refreshToken) return false;
 
   try {
-    const BACKEND_URL = import.meta.env.VITE_API_URL;
     const res = await axios.post(
-      `${BACKEND_URL}/api/v1/auth/token/refresh/`,
-      { refresh: refreshToken },
-      { withCredentials: true }
+      `${API_BASE_URL}/v1/auth/token/refresh/`,
+      { refresh: refreshToken }
     );
 
-    const newAccessToken = res?.data?.access;
-    const newRefreshToken = res?.data?.refresh;
+    const newAccessToken = res?.data?.tokens?.access;
+    const newRefreshToken = res?.data?.tokens?.refresh;
 
     if (newAccessToken) {
       setAccessToken(newAccessToken);

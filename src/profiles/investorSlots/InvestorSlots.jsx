@@ -2,31 +2,27 @@ import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
-  fetchExpertSlots,
-  createExpertSlot,
-  updateExpertSlot,
-  deleteExpertSlot,
-} from "../../redux/slices/expertSlotsSlice";
+  fetchInvestorSlots,
+  createInvestorSlot,
+} from "../../redux/slices/investorSlotsSlice";
 
 import { useAlert } from "../../context/AlertContext";
-import { useConfirm } from "../../context/ConfirmContext";
 
-import SlotForm from "./SlotForm";
-import SlotCard from "./SlotCard";
+import InvestorSlotForm from "./InvestorSlotForm";
+import InvestorSlotCard from "./InvestorSlotCard";
 import ModalOverlay from "../../components/ui/ModalOverlay";
 import { GoPlus } from "react-icons/go";
 
-export default function ExpertSlots({ theme: propTheme }) {
+export default function InvestorSlots({ theme: propTheme }) {
   const dispatch = useDispatch();
   const { showAlert } = useAlert();
-  const { showConfirm } = useConfirm();
 
   /* ----------------------------
       REDUX STATE
   ----------------------------- */
-  const { data: user, theme: reduxTheme } = useSelector((state) => state.user);
+  const { data: user, status, theme: reduxTheme } = useSelector((state) => state.user);
   const { items: slots, loading, error } = useSelector(
-    (state) => state.expertSlots
+    (state) => state.investorSlots
   );
 
   const theme = propTheme || reduxTheme;
@@ -36,40 +32,29 @@ export default function ExpertSlots({ theme: propTheme }) {
       LOCAL UI STATE
   ----------------------------- */
   const [showModal, setShowModal] = useState(false);
-  const [editingSlot, setEditingSlot] = useState(null);
 
   /* ----------------------------
       FETCH SLOTS
+      user?.uuid is undefined after page refresh because /v1/auth/me/ does
+      not return a uuid field — it only gets set on login. The uuid IS stored
+      in localStorage from loginUser.fulfilled. So we trigger the fetch as
+      soon as the auth request finishes (status === "success"), and let the
+      thunk read the uuid from localStorage as fallback.
   ----------------------------- */
   useEffect(() => {
-    if (!user) return;
-    if (!user.uuid) return;
-    if (user.user_type !== "expert") return;
-
-    dispatch(fetchExpertSlots(user.uuid));
-  }, [user, dispatch]);
-
+    if (status !== "success") return;
+    dispatch(fetchInvestorSlots());
+  }, [status, dispatch]);
 
   /* ----------------------------
-      CREATE / UPDATE SLOT
+      CREATE SLOT
   ----------------------------- */
-  const handleSave = async (payload, slotUuid = null) => {
+  const handleSave = async (payload) => {
     try {
-      if (slotUuid) {
-        await dispatch(
-          updateExpertSlot({ slotUuid, payload })
-        ).unwrap();
-        showAlert("Slot updated successfully", "success");
-      } else {
-        await dispatch(createExpertSlot(payload)).unwrap();
-        showAlert("Slot created successfully", "success");
-      }
-
+      await dispatch(createInvestorSlot(payload)).unwrap();
+      showAlert("Slot created successfully", "success");
       setShowModal(false);
-      setEditingSlot(null);
-      dispatch(fetchExpertSlots(user.uuid));
-
-
+      dispatch(fetchInvestorSlots());
     } catch (err) {
       if (typeof err === "object") {
         const msg =
@@ -78,35 +63,9 @@ export default function ExpertSlots({ theme: propTheme }) {
           "Save failed";
         showAlert(msg, "error");
       } else {
-        showAlert(err, "error");
+        showAlert(err || "Save failed", "error");
       }
     }
-  };
-
-  /* ----------------------------
-      DELETE SLOT
-  ----------------------------- */
-  const handleDelete = (slotUuid) => {
-    showConfirm({
-      title: "Delete Slot",
-      message: "Are you sure you want to delete this slot?",
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      variant: "danger",
-
-      onConfirm: async () => {
-        try {
-          await dispatch(deleteExpertSlot(slotUuid)).unwrap();
-          showAlert("Slot deleted successfully", "success");
-          dispatch(fetchExpertSlots(user.uuid));
-        } catch (err) {
-          showAlert(
-            typeof err === "string" ? err : "Delete failed",
-            "error"
-          );
-        }
-      },
-    });
   };
 
   const sortedSlots = useMemo(() => {
@@ -114,8 +73,6 @@ export default function ExpertSlots({ theme: propTheme }) {
       (a, b) => new Date(a.start_datetime) - new Date(b.start_datetime)
     );
   }, [slots]);
-
-
 
   /* ----------------------------
       UI
@@ -137,10 +94,7 @@ export default function ExpertSlots({ theme: propTheme }) {
             </div>
 
             <button
-              onClick={() => {
-                setEditingSlot(null);
-                setShowModal(true);
-              }}
+              onClick={() => setShowModal(true)}
               className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-600/20"
             >
               <GoPlus size={18} /> Add Slot
@@ -152,7 +106,9 @@ export default function ExpertSlots({ theme: propTheme }) {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className={`text-xs font-black uppercase tracking-widest opacity-50 ${isDark ? "text-white" : "text-black"}`}>Loading Slots...</p>
+            <p className={`text-xs font-black uppercase tracking-widest opacity-50 ${isDark ? "text-white" : "text-black"}`}>
+              Loading Slots...
+            </p>
           </div>
         ) : error ? (
           <div className="p-8 text-center rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500">
@@ -166,18 +122,12 @@ export default function ExpertSlots({ theme: propTheme }) {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedSlots.map((slot) => {
-              // ✅ Normalize: API may return 'uuid' or 'id' as the primary key.
               const slotId = slot.uuid ?? slot.id;
               return (
-                <SlotCard
+                <InvestorSlotCard
                   key={slotId}
                   slot={{ ...slot, uuid: slotId }}
                   isDark={isDark}
-                  onEdit={() => {
-                    setEditingSlot({ ...slot, uuid: slotId });
-                    setShowModal(true);
-                  }}
-                  onDelete={() => handleDelete(slotId)}
                 />
               );
             })}
@@ -186,25 +136,19 @@ export default function ExpertSlots({ theme: propTheme }) {
 
       </div>
 
-      {/* ======================
-          MODAL
-      ======================= */}
+      {/* MODAL */}
       {showModal && (
         <ModalOverlay close={() => setShowModal(false)}>
           <div className={`w-full max-w-xl p-8 rounded-3xl shadow-2xl relative ${isDark ? "bg-neutral-900 border border-neutral-800" : "bg-white"}`}>
-            <SlotForm
-              initialData={editingSlot}
+            <InvestorSlotForm
+              initialData={null}
               onSave={handleSave}
-              onCancel={() => {
-                setShowModal(false);
-                setEditingSlot(null);
-              }}
+              onCancel={() => setShowModal(false)}
               isDark={isDark}
             />
           </div>
         </ModalOverlay>
       )}
-
 
     </div>
   );

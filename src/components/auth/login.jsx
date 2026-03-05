@@ -1,6 +1,7 @@
 // src/components/auth/Login.jsx
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { loginUser, fetchUserProfile } from "../../redux/slices/userSlice";
 import { useAlert } from "../../context/AlertContext";
 
@@ -10,6 +11,7 @@ function LoginModal({ onClose, openSignup, isDark }) {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const bg = isDark ? "bg-neutral-800 text-white" : "bg-white text-black";
@@ -39,8 +41,9 @@ function LoginModal({ onClose, openSignup, isDark }) {
       }
 
       await dispatch(fetchUserProfile());
-      showAlert("Login successful!", "success");
+      sessionStorage.setItem('pending_alert', JSON.stringify({ message: "Login successful!", type: "success" }));
       onClose();
+      window.location.reload();
     } catch (err) {
       console.log(err);
       showAlert("Login failed", "error");
@@ -78,21 +81,30 @@ function LoginModal({ onClose, openSignup, isDark }) {
           }`}
       />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className={`w-full px-3 py-2 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
-          }`}
-      />
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={`w-full px-3 py-2 pr-10 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
+            }`}
+        />
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
+          className="absolute inset-y-0 right-3 flex items-center text-neutral-500 hover:text-neutral-400 transition-colors"
+        >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
 
       <button
         onClick={handleLogin}
         disabled={loading}
         className={`w-full mt-6 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${loading
-            ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
-            : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
+          ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
+          : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
           }`}
       >
         {loading ? "Logging in..." : "Login"}

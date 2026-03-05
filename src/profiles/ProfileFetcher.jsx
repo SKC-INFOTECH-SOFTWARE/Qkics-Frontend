@@ -12,29 +12,44 @@ import InvestorProfile from "./investorProfile";
 
 export default function ProfileFetcher() {
   const dispatch = useDispatch();
-  const { username } = useParams();
+  const { username: routeParam } = useParams();
   const loggedUser = useSelector((state) => state.user.data);
 
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const resolvedParam = routeParam || loggedUser?.uuid || loggedUser?.username;
+  const isSelfByUuid = loggedUser && (
+    !routeParam ||
+    loggedUser.uuid === routeParam ||
+    loggedUser.username === routeParam
+  );
+
   useEffect(() => {
+    if (isSelfByUuid) return; // Bypass if it's our own mapped UUID
+
     dispatch(clearActiveProfileData());
     fetchProfile();
 
     return () => {
       dispatch(clearActiveProfileData());
     };
-  }, [username, dispatch]);
+  }, [resolvedParam, dispatch, isSelfByUuid]);
 
   const fetchProfile = async () => {
+    if (!resolvedParam) {
+      setError("Profile not found or you are not logged in.");
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
 
       const res = await axiosSecure.get(
-        `/v1/auth/profiles/${username}/`
+        `/v1/auth/profiles/${resolvedParam}/`
       );
 
       setProfileData(res.data);
@@ -50,6 +65,16 @@ export default function ProfileFetcher() {
       setLoading(false);
     }
   };
+
+  if (isSelfByUuid) {
+    const role = loggedUser.user_type;
+    const commonProps = { readOnly: false, disableSelfFetch: false };
+
+    if (role === "expert") return <ExpertProfile {...commonProps} />;
+    if (role === "entrepreneur") return <EntrepreneurProfile {...commonProps} />;
+    if (role === "investor") return <InvestorProfile {...commonProps} />;
+    return <NormalProfile {...commonProps} />;
+  }
 
   if (loading) {
     return (

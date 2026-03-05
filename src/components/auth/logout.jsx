@@ -6,7 +6,7 @@ import { useAlert } from "../../context/AlertContext";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/slices/userSlice";
 import { clearPosts } from "../../redux/slices/postsSlice";
-import { getRefreshToken } from "../../redux/store/tokenManager";
+import { getRefreshToken, clearAllTokens } from "../../redux/store/tokenManager";
 
 function Logout() {
   const navigate = useNavigate();
@@ -23,23 +23,24 @@ function Logout() {
       // don't hang waiting for a token that will never come
       resetRefreshState();
 
+      // Clear Redux state immediately so navbar updates right away
+      dispatch(logoutUser());
+
       try {
         const refreshToken = getRefreshToken();
-        // Send the refresh token in the body so the backend can blacklist it
         await axiosSecure.post(
           `/v1/auth/logout/`,
-          refreshToken ? { refresh: refreshToken } : {},
-          { withCredentials: true }
+          { refresh: refreshToken }
         );
       } catch (error) {
         // Don't block logout if the API call fails — we still clear everything
         console.log("Logout API error:", error.response?.data);
       } finally {
-        // ✅ Always runs — clears all tokens, uuid, Redux state, post cache
-        dispatch(logoutUser()); // calls clearAllTokens() internally
+        // ✅ Always runs — clears all tokens, uuid, post cache
+        clearAllTokens();
         dispatch(clearPosts());
-        showAlert("Logged out successfully.", "success");
-        navigate("/");
+        sessionStorage.setItem('pending_alert', JSON.stringify({ message: "Logged out successfully.", type: "success" }));
+        window.location.href = "/";
       }
     };
 

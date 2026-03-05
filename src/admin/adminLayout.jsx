@@ -6,8 +6,8 @@ import { Outlet, Navigate } from "react-router-dom";
 export default function AdminLayout({ user, status, theme, role, onToggleTheme }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // 1. WHILE LOADING or IDLE
-  if (status === "loading" || status === "idle") {
+  // 1. WHILE LOADING — show spinner only during actual fetch
+  if (status === "loading") {
     return (
       <div className={`h-screen w-screen flex items-center justify-center transition-colors duration-200 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
@@ -15,8 +15,13 @@ export default function AdminLayout({ user, status, theme, role, onToggleTheme }
     );
   }
 
-  // 2. AFTER LOADING - REDIRECT IF NOT ADMIN
-  if (!user || (user.user_type !== "admin" && user.user_type !== "superadmin")) {
+  // 2. IDLE or no user = not authenticated → go to login
+  if (!user || status === "idle") {
+    return <Navigate to="/" />;
+  }
+
+  // 3. AUTHENTICATED BUT NOT ADMIN → redirect
+  if (user.user_type !== "admin" && user.user_type !== "superadmin") {
     return <Navigate to="/" />;
   }
 

@@ -4,7 +4,7 @@ import axiosSecure from "../utils/axiosSecure";
 import useTags from "../hooks/useTags";
 import { useAlert } from "../../context/AlertContext";
 
-function CreatePostModal({ onClose, onSuccess, isDark, post }) {
+function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = false }) {
   const { showAlert } = useAlert();
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState("");
@@ -21,9 +21,9 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
     post ? post.tags.map((t) => t.id) : []
   );
 
-  const [image, setImage] = useState(post?.image || null);
-  const [newImageFile, setNewImageFile] = useState(null);
-  const [removeImage, setRemoveImage] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState([]);
+  const [previews, setPreviews] = useState(post?.media || post?.image ? (post.media || [{ file: post.image, media_type: "image", id: "old_image" }]) : []);
+  const [deletedMediaIds, setDeletedMediaIds] = useState([]);
 
   const { tags, loading: loadingTags } = useTags();
 
@@ -49,15 +49,36 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
   };
 
   /* ---------------------------
-      IMAGE SELECTION
+      MEDIA SELECTION
   --------------------------- */
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleMediaChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    setNewImageFile(file);
-    setImage(URL.createObjectURL(file));
-    setRemoveImage(false);
+    if (previews.length + files.length > 10) {
+      showAlert("Max 10 media files allowed", "warning");
+      return;
+    }
+
+    setMediaFiles((prev) => [...prev, ...files]);
+
+    const newPreviews = files.map((file) => ({
+      id: `temp-${Date.now()}-${file.name}`,
+      file: URL.createObjectURL(file),
+      media_type: file.type.startsWith("video/") ? "video" : "image",
+      isNew: true,
+      originalFile: file,
+    }));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeMedia = (mediaToRemove) => {
+    if (mediaToRemove.isNew) {
+      setMediaFiles((prev) => prev.filter((f) => f !== mediaToRemove.originalFile));
+    } else {
+      setDeletedMediaIds((prev) => [...prev, mediaToRemove.id]);
+    }
+    setPreviews((prev) => prev.filter((p) => p.id !== mediaToRemove.id));
   };
 
   /* ---------------------------
@@ -83,18 +104,19 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
 
     try {
       /* ------------------------------------------------
-          CASE A: EDIT + NO NEW IMAGE (JSON)
+          CASE A: EDIT + NO NEW MEDIA (JSON)
       ------------------------------------------------ */
-      if (post && !newImageFile) {
+      if (post && mediaFiles.length === 0) {
         const payload = {
           title,
           preview_content,
           full_content,
           tags: selectedTags,
-          ...(removeImage ? { image: null } : {}),
+          knowledge_hub: knowledgeHub,
+          deleted_media_ids: deletedMediaIds,
         };
 
-        const res = await axiosSecure.put(
+        const res = await axiosSecure.patch(
           `/v1/community/posts/${post.id}/`,
           payload,
           { headers: { "Content-Type": "application/json" } }
@@ -107,11 +129,9 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
       }
 
       /* ------------------------------------------------
-          CASE B: CREATE or EDIT WITH NEW IMAGE (multipart)
+          CASE B: CREATE or EDIT WITH NEW MEDIA (multipart)
       ------------------------------------------------ */
       const formData = new FormData();
-
-
 
       formData.append("title", title);
       formData.append("preview_content", preview_content);
@@ -119,16 +139,19 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
       if (full_content) {
         formData.append("full_content", full_content);
       }
+      formData.append("knowledge_hub", knowledgeHub ? "true" : "false");
 
       selectedTags.forEach((id) => formData.append("tags", id));
 
-      if (newImageFile) {
-        formData.append("image", newImageFile);
-      }
+      mediaFiles.forEach((file) => {
+        formData.append("media_files", file);
+      });
+
+      deletedMediaIds.forEach((id) => formData.append("deleted_media_ids", id));
 
       let res;
       if (post) {
-        res = await axiosSecure.put(
+        res = await axiosSecure.patch(
           `/v1/community/posts/${post.id}/`,
           formData
         );
@@ -250,48 +273,43 @@ function CreatePostModal({ onClose, onSuccess, isDark, post }) {
             )}
           </div>
 
-          {/* ---------------- IMAGE ---------------- */}
+          {/* ---------------- MEDIA ---------------- */}
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block text-left">Media attachment</label>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block text-left">Media attachments</label>
 
-            {image ? (
-              <div className="relative rounded-[2rem] overflow-hidden border border-white/5 group">
-                <img
-                  src={image}
-                  alt="Preview"
-                  className="w-full h-auto max-h-[300px] object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                  <button
-                    onClick={() => {
-                      setImage(null);
-                      setNewImageFile(null);
-                      setRemoveImage(true);
-                    }}
-                    className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
-                  >
-                    Delete Artwork
-                  </button>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              {previews.map((m) => (
+                <div key={m.id} className="relative rounded-[1rem] overflow-hidden border border-white/5 group aspect-square">
+                  {m.media_type === "video" ? (
+                    <video src={m.file} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={m.file} alt="Preview" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                    <button
+                      onClick={() => removeMedia(m)}
+                      className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <label
-                className={`flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-[2rem] cursor-pointer transition-all ${isDark ? "border-white/10 hover:border-red-500/50 bg-white/5" : "border-black/10 hover:border-red-600/50 bg-black/5"
-                  }`}
-              >
+              ))}
+
+              <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-[1rem] cursor-pointer transition-all aspect-square ${isDark ? "border-white/10 hover:border-red-500/50 bg-white/5" : "border-black/10 hover:border-red-600/50 bg-black/5"}`}>
                 <div className="flex flex-col items-center">
                   <span className="text-xl mb-1">📸</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Upload Media</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Add Media</span>
                 </div>
                 <input
-                  id="post-image-input"
                   type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleMediaChange}
                   className="hidden"
                 />
               </label>
-            )}
+            </div>
           </div>
 
           {/* ---------------- BUTTONS ---------------- */}

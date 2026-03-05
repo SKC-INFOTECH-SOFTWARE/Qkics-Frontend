@@ -6,6 +6,7 @@ import { useAlert } from "./context/AlertContext";
 import { fetchUserProfile, setTheme } from "./redux/slices/userSlice";
 import { silentRefresh } from "./components/utils/axiosSecure";
 import { setNavigate } from "./components/utils/navigation";
+import { getAccessToken } from "./redux/store/tokenManager";
 import ServerDown from "./components/Serverdown";
 
 import Navbar from "./components/navbar";
@@ -19,12 +20,14 @@ const Notification = lazy(() => import("./pages/notification"));
 const DocumentsPage = lazy(() => import("./pages/DocumentsPage"));
 const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
 const EntrepreneurConnect = lazy(() => import("./pages/entrepreneurConnect"));
+const KnowledgeHubFeed = lazy(() => import("./pages/KnowledgeHubFeed"));
 
 const Logout = lazy(() => import("./components/auth/logout"));
 const Comments = lazy(() => import("./components/posts/comment"));
 const Subscription = lazy(() => import("./components/subscription/Subscription"));
 const MyBookings = lazy(() => import("./components/myBookings/MyBookings"));
 const BookSession = lazy(() => import("./components/profileFetch/expertBooking/BookSession"));
+const InvestorBookSession = lazy(() => import("./components/profileFetch/investorFetch/InvestorBookSession"));
 
 const NormalProfile = lazy(() => import("./profiles/normalProfile"));
 const EntrepreneurProfile = lazy(() => import("./profiles/entrepreneur"));
@@ -32,6 +35,7 @@ const ExpertProfile = lazy(() => import("./profiles/expertProfile"));
 const InvestorProfile = lazy(() => import("./profiles/investorProfile"));
 const ProfileFetcher = lazy(() => import("./profiles/ProfileFetcher"));
 const ExpertSlots = lazy(() => import("./profiles/expertSlots/ExpertSlots"));
+const InvestorSlots = lazy(() => import("./profiles/investorSlots/InvestorSlots"));
 const ExpertWizard = lazy(() => import("./profiles/expertWizards/ExpertWizard"));
 const EntrepreneurWizard = lazy(() => import("./profiles/entreprenuerWizard/entreprenuerWizard"));
 
@@ -50,6 +54,7 @@ const AdminDocuments = lazy(() => import("./admin/adminPages/adminDocuments"));
 const SystemLogs = lazy(() => import("./admin/superadminPages/systemLogs"));
 const AdminExpertApplications = lazy(() => import("./admin/adminPages/adminExpertApplications"));
 const AdminEntrepreneurApplications = lazy(() => import("./admin/adminPages/adminEntrepreneurApplications"));
+const AdminAdvertisements = lazy(() => import("./admin/adminPages/adminAdvertisements"));
 
 // ─── Simple full-screen loader shown while chunks download ───────────────────
 function PageLoader() {
@@ -73,17 +78,17 @@ function App() {
   const { data: user, status, theme } = useSelector((state) => state.user);
 
   useEffect(() => {
-    // ✅ On every page load/refresh: silently restore the access token from the
-    // httpOnly refresh cookie FIRST, then fetch the user profile.
-    // Without this, the memory-only access token is gone after a page refresh
-    // and fetchUserProfile() would 401 before the token is restored.
-    // ✅ Only fetch profile if we successfully restored an access token.
-    // If silentRefresh fails (no cookie / expired), the user is genuinely
-    // logged out — don't call fetchUserProfile which would 401 and cause
-    // the 401 interceptor to re-run a broken refresh cycle.
-    silentRefresh().then((gotToken) => {
-      if (gotToken) dispatch(fetchUserProfile());
-    });
+    // ✅ On every page load/refresh: check if we already have an access token
+    // preserved in sessionStorage. If so, immediately fetch the user profile.
+    // If it's expired, the axios response interceptor will automatically refresh it!
+    // If no access token exists, fallback to attempting a silent refresh.
+    if (getAccessToken()) {
+      dispatch(fetchUserProfile());
+    } else {
+      silentRefresh().then((gotToken) => {
+        if (gotToken) dispatch(fetchUserProfile());
+      });
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -144,24 +149,27 @@ function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/booking" element={<Booking />} />
+            <Route path="/experts" element={<Booking />} />
             <Route path="/spaces" element={<Space />} />
             <Route path="/notifications" element={<Notification />} />
             <Route path="/document" element={<DocumentsPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/entrepreneur-connect" element={<EntrepreneurConnect />} />
+            <Route path="/knowledge-hub" element={<KnowledgeHubFeed />} />
 
-            <Route path="/normal" element={<NormalProfile />} />
-            <Route path="/entrepreneur" element={<EntrepreneurProfile />} />
-            <Route path="/expert" element={<ExpertProfile />} />
-            <Route path="/investor" element={<InvestorProfile />} />
-            <Route path="/profile/:username" element={<ProfileFetcher />} />
+            <Route path="/normal/:username?" element={<ProfileFetcher />} />
+            <Route path="/entrepreneur/:username?" element={<ProfileFetcher />} />
+            <Route path="/expert/:username?" element={<ProfileFetcher />} />
+            <Route path="/investor/:username?" element={<ProfileFetcher />} />
+            <Route path="/profile/:username?" element={<ProfileFetcher />} />
 
             <Route path="/upgrade/expert" element={<ExpertWizard />} />
             <Route path="/upgrade/entrepreneur" element={<EntrepreneurWizard />} />
 
             <Route path="/expert/slots" element={<ExpertSlots />} />
+            <Route path="/investor/slots" element={<InvestorSlots />} />
             <Route path="/book-session/:expertUuid" element={<BookSession />} />
+            <Route path="/book-session/investor/:investorUuid" element={<InvestorBookSession />} />
 
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/my-bookings" element={<MyBookings />} />
@@ -189,6 +197,7 @@ function App() {
               <Route path="/system-logs" element={<SystemLogs theme={theme} />} />
               <Route path="/subscriptions" element={<AdminSubscriptions theme={theme} />} />
               <Route path="/admin-documents" element={<AdminDocuments theme={theme} />} />
+              <Route path="/admin-advertisements" element={<AdminAdvertisements theme={theme} />} />
               <Route path="/admin-application/expert" element={<AdminExpertApplications theme={theme} />} />
               <Route path="/admin-application/entrepreneur" element={<AdminEntrepreneurApplications theme={theme} />} />
             </Route>

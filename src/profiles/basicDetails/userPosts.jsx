@@ -168,7 +168,6 @@ export default function UserPosts() {
       {/* RIGHT: Ads */}
       <aside className="hidden lg:block lg:col-span-4 space-y-8 pt-12">
         <AdCard isDark={isDark} />
-        <AdCard isDark={isDark} featured />
       </aside>
 
       {/* POST MODAL */}

@@ -6,15 +6,14 @@
  * Returns the profile route for a given user_type.
  * Used by Navbar, Home, SearchResultsPage, and any future page.
  */
-export const getOwnProfileRoute = (userType) => {
-  switch (userType) {
-    case "expert":       return "/expert";
-    case "entrepreneur": return "/entrepreneur";
-    case "investor":     return "/investor";
-    case "admin":        return "/admin";
-    case "superadmin":   return "/superadmin";
-    default:             return "/normal";
-  }
+export const getOwnProfileRoute = (userType, username) => {
+  const postfix = username ? `/${username}` : "";
+  // Admins still have their own separated dashboards
+  if (userType === "admin") return "/admin";
+  if (userType === "superadmin") return "/superadmin";
+
+  // Everyone else goes to their unified profile page with their username
+  return `/profile${postfix}`;
 };
 
 /**
@@ -27,8 +26,11 @@ export const getOwnProfileRoute = (userType) => {
  * @returns {string}            - The route to navigate to
  */
 export const resolveProfileRoute = (author, loggedUser) => {
+  if (!author) return "/";
+
   if (!loggedUser || loggedUser.username !== author.username) {
-    return `/profile/${author.username}`;
+    // Prioritize username for cleaner URLs
+    return `/profile/${author.username || author.uuid}`;
   }
-  return getOwnProfileRoute(loggedUser.user_type);
+  return getOwnProfileRoute(loggedUser.user_type, loggedUser.username);
 };

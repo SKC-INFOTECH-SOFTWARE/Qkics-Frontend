@@ -7,6 +7,7 @@ import { getAccessToken } from "../../redux/store/tokenManager";
 
 import { BiLike, BiSolidLike } from "react-icons/bi";
 import { FaReply, FaTrash } from "react-icons/fa";
+import { FiArrowLeft } from "react-icons/fi";
 
 import { useSelector, useDispatch } from "react-redux";
 import { clearPostViewState } from "../../redux/slices/postViewSlice";
@@ -360,9 +361,9 @@ export default function Comments() {
               window.scrollTo(0, view.scroll || 0);
             }, 150);
           }}
-          className={`flex items-center gap-2 mb-6 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${isDark ? "hover:bg-white/10 text-neutral-400 hover:text-white" : "hover:bg-black/5 text-neutral-500 hover:text-black"}`}
+          className={`p-3 rounded-full mb-6 transition-all w-fit ${isDark ? "bg-white/5 hover:bg-white/10 text-white" : "bg-black/5 hover:bg-black/10 text-black"}`}
         >
-          ← Back
+          <FiArrowLeft size={20} />
         </button>
 
         {/* GRID LAYOUT */}

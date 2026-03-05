@@ -45,7 +45,7 @@ export default function NotificationPage() {
         <div className="flex items-center gap-4">
           <div className={`px-4 py-2 rounded-xl flex gap-4 font-bold shadow-sm ${isDark ? "bg-white/5" : "bg-black/5"}`}>
             <span className="text-red-500">
-              {unreadCount > 9 ? "9+" : unreadCount} <span className="text-xs uppercase opacity-70">Unread</span>
+              {unreadCount} <span className="text-xs uppercase opacity-70">Unread</span>
             </span>
             <span className="opacity-50">|</span>
             <span>

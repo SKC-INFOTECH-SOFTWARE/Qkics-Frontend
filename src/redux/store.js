@@ -5,6 +5,7 @@ import postsReducer from "./slices/postsSlice";
 import expertReducer from "./slices/expertSlice";
 import postViewReducer from "./slices/postViewSlice";
 import expertSlotsReducer from "./slices/expertSlotsSlice";
+import investorSlotsReducer from "./slices/investorSlotsSlice";
 import bookingReducer from "./slices/bookingSlice";
 import tagsReducer from "./slices/tagsSlice";
 
@@ -15,6 +16,7 @@ export const store = configureStore({
     expert: expertReducer,
     postView: postViewReducer,
     expertSlots: expertSlotsReducer,
+    investorSlots: investorSlotsReducer,
     booking: bookingReducer,
     tags: tagsReducer,
   },

@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { API_BASE_URL } from "../../config/api";
 import { loginUser, fetchUserProfile } from "../../redux/slices/userSlice";
 import { useAlert } from "../../context/AlertContext";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function SignupModal({ onClose, openLogin, isDark }) {
   const dispatch = useDispatch();
@@ -23,6 +24,9 @@ function SignupModal({ onClose, openLogin, isDark }) {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [passwordErr, setPasswordErr] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
 
   // const [userType, setUserType] = useState("normal");
 
@@ -216,24 +220,42 @@ function SignupModal({ onClose, openLogin, isDark }) {
       {usernameErr && <p className="text-red-500 text-xs">{usernameErr}</p>}
 
       {/* PASSWORD */}
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => validatePassword(e.target.value)}
-        className={`w-full px-3 py-2 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
-          }`}
-      />
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          placeholder="Password"
+          value={password}
+          onChange={(e) => validatePassword(e.target.value)}
+          className={`w-full px-3 py-2 pr-10 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
+            }`}
+        />
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
+          className="absolute inset-y-0 right-3 flex items-center text-neutral-500 hover:text-neutral-400 transition-colors"
+        >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
       {passwordErr && <p className="text-red-500 text-xs">{passwordErr}</p>}
 
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        value={password2}
-        onChange={(e) => setPassword2(e.target.value)}
-        className={`w-full px-3 py-2 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
-          }`}
-      />
+      <div className="relative">
+        <input
+          type={showPassword2 ? "text" : "password"}
+          placeholder="Confirm Password"
+          value={password2}
+          onChange={(e) => setPassword2(e.target.value)}
+          className={`w-full px-3 py-2 pr-10 rounded border ${isDark ? "bg-neutral-700 border-neutral-600" : "bg-neutral-50"
+            }`}
+        />
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); setShowPassword2(!showPassword2); }}
+          className="absolute inset-y-0 right-3 flex items-center text-neutral-500 hover:text-neutral-400 transition-colors"
+        >
+          {showPassword2 ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
 
       {/* EMAIL */}
       <input
@@ -277,8 +299,8 @@ function SignupModal({ onClose, openLogin, isDark }) {
         onClick={handleSignup}
         disabled={loading}
         className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${loading
-            ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
-            : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
+          ? "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"
+          : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
           }`}
       >
         {loading ? "Creating..." : "Create Account"}

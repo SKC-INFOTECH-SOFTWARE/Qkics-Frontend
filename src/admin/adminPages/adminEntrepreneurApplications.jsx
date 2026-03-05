@@ -10,7 +10,7 @@ export default function AdminEntrepreneurApplications({ theme }) {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
-    const [filterStatus, setFilterStatus] = useState("");
+    const [filterStatus, setFilterStatus] = useState("pending");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalApplications, setTotalApplications] = useState(0);

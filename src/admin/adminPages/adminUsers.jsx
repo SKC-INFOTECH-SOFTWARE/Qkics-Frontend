@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axiosSecure from "../../components/utils/axiosSecure";
-import { FaSearch, FaEye, FaUsers, FaUserCircle, FaEnvelope, FaPhone, FaCalendarAlt } from "react-icons/fa";
+import { FaSearch, FaEye, FaUsers, FaUserCircle, FaEnvelope, FaPhone, FaCalendarAlt, FaPlus, FaArrowUp } from "react-icons/fa";
 import { useAlert } from "../../context/AlertContext";
+import AddInvestorModal from "./AddInvestorModal";
+import UpgradeToInvestorModal from "./UpgradeToInvestorModal";
 
 export default function AdminUsers({ theme }) {
     const isDark = theme === "dark";
@@ -16,6 +18,8 @@ export default function AdminUsers({ theme }) {
     const [totalUsers, setTotalUsers] = useState(0);
 
     const [viewModal, setViewModal] = useState({ isOpen: false, user: null });
+    const [isAddInvestorOpen, setIsAddInvestorOpen] = useState(false);
+    const [upgradeModal, setUpgradeModal] = useState({ isOpen: false, user: null });
 
     const fetchUsers = async () => {
         try {
@@ -61,6 +65,10 @@ export default function AdminUsers({ theme }) {
         setViewModal({ isOpen: true, user });
     };
 
+    const handleUpgradeClick = (user) => {
+        setUpgradeModal({ isOpen: true, user });
+    };
+
     const getRoleStyle = (role) => {
         switch (role) {
             case "superadmin":
@@ -74,7 +82,7 @@ export default function AdminUsers({ theme }) {
             case "entrepreneur":
                 return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400";
             case "investor":
-                return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";    
+                return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
             default:
                 return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
         }
@@ -95,6 +103,15 @@ export default function AdminUsers({ theme }) {
                     <h1 className={`text-2xl font-semibold tracking-tight ${isDark ? "text-gray-100" : "text-gray-900"}`}>
                         User Management
                     </h1>
+                </div>
+                <div>
+                    <button
+                        onClick={() => setIsAddInvestorOpen(true)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm`}
+                    >
+                        <FaPlus className="text-xs" />
+                        Add Investor
+                    </button>
                 </div>
             </div>
 
@@ -187,10 +204,15 @@ export default function AdminUsers({ theme }) {
                                             </span>
                                         </td>
                                         <td className="py-3 px-5 text-center">
-                                            <div className="flex items-center justify-center">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <button title="View Details" onClick={() => handleViewClick(user)} className={`p-1.5 rounded-md transition-colors ${isDark ? "text-blue-400 hover:bg-blue-400/10" : "text-blue-600 hover:bg-blue-50"}`}>
                                                     <FaEye />
                                                 </button>
+                                                {user.user_type === "normal" && (
+                                                    <button title="Upgrade to Investor" onClick={() => handleUpgradeClick(user)} className={`p-1.5 rounded-md transition-colors ${isDark ? "text-green-400 hover:bg-green-400/10" : "text-green-600 hover:bg-green-50"}`}>
+                                                        <FaArrowUp />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -335,6 +357,29 @@ export default function AdminUsers({ theme }) {
                     </div>
                 </div>
             )}
+
+            {/* ADD INVESTOR MODAL */}
+            <AddInvestorModal
+                isOpen={isAddInvestorOpen}
+                onClose={() => setIsAddInvestorOpen(false)}
+                onSuccess={() => {
+                    setIsAddInvestorOpen(false);
+                    fetchUsers();
+                }}
+                theme={theme}
+            />
+
+            {/* UPGRADE MODAL */}
+            <UpgradeToInvestorModal
+                isOpen={upgradeModal.isOpen}
+                onClose={() => setUpgradeModal({ isOpen: false, user: null })}
+                user={upgradeModal.user}
+                onSuccess={() => {
+                    setUpgradeModal({ isOpen: false, user: null });
+                    fetchUsers();
+                }}
+                theme={theme}
+            />
         </div>
     );
 }

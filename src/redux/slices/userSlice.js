@@ -5,8 +5,12 @@ import { setAccessToken, setRefreshToken, clearAllTokens } from "../store/tokenM
 
 /* =====================================
    INIT: Restore UUID from localStorage
+   NOTE: We intentionally do NOT pre-populate state.data with the stored UUID.
+   Doing so caused the navbar to show a logged-in avatar even when the refresh
+   token cookie was already gone — the user appeared logged in but no API calls
+   worked. Instead, App.jsx runs silentRefresh() on boot and fetchUserProfile()
+   populates state.data only when we actually have a valid token.
 ===================================== */
-const storedUuid = localStorage.getItem("user_uuid");
 
 /* =====================================
    THUNKS
@@ -20,6 +24,9 @@ export const fetchUserProfile = createAsyncThunk(
       const res = await axiosSecure.get("/v1/auth/me/");
       return res.data;
     } catch (err) {
+      if (err.response?.status === 401) {
+        clearAllTokens();
+      }
       return rejectWithValue(err.response?.data || "Failed to fetch profile");
     }
   }
@@ -33,8 +40,8 @@ export const loginUser = createAsyncThunk(
       const res = await axiosSecure.post("/v1/auth/login/", credentials);
       const data = res?.data ?? res;
 
-      const accessToken = data?.access;
-      const refreshToken = data?.refresh;
+      const accessToken = data?.tokens.access;
+      const refreshToken = data?.tokens.refresh;
       const user = data?.user;
 
       if (!accessToken || !user) {
@@ -75,7 +82,7 @@ const userSlice = createSlice({
   name: "user",
 
   initialState: {
-    data: storedUuid ? { uuid: storedUuid } : null,
+    data: null,  // Always null on boot — App.jsx will populate via silentRefresh + fetchUserProfile
     role: null,
     status: "idle",
     error: null,
@@ -137,6 +144,8 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.status = "idle";
+        state.data = null; // Explicitly drop local user data on dead fetches
+        state.role = null;
         state.error =
           action.payload || action.error?.message || "Failed to fetch profile";
       })

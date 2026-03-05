@@ -86,8 +86,12 @@ function Navbar({ theme, onToggleTheme, user }) {
 
   const goToProfile = () => {
     setDropdown(false);
-    if (!user) return navigate("/normal");
-    navigate(getOwnProfileRoute(user.user_type));
+    if (!user) return navigate("/");
+    // Admin/superadmin go to their dashboard, not a public profile
+    if (user.user_type === "admin" || user.user_type === "superadmin") {
+      return navigate(user.user_type === "superadmin" ? "/superadmin" : "/admin");
+    }
+    navigate(getOwnProfileRoute(user.user_type, user.username));
   };
 
   const handleSearchFocus = () => {
@@ -125,8 +129,8 @@ function Navbar({ theme, onToggleTheme, user }) {
             </Link>
 
             <button
-              onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/booking")}
-              className={getNavClass("/booking")}
+              onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/experts")}
+              className={getNavClass("/experts")}
               title="Experts"
             >
               {isSearchExpanded && <FaUsersGear className="text-sm animate-fadeIn" />}
@@ -158,7 +162,7 @@ function Navbar({ theme, onToggleTheme, user }) {
                     <div className="flex-1 flex flex-col pt-1">
                       <h3 className={`text-sm font-black uppercase tracking-[0.2em] mb-4 text-red-600 ml-2`}>Knowledge Hub</h3>
                       <div className="space-y-1">
-                        <button onClick={() => { if (!isLoggedIn) setShowLogin(true); else { navigate("/"); setEntDropdown(false); } }} className={`w-full text-left block px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 uppercase tracking-widest ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"}`}>Researched Based Feed</button>
+                        <button onClick={() => { if (!isLoggedIn) setShowLogin(true); else { navigate("/knowledge-hub"); setEntDropdown(false); } }} className={`w-full text-left block px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 uppercase tracking-widest ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"}`}>Researched Based Feed</button>
                         <button onClick={() => { if (!isLoggedIn) setShowLogin(true); else { navigate("/document"); setEntDropdown(false); } }} className={`w-full text-left block px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 uppercase tracking-widest ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"}`}>Documents</button>
                       </div>
                     </div>
@@ -192,14 +196,14 @@ function Navbar({ theme, onToggleTheme, user }) {
               {!isSearchExpanded && <span className="text-xs animate-fadeIn">Documents</span>}
             </button>
 
-            <button
+            {/* <button
               onClick={() => !isLoggedIn ? setShowLogin(true) : navigate("/msmd")}
               className={getNavClass("/mvlksdam")}
               title="Company"
             >
               {isSearchExpanded && <FaBuilding className="text-sm animate-fadeIn" />}
               {!isSearchExpanded && <span className="text-xs animate-fadeIn">Company</span>}
-            </button>
+            </button> */}
           </nav>
 
           {/* RIGHT: ACTIONS */}
@@ -322,11 +326,7 @@ function Navbar({ theme, onToggleTheme, user }) {
                       : "ring-neutral-200 ring-offset-white hover:ring-red-500"
                       }`}
                   >
-                    <img
-                      src={`${resolveAvatar(user?.profile_picture, user?.username)}${user?.profile_picture ? `?v=${picVersion}` : ""}`}
-                      alt="profile"
-                      className="h-full w-full object-cover"
-                    />
+                    <UserAvatar user={user} picVersion={picVersion} isDark={isDark} />
                   </button>
 
                   {dropdown && (
@@ -434,6 +434,32 @@ function Navbar({ theme, onToggleTheme, user }) {
       {/* Spacer for fixed header */}
       <div className="h-20"></div>
     </>
+  );
+}
+
+/**
+ * Shows the user's profile picture if available,
+ * otherwise renders their initials (first 2 chars of username).
+ * This fixes the admin nav showing a broken/placeholder image.
+ */
+function UserAvatar({ user, picVersion, isDark }) {
+  if (user?.profile_picture) {
+    return (
+      <img
+        src={`${resolveAvatar(user.profile_picture, user.username)}?v=${picVersion}`}
+        alt="profile"
+        className="h-full w-full object-cover"
+      />
+    );
+  }
+  // Initials fallback
+  const initials = (user?.username || user?.first_name || "?")
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <div className={`h-full w-full flex items-center justify-center text-sm font-black ${isDark ? "bg-neutral-700 text-white" : "bg-neutral-200 text-black"}`}>
+      {initials}
+    </div>
   );
 }
 
