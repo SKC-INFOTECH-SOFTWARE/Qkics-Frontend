@@ -58,67 +58,71 @@ export default function InvestorBookSession() {
     }
   };
 
-  /* ---------------- FAKE PAYMENT FLOW ---------------- */
+  /* ---------------- BOOKING FLOW ---------------- */
   const handleSlotClick = (slot) => {
     if (paymentProcessing) return;
 
     showConfirm({
       title: "Confirm Booking",
-      message: `Do you want to book this session for ₹${slot.price}?`,
-      confirmText: "Confirm",
+      message: `Do you want to book this session with this Investor?`,
+      confirmText: "Book Now",
       cancelText: "Cancel",
 
       onConfirm: async () => {
         setPaymentProcessing(true);
 
         try {
-          /* 1️⃣ CREATE BOOKING */
+          /* 1️⃣ CHECK SUBSCRIPTION STATUS */
+          let subscription;
+          try {
+            const subRes = await axiosSecure.get("/v1/subscriptions/me/");
+            subscription = subRes.data;
+          } catch (err) {
+            // Probably 404 or specific "No active subscription" error
+            throw new Error("UNSUBSCRIBED");
+          }
+
+          // Validation: Check if subscription is active and within date range
+          const now = new Date();
+          const startDate = new Date(subscription.start_date);
+          const endDate = new Date(subscription.end_date);
+
+          if (!subscription.is_active || now < startDate || now > endDate) {
+            throw new Error("UNSUBSCRIBED");
+          }
+
+          /* 2️⃣ CREATE BOOKING */
           const bookingRes = await axiosSecure.post("/v1/bookings/investor-bookings/", {
             slot_id: slot.uuid,
           });
-          const booking = bookingRes.data;
 
-          console.log("✅ Booking created:", booking);
-
-          /* 2️⃣ FAKE PAYMENT API */
-          const paymentRes = await axiosSecure.post(
-            "/v1/payments/fake/booking/",
-            {
-              booking_id: booking.uuid || booking.id,
-            }
-          );
-
-          console.log("✅ Fake payment success:", paymentRes.data);
-
-          setPaymentProcessing(false);
+          console.log("✅ Booking successful:", bookingRes.data);
 
           showAlert(
             "Booking confirmed successfully!",
             "success"
           );
 
-          // Remove booked slot
+          // Remove booked slot from UI
           setSlots((prev) =>
             prev.filter((s) => s.uuid !== slot.uuid)
           );
-          dispatch(resetBookingState());
 
-          // Optional chat navigation
-          if (paymentRes.data.chat_room_id) {
-            console.log(
-              "💬 Chat room created:",
-              paymentRes.data.chat_room_id
-            );
-            // navigate(`/chat/${paymentRes.data.chat_room_id}`);
-          }
+          dispatch(resetBookingState());
+          setPaymentProcessing(false);
+
         } catch (err) {
           console.error("❌ Booking failed:", err);
           setPaymentProcessing(false);
 
-          showAlert(
-            "Booking failed. Please try again.",
-            "error"
-          );
+          if (err.message === "UNSUBSCRIBED" || err.response?.data?.detail === "No active subscription") {
+            showAlert("This feature is available only for subscribed users. Please subscribe to a plan to continue.", "warning");
+          } else {
+            showAlert(
+              "Booking failed. Please check your connection or try again.",
+              "error"
+            );
+          }
         }
       },
     });

@@ -265,10 +265,10 @@ function Navbar({ theme, onToggleTheme, user }) {
             <div className="flex items-center gap-2 md:gap-3">
               {/* PREMIUM BUTTON */}
               <button
-                className="hidden xl:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-linear-to-r from-red-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-red-600/30 hover:scale-105 transition-all active:scale-95"
+                className="hidden xl:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-red-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-red-600/30 hover:scale-105 transition-all active:scale-95"
                 onClick={() => navigate("/subscription")}
               >
-                <FaCrown size={12} />
+                <FaCrown size={15} className="text-yellow-500" />
                 <span>Premium</span>
               </button>
 

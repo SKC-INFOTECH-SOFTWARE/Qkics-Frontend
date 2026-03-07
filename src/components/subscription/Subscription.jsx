@@ -15,6 +15,7 @@ export default function Subscription() {
 
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [subscribing, setSubscribing] = useState(null); // stores uuid of plan being subscribed to
 
     // Theme Colors
     const bg = isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]";
@@ -30,26 +31,42 @@ export default function Subscription() {
     const fetchPlans = async () => {
         try {
             setLoading(true);
-            // Assuming public endpoint. If fails, we might need to adjust based on backend routes.
-            // Admin uses /v1/subscriptions/admin/plans/
             const res = await axiosSecure.get("/v1/subscriptions/plans/");
-            const data = res.data;
-            setPlans(Array.isArray(data) ? data : (data?.results || []));
+            setPlans(Array.isArray(res.data) ? res.data : (res.data?.results || []));
         } catch (err) {
             console.error("Failed to load plans", err);
-            // Fallback or empty state handled in UI
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSubscribe = (plan) => {
+    const handleSubscribe = async (plan) => {
         if (!user) {
             showAlert("Please login to subscribe", "error");
             return;
         }
-        // Navigate to payment with plan details
-        navigate("/payment", { state: { plan } });
+
+        try {
+            setSubscribing(plan.uuid);
+            const res = await axiosSecure.post("/v1/subscriptions/subscribe/", {
+                plan_uuid: plan.uuid
+            });
+
+            console.log("✅ Subscription successful:", res.data);
+            showAlert(`Successfully subscribed to ${plan.name} plan!`, "success");
+
+            // Navigate to profile or refresh page to show active status
+            setTimeout(() => {
+                navigate("/profile");
+            }, 1000);
+
+        } catch (err) {
+            console.error("❌ Subscription failed:", err);
+            const errMsg = err.response?.data?.detail || err.response?.data?.message || "Failed to subscribe. Please try again.";
+            showAlert(errMsg, "error");
+        } finally {
+            setSubscribing(null);
+        }
     };
 
     if (loading) {
@@ -68,7 +85,7 @@ export default function Subscription() {
             <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
 
                 {/* HEADER */}
-                <div className="text-center mb- animate-fadeIn">
+                <div className="text-center mb-12 animate-fadeIn">
                     <h1 className={`text-4xl md:text-6xl font-black tracking-tighter mb-6 ${text}`}>
                         Upgrade your <span className="text-red-600">Impact</span>
                     </h1>
@@ -85,50 +102,50 @@ export default function Subscription() {
                         <p className={`text-sm ${muted} mt-2`}>Please check back later for new subscription offers.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 mt-12 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="flex flex-wrap justify-center mt-12 gap-6 md:gap-8 max-w-5xl mx-auto">
                         {plans.map((plan, index) => {
                             const isRecommended = index === 1; // Assuming middle plan is recommended for visual balance
 
                             return (
                                 <div
                                     key={plan.uuid}
-                                    className={`relative group flex flex-col p-8 rounded-[2rem] border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl
+                                    className={`relative group flex flex-col p-6 w-full max-w-[300px] rounded-3xl border transition-all duration-500 hover:-translate-y-2 hover:shadow-xl
                     ${isDark
                                             ? "bg-neutral-900 border-neutral-800 hover:border-red-600/30"
                                             : "bg-white border-neutral-100 hover:border-red-600/20 hover:shadow-red-600/5"}
                   `}
                                 >
                                     {isRecommended && (
-                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-red-600/40">
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-red-600/40 z-10">
                                             Most Popular
                                         </div>
                                     )}
 
                                     {/* CARD HEADER */}
-                                    <div className="mb-8">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-2xl
+                                    <div className="mb-6">
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-xl
                       ${isDark ? "bg-neutral-800 text-white" : "bg-neutral-50 text-black"}
                       group-hover:scale-110 transition-transform duration-500
                     `}>
                                             <FaCrown className={isRecommended ? "text-red-600" : "opacity-30"} />
                                         </div>
-                                        <h3 className={`text-2xl font-black uppercase tracking-tight mb-2 ${text}`}>
+                                        <h3 className={`text-xl font-black uppercase tracking-tight mb-1 ${text}`}>
                                             {plan.name}
                                         </h3>
                                         <div className="flex items-baseline gap-1">
-                                            <span className={`text-4xl font-extrabold ${text}`}>₹{plan.price}</span>
-                                            <span className={`text-sm font-medium ${muted}`}>/ {plan.duration_days} days</span>
+                                            <span className={`text-3xl font-extrabold ${text}`}>₹{plan.price}</span>
+                                            <span className={`text-xs font-medium ${muted}`}>/ {plan.duration_days} days</span>
                                         </div>
                                     </div>
 
                                     {/* FEATURES LIST (Placeholder if no features in API) */}
-                                    <div className="flex-1 space-y-4 mb-8">
+                                    <div className="flex-1 space-y-4 mb-6">
                                         <div className={`w-full h-px ${isDark ? "bg-neutral-800" : "bg-neutral-100"}`} />
-                                        <ul className="space-y-4">
+                                        <ul className="space-y-3">
                                             {['Premium Support', 'Unlimited Access', 'Expert Consultation', 'Verified Badge'].map((feature, i) => (
                                                 <li key={i} className="flex items-center gap-3">
-                                                    <FaCheckCircle className="text-red-600 flex-shrink-0" size={16} />
-                                                    <span className={`text-sm font-bold ${muted}`}>{feature}</span>
+                                                    <FaCheckCircle className="text-red-600 flex-shrink-0" size={14} />
+                                                    <span className={`text-xs font-bold ${muted}`}>{feature}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -137,14 +154,23 @@ export default function Subscription() {
                                     {/* ACTION BUTTON */}
                                     <button
                                         onClick={() => handleSubscribe(plan)}
-                                        className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.2em] transition-all
-                      ${isRecommended
-                                                ? "bg-red-600 text-white shadow-xl shadow-red-600/30 hover:bg-red-700 hover:scale-[1.02]"
+                                        disabled={subscribing !== null}
+                                        className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.2em] transition-all
+                                             ${subscribing === plan.uuid ? "opacity-50 cursor-not-allowed" : ""}
+                                             ${isRecommended
+                                                ? "bg-red-600 text-white shadow-lg shadow-red-600/30 hover:bg-red-700 hover:scale-[1.02]"
                                                 : `${isDark ? "bg-white text-black hover:bg-neutral-200" : "bg-black text-white hover:bg-neutral-800"}`
                                             }
-                    `}
+                                         `}
                                     >
-                                        Get Started <FaArrowRight />
+                                        {subscribing === plan.uuid ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                                <span>Subscribing...</span>
+                                            </div>
+                                        ) : (
+                                            <>Get Started <FaArrowRight size={12} /></>
+                                        )}
                                     </button>
                                 </div>
                             );

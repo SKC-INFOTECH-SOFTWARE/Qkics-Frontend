@@ -39,7 +39,6 @@ const InvestorSlots = lazy(() => import("./profiles/investorSlots/InvestorSlots"
 const ExpertWizard = lazy(() => import("./profiles/expertWizards/ExpertWizard"));
 const EntrepreneurWizard = lazy(() => import("./profiles/entreprenuerWizard/entreprenuerWizard"));
 
-const PaymentPage = lazy(() => import("./payment"));
 const ChatPage = lazy(() => import("./chat"));
 const Error = lazy(() => import("./error"));
 
@@ -173,7 +172,6 @@ function App() {
 
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/my-bookings" element={<MyBookings />} />
-            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/chat/:roomId?" element={<ChatPage />} />
             <Route path="/post/:id/comments" element={<Comments />} />
             <Route path="/logout" element={<Logout />} />

@@ -21,12 +21,35 @@ export const fetchUserProfile = createAsyncThunk(
   "user/fetchProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axiosSecure.get("/v1/auth/me/");
-      return res.data;
-    } catch (err) {
-      if (err.response?.status === 401) {
-        clearAllTokens();
+      // Fetch profile and subscription status in parallel
+      const [profileRes, subRes] = await Promise.allSettled([
+        axiosSecure.get("/v1/auth/me/"),
+        axiosSecure.get("/v1/subscriptions/me/")
+      ]);
+
+      if (profileRes.status === "rejected") {
+        if (profileRes.reason.response?.status === 401) {
+          clearAllTokens();
+        }
+        throw profileRes.reason;
       }
+
+      const userData = profileRes.value.data;
+      let is_subscribed = false;
+
+      if (subRes.status === "fulfilled") {
+        const subData = subRes.value.data;
+        const now = new Date();
+        const start = new Date(subData.start_date);
+        const end = new Date(subData.end_date);
+
+        if (subData.is_active && now >= start && now <= end) {
+          is_subscribed = true;
+        }
+      }
+
+      return { ...userData, is_subscribed };
+    } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to fetch profile");
     }
   }

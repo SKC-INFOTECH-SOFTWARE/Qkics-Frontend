@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { BiLike, BiSolidLike } from "react-icons/bi";
 import { FaEllipsisH, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { HiPencilAlt, HiTrash } from "react-icons/hi";
 import UserBadge from "../ui/UserBadge";
+import { useAlert } from "../../context/AlertContext";
 import useClickOutside from "../hooks/useClickOutside";
 import { resolveAvatar } from "../utils/mediaUrl";
 
@@ -26,8 +28,6 @@ const timeAgo = (dateString) => {
     return "now";
 };
 
-// HELPER: User Badge - Removed and moved to reusable component
-
 export default function PostCard({
     post,
     loggedUser,
@@ -40,6 +40,8 @@ export default function PostCard({
     onImageClick,
     onProfileClick,
 }) {
+    const navigate = useNavigate();
+    const { showAlert } = useAlert();
     const picVersion = useSelector((state) => state.user.picVersion || 0);
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
@@ -49,6 +51,21 @@ export default function PostCard({
 
     const text = isDark ? "text-neutral-100" : "text-neutral-900";
     const borderColor = isDark ? "border-white/5" : "border-black/5";
+
+    const isLocked = post.is_locked === true;
+    const fullContent = post.content || "";
+    const previewLength = post.preview_length || 500;
+
+    const isLongContent = !isLocked && fullContent.length > previewLength;
+
+    // What text to actually display
+    const displayText = isLocked
+        ? fullContent
+        : (expanded ? fullContent : (isLongContent ? fullContent.slice(0, previewLength) + "" : fullContent));
+
+    // Gated message triggers if locked and expanded
+    const isGated = expanded && isLocked;
+    const isOwnPost = loggedUser && loggedUser.id === post.author.id;
 
     return (
         <article className={`premium-card overflow-hidden ${isDark ? "bg-neutral-900" : "bg-white"} animate-fadeIn`}>
@@ -61,14 +78,10 @@ export default function PostCard({
                     >
                         <img
                             src={(() => {
-                                const isOwnPost = loggedUser && loggedUser.id === post.author.id;
-                                // For own posts use live Redux pic so it updates immediately after upload
                                 const pic = isOwnPost
                                     ? loggedUser.profile_picture
                                     : post.author.profile_picture;
                                 const base = resolveAvatar(pic, post.author.username);
-                                // Always cache-bust when a picture exists — fixes stale images
-                                // after profile-picture changes and after logout (picVersion resets to 0)
                                 return pic ? `${base}?v=${picVersion}` : base;
                             })()}
                             className="h-full w-full object-cover"
@@ -108,8 +121,7 @@ export default function PostCard({
                         </button>
 
                         {menuOpen && (
-                            <div className={`absolute right-0 mt-3 w-40 rounded-xl shadow-2xl border p-1 animate-pop z-20 ${isDark ? "bg-neutral-800 border-white/10" : "bg-white border-black/5"
-                                }`}>
+                            <div className={`absolute right-0 mt-3 w-40 rounded-xl shadow-2xl border p-1 animate-pop z-20 ${isDark ? "bg-neutral-800 border-white/10" : "bg-white border-black/5"}`}>
                                 <button
                                     onClick={() => { setMenuOpen(false); onEdit?.(post); }}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm font-medium transition-colors"
@@ -137,17 +149,65 @@ export default function PostCard({
                 )}
 
                 <div className="relative">
-                    <p className={`text-sm leading-relaxed opacity-80 font-medium ${!expanded && post.content.length > 200 ? "line-clamp-3" : ""}`}>
-                        {post.content}
+                    <p className="text-sm leading-relaxed opacity-80 font-medium whitespace-pre-wrap">
+                        {displayText} 
                     </p>
 
-                    {post.content.length > 200 && (
+                    {/* READ MORE — show when there's more content and not yet expanded */}
+                    {(isLocked || isLongContent) && !expanded && (
+                        <div className="mt-2 text-sm">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isLocked) {
+                                        showAlert("Please subscribe to see the full content", "warning");
+                                    }
+                                    setExpanded(true);
+                                }}
+                                className="text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors flex items-center gap-1"
+                            >
+                                READ MORE ▼
+                            </button>
+                        </div>
+                    )}
+
+                    {/* READ LESS — only when fully expanded and NOT locked */}
+                    {isLongContent && expanded && (
                         <button
-                            onClick={() => setExpanded(!expanded)}
-                            className="mt-1 text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setExpanded(false);
+                            }}
+                            className="mt-3 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-red-500 transition-colors block"
                         >
-                            {expanded ? "READ LESS ▲" : "READ MORE ▼"}
+                            READ LESS ▲
                         </button>
+                    )}
+
+                    {/* GATED — expanded but not subscribed */}
+                    {isGated && (
+                        <div className={`mt-3 p-4 rounded-xl border animate-fadeIn ${isDark ? "bg-red-600/10 border-red-600/20" : "bg-red-50 border-red-100"}`}>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 rounded-lg bg-red-600 flex items-center justify-center text-[10px] text-white font-black">
+                                    $
+                                </div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-red-600">
+                                    Subscription Required
+                                </p>
+                            </div>
+                            <p className="text-xs opacity-70 mb-4 leading-relaxed">
+                                You've reached the free reading limit. Please subscribe to a Premium Plan to unlock the full intelligence of this discovery.
+                            </p>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate("/subscription");
+                                }}
+                                className="w-full bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-3 rounded-xl shadow-lg hover:bg-red-700 transition-all hover:-translate-y-0.5"
+                            >
+                                Subscribe to Unlock
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -180,8 +240,11 @@ export default function PostCard({
                             </div>
                         )}
 
-                        <div className="w-full h-full relative flex items-center justify-center cursor-pointer" onClick={() => (post.media[currentMediaIndex].media_type === "image" ? onImageClick?.(post.media[currentMediaIndex].file) : null)}>
-                            {/* Blurred Background for image to maintain aspect ratio look */}
+                        <div
+                            className="w-full h-full relative flex items-center justify-center cursor-pointer"
+                            onClick={() => post.media[currentMediaIndex].media_type === "image" ? onImageClick?.(post.media[currentMediaIndex].file) : null}
+                        >
+                            {/* Blurred Background */}
                             {post.media[currentMediaIndex].media_type === "image" && (
                                 <div
                                     className="absolute inset-0 bg-cover bg-center blur-xl opacity-40 scale-110"
@@ -211,10 +274,7 @@ export default function PostCard({
                             <>
                                 {currentMediaIndex > 0 && (
                                     <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentMediaIndex(prev => prev - 1);
-                                        }}
+                                        onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex(prev => prev - 1); }}
                                         className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
                                     >
                                         <FaChevronLeft size={14} />
@@ -222,10 +282,7 @@ export default function PostCard({
                                 )}
                                 {currentMediaIndex < post.media.length - 1 && (
                                     <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentMediaIndex(prev => prev + 1);
-                                        }}
+                                        onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex(prev => prev + 1); }}
                                         className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
                                     >
                                         <FaChevronRight size={14} />
@@ -233,10 +290,12 @@ export default function PostCard({
                                 )}
                             </>
                         )}
-
                     </div>
                 ) : post.image && (
-                    <div className="mt-3 overflow-hidden rounded-2xl group relative cursor-zoom-in bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" onClick={() => onImageClick?.(post.image)}>
+                    <div
+                        className="mt-3 overflow-hidden rounded-2xl group relative cursor-zoom-in bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                        onClick={() => onImageClick?.(post.image)}
+                    >
                         <div
                             className="absolute inset-0 bg-cover bg-center blur-xl opacity-40 scale-110"
                             style={{ backgroundImage: `url(${post.image})` }}
@@ -265,15 +324,11 @@ export default function PostCard({
 
                     <button
                         onClick={() => onCommentClick?.(post)}
-                        className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border border-black/5 dark:border-white/5 hover:border-red-500/50 transition-all`}
+                        className="flex items-center gap-3 px-5 py-2.5 rounded-xl border border-black/5 dark:border-white/5 hover:border-red-500/50 transition-all"
                     >
                         <span className="text-base">💬</span>
                         <span className="text-xs font-bold text-neutral-500">{post.total_comments} Comments</span>
                     </button>
-
-                    {/* <button className={`ml-auto h-10 w-10 flex items-center justify-center rounded-xl border border-black/5 dark:border-white/5 hover:bg-neutral-100 dark:hover:bg-white/5 transition-all text-neutral-400`}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
-                    </button> */}
                 </div>
             </div>
         </article>

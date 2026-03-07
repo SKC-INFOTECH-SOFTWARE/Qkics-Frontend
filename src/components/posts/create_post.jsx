@@ -8,34 +8,30 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
   const { showAlert } = useAlert();
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState("");
+
   useEffect(() => {
     if (!post) return;
-
-    // Backend already sends full content if this is your post
     setContent(post.content || "");
   }, [post]);
-
-
 
   const [selectedTags, setSelectedTags] = useState(
     post ? post.tags.map((t) => t.id) : []
   );
 
   const [mediaFiles, setMediaFiles] = useState([]);
-  const [previews, setPreviews] = useState(post?.media || post?.image ? (post.media || [{ file: post.image, media_type: "image", id: "old_image" }]) : []);
+  const [previews, setPreviews] = useState(
+    post?.media || post?.image
+      ? (post.media || [{ file: post.image, media_type: "image", id: "old_image" }])
+      : []
+  );
   const [deletedMediaIds, setDeletedMediaIds] = useState([]);
 
   const { tags, loading: loadingTags } = useTags();
-
   const [loading, setLoading] = useState(false);
 
   const bg = isDark ? "bg-neutral-900 text-white" : "bg-white text-black";
-  const inputBg = isDark ? "bg-neutral-800 text-white" : "bg-neutral-100 text-black";
   const border = isDark ? "border-neutral-700" : "border-neutral-300";
 
-  /* ---------------------------
-      TAG SELECTION
-  --------------------------- */
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag.id)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag.id));
@@ -48,9 +44,6 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
     }
   };
 
-  /* ---------------------------
-      MEDIA SELECTION
-  --------------------------- */
   const handleMediaChange = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -81,10 +74,11 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
     setPreviews((prev) => prev.filter((p) => p.id !== mediaToRemove.id));
   };
 
-  /* ---------------------------
-      SUBMIT HANDLER
-  --------------------------- */
-  // inside your CreatePostModal component
+  const fetchFreshPost = async (postId) => {
+    const res = await axiosSecure.get(`/v1/community/posts/${postId}/`);
+    return res.data;
+  };
+
   const handleSubmit = async () => {
     if (!content.trim()) {
       return showAlert("Content is required", "warning");
@@ -92,87 +86,106 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
 
     setLoading(true);
 
-    const PREVIEW_LIMIT = 500;
+    const PREVIEW_LIMIT = 450;
     const FULL_LIMIT = 10000;
 
-    const normalizedContent = content.slice(0, FULL_LIMIT);
-
+    const trimmedContent = content.trim();
+    const normalizedContent = trimmedContent.slice(0, FULL_LIMIT);
     const preview_content = normalizedContent.slice(0, PREVIEW_LIMIT);
-    const full_content = normalizedContent; // REQUIRED by backend
-
-
+    const full_content = normalizedContent;
 
     try {
       /* ------------------------------------------------
-          CASE A: EDIT + NO NEW MEDIA (JSON)
+          CASE A: text/tag only edit — JSON PATCH
       ------------------------------------------------ */
-      if (post && mediaFiles.length === 0) {
+      if (post && mediaFiles.length === 0 && deletedMediaIds.length === 0) {
         const payload = {
           title,
           preview_content,
           full_content,
           tags: selectedTags,
           knowledge_hub: knowledgeHub,
-          deleted_media_ids: deletedMediaIds,
         };
 
-        const res = await axiosSecure.patch(
+        await axiosSecure.patch(
           `/v1/community/posts/${post.id}/`,
           payload,
           { headers: { "Content-Type": "application/json" } }
         );
 
+        const fresh = await fetchFreshPost(post.id);
         showAlert("Post updated!", "success");
-        onSuccess(res.data);
+        onSuccess(fresh);
         onClose();
         return;
       }
 
       /* ------------------------------------------------
-          CASE B: CREATE or EDIT WITH NEW MEDIA (multipart)
+          CASE B: CREATE or EDIT with media changes.
+
+          DEBUG: Log exactly what is being sent so we can
+          confirm what the backend actually receives.
       ------------------------------------------------ */
       const formData = new FormData();
 
       formData.append("title", title);
       formData.append("preview_content", preview_content);
-
-      if (full_content) {
-        formData.append("full_content", full_content);
-      }
+      formData.append("full_content", full_content);
       formData.append("knowledge_hub", knowledgeHub ? "true" : "false");
-
       selectedTags.forEach((id) => formData.append("tags", id));
 
-      mediaFiles.forEach((file) => {
-        formData.append("media_files", file);
-      });
-
-      deletedMediaIds.forEach((id) => formData.append("deleted_media_ids", id));
-
-      let res;
       if (post) {
-        res = await axiosSecure.patch(
+        // --- EDIT FLOW ---
+        // 1. New files to add
+        mediaFiles.forEach((file) => {
+          formData.append("add_media", file);
+        });
+
+        // 2. IDs of existing media to remove (as JSON string)
+        const removeIds = deletedMediaIds.filter(id => id !== "old_image");
+        if (removeIds.length > 0) {
+          formData.append("remove_media_ids", JSON.stringify(removeIds));
+        }
+
+        // 3. Clear legacy single image if needed
+        if (deletedMediaIds.includes("old_image")) {
+          formData.append("image", "");
+        }
+
+        // 4. Current order of existing media (as JSON string)
+        const reorderData = previews
+          .filter(m => !m.isNew && m.id !== "old_image")
+          .map((m, index) => ({ id: m.id, order: index }));
+
+        if (reorderData.length > 0) {
+          formData.append("reorder_media", JSON.stringify(reorderData));
+        }
+
+        const patchRes = await axiosSecure.patch(
           `/v1/community/posts/${post.id}/`,
           formData
         );
+        console.log("PATCH success:", patchRes.status, patchRes.data);
+
+        const fresh = await fetchFreshPost(post.id);
+        showAlert("Post updated!", "success");
+        onSuccess(fresh);
       } else {
-        res = await axiosSecure.post(
-          "/v1/community/posts/",
-          formData
-        );
+        // --- CREATE FLOW ---
+        mediaFiles.forEach((file) => {
+          formData.append("media", file);
+        });
+
+        const res = await axiosSecure.post("/v1/community/posts/", formData);
+        showAlert("Post created!", "success");
+        onSuccess(res.data);
       }
 
-      showAlert(post ? "Post updated!" : "Post created!", "success");
-      onSuccess(res.data);
       onClose();
     } catch (err) {
       console.log("Submit error:", err.response?.status, err.response?.data || err);
-
       if (err.response?.data) {
-        showAlert(
-          "Action failed: " + JSON.stringify(err.response.data),
-          "error"
-        );
+        showAlert("Action failed: " + JSON.stringify(err.response.data), "error");
       } else {
         showAlert("Action failed. Check console.", "error");
       }
@@ -180,8 +193,6 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
       setLoading(false);
     }
   };
-
-
 
   return (
     <div
@@ -203,13 +214,11 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
           </div>
           <button
             onClick={onClose}
-            className={`h-10 w-10 rounded-2xl flex items-center justify-center transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-neutral-400" : "bg-black/5 hover:bg-black/10 text-neutral-500"
-              }`}
+            className={`h-10 w-10 rounded-2xl flex items-center justify-center transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-neutral-400" : "bg-black/5 hover:bg-black/10 text-neutral-500"}`}
           >✕</button>
         </div>
 
         <div className="space-y-6">
-          {/* ---------------- TITLE ---------------- */}
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block text-left">Post Title</label>
             <input
@@ -217,8 +226,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={200}
-              className={`w-full px-4 py-3.5 rounded-2xl border transition-all outline-none focus:ring-2 focus:ring-red-600/20 ${isDark ? "bg-neutral-800 border-white/5 focus:border-red-600/50" : "bg-neutral-50 border-black/5 focus:border-red-600/30"
-                }`}
+              className={`w-full px-4 py-3.5 rounded-2xl border transition-all outline-none focus:ring-2 focus:ring-red-600/20 ${isDark ? "bg-neutral-800 border-white/5 focus:border-red-600/50" : "bg-neutral-50 border-black/5 focus:border-red-600/30"}`}
               placeholder="e.g. The future of AI in 2026..."
             />
             <div className="flex justify-end mt-1">
@@ -226,7 +234,6 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
             </div>
           </div>
 
-          {/* ---------------- CONTENT ---------------- */}
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2 block text-left">Content</label>
             <textarea
@@ -234,8 +241,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
               onChange={(e) => setContent(e.target.value)}
               rows={6}
               maxLength={10000}
-              className={`w-full px-4 py-3.5 rounded-2xl border transition-all outline-none focus:ring-2 focus:ring-red-600/20 resize-none ${isDark ? "bg-neutral-800 border-white/5 focus:border-red-600/50" : "bg-neutral-50 border-black/5 focus:border-red-600/30"
-                }`}
+              className={`w-full px-4 py-3.5 rounded-2xl border transition-all outline-none focus:ring-2 focus:ring-red-600/20 resize-none ${isDark ? "bg-neutral-800 border-white/5 focus:border-red-600/50" : "bg-neutral-50 border-black/5 focus:border-red-600/30"}`}
               placeholder="What's on your mind?..."
             />
             <div className="flex justify-end mt-1">
@@ -243,11 +249,8 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
             </div>
           </div>
 
-
-          {/* ---------------- TAGS ---------------- */}
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block text-left">Tags (max 5)</label>
-
             {loadingTags ? (
               <div className="animate-pulse flex gap-2">
                 {[1, 2, 3].map(i => <div key={i} className="h-8 w-20 bg-neutral-800 rounded-full" />)}
@@ -273,10 +276,8 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
             )}
           </div>
 
-          {/* ---------------- MEDIA ---------------- */}
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3 block text-left">Media attachments</label>
-
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               {previews.map((m) => (
                 <div key={m.id} className="relative rounded-[1rem] overflow-hidden border border-white/5 group aspect-square">
@@ -312,12 +313,10 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
             </div>
           </div>
 
-          {/* ---------------- BUTTONS ---------------- */}
           <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
             <button
               onClick={onClose}
-              className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDark ? "text-neutral-400 hover:text-white" : "text-neutral-500 hover:text-black"
-                }`}
+              className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDark ? "text-neutral-400 hover:text-white" : "text-neutral-500 hover:text-black"}`}
             >
               Cancel
             </button>
@@ -330,7 +329,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
                 : "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20 hover:shadow-red-600/40"
                 }`}
             >
-              {loading ? "Discovering..." : post ? "Update" : "Publish"}
+              {loading ? "Saving..." : post ? "Update" : "Publish"}
             </button>
           </div>
         </div>

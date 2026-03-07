@@ -50,7 +50,7 @@ function ReplyInput({
           </button>
           <button
             onClick={onSubmit}
-            className="px-6 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+            className="px-6 py-1.5 rounded-xl bg-red-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-95"
           >
             Reply
           </button>
@@ -74,6 +74,13 @@ export default function Comments() {
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
+
+  const [expandedComments, setExpandedComments] = useState({});
+  const [expandedPost, setExpandedPost] = useState(false);
+
+  const toggleCommentExpansion = (id) => {
+    setExpandedComments((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const [content, setContent] = useState("");
   const [replyContent, setReplyContent] = useState("");
@@ -390,9 +397,79 @@ export default function Comments() {
 
               <h1 className={`text-2xl md:text-3xl font-black tracking-tight mb-4 ${text}`}>{post.title}</h1>
 
-              <p className={`${text} text-base md:text-lg leading-relaxed whitespace-pre-wrap`}>
-                {post.content}
-              </p>
+              {(() => {
+                const isLocked = post.is_locked === true;
+                const fullContent = post.content || "";
+                const previewLength = post.preview_length || 500;
+                const isLongContent = !isLocked && fullContent.length > previewLength;
+
+                const displayText = isLocked
+                  ? fullContent
+                  : (expandedPost ? fullContent : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent));
+                const isGated = expandedPost && isLocked;
+
+                return (
+                  <div>
+                    <p className={`${text} text-sm leading-relaxed opacity-80 font-medium whitespace-pre-wrap`}>
+                      {displayText}
+                    </p>
+
+                    {(isLocked || isLongContent) && !expandedPost && (
+                      <div className="mt-2 text-sm">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isLocked) {
+                              showAlert("This feature is available only for subscribed users. Please subscribe to a plan to continue.", "warning");
+                            }
+                            setExpandedPost(true);
+                          }}
+                          className="text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors flex items-center gap-1"
+                        >
+                          READ MORE ▼
+                        </button>
+                      </div>
+                    )}
+
+                    {isLongContent && expandedPost && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedPost(false);
+                        }}
+                        className="mt-3 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-red-500 transition-colors block"
+                      >
+                        READ LESS ▲
+                      </button>
+                    )}
+
+                    {isGated && (
+                      <div className={`mt-3 p-4 rounded-xl border animate-fadeIn ${isDark ? "bg-red-600/10 border-red-600/20" : "bg-red-50 border-red-100"}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-6 h-6 rounded-lg bg-red-600 flex items-center justify-center text-[10px] text-white font-black">
+                            $
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-red-600">
+                            Subscription Required
+                          </p>
+                        </div>
+                        <p className="text-xs opacity-70 mb-4 leading-relaxed">
+                          You've reached the free reading limit. Please subscribe to a Premium Plan to unlock the full intelligence of this discovery.
+                        </p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/subscription");
+                          }}
+                          className="w-full bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-3 rounded-xl shadow-lg hover:bg-red-700 transition-all hover:-translate-y-0.5"
+                        >
+                          Subscribe to Unlock
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* TAGS */}
               {Array.isArray(post.tags) && post.tags.length > 0 && (
@@ -448,7 +525,7 @@ export default function Comments() {
                 <button
                   onClick={addComment}
                   disabled={!content.trim()}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 ${content.trim() ? "bg-blue-600/90 hover:bg-blue-600 text-white shadow-blue-600/20" : "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"}`}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 ${content.trim() ? "bg-red-600/90 hover:bg-red-600 text-white shadow-red-600/20" : "bg-neutral-500/20 text-neutral-500 cursor-not-allowed"}`}
                 >
                   Post Comment
                 </button>
@@ -485,20 +562,95 @@ export default function Comments() {
                     )}
                   </div>
 
-                  <p className={`${text} text-sm leading-relaxed mb-4 pl-[52px]`}>{c.content}</p>
+                  {(() => {
+                    const expanded = expandedComments[c.id] || false;
+                    const isLocked = c.is_locked === true;
+                    const fullContent = c.content || "";
+                    const previewLength = c.preview_length || 500;
+                    const isLongContent = !isLocked && fullContent.length > previewLength;
+
+                    const displayText = isLocked
+                      ? fullContent
+                      : (expanded ? fullContent : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent));
+                    const isGated = expanded && isLocked;
+
+                    return (
+                      <div>
+                        <p className={`${text} text-sm leading-relaxed mb-4 pl-[52px] whitespace-pre-wrap`}>
+                          {displayText}
+                        </p>
+
+                        <div className="pl-[52px] mb-4">
+                          {(isLocked || isLongContent) && !expanded && (
+                            <div className="mt-2 text-sm">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isLocked) {
+                                    showAlert("This feature is available only for subscribed users. Please subscribe to a plan to continue.", "warning");
+                                  }
+                                  toggleCommentExpansion(c.id);
+                                }}
+                                className="text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors flex items-center gap-1"
+                              >
+                                READ MORE ▼
+                              </button>
+                            </div>
+                          )}
+
+                          {isLongContent && expanded && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCommentExpansion(c.id);
+                              }}
+                              className="mt-3 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-red-500 transition-colors block"
+                            >
+                              READ LESS ▲
+                            </button>
+                          )}
+
+                          {isGated && (
+                            <div className={`mt-3 p-4 rounded-xl border animate-fadeIn ${isDark ? "bg-red-600/10 border-red-600/20" : "bg-red-50 border-red-100"}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 rounded-lg bg-red-600 flex items-center justify-center text-[10px] text-white font-black">
+                                  $
+                                </div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-red-600">
+                                  Subscription Required
+                                </p>
+                              </div>
+                              <p className="text-xs opacity-70 mb-4 leading-relaxed">
+                                You've reached the free reading limit. Please subscribe to a Premium Plan to unlock the full intelligence of this discussion.
+                              </p>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate("/subscription");
+                                }}
+                                className="w-full bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-3 rounded-xl shadow-lg hover:bg-red-700 transition-all hover:-translate-y-0.5"
+                              >
+                                Subscribe to Unlock
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* ACTIONS */}
                   <div className="flex items-center gap-6 pl-[52px]">
                     <button
                       onClick={() => handleCommentLike(c.id)}
-                      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors ${c.is_liked ? "text-blue-500" : "text-neutral-500 hover:text-blue-500"}`}
+                      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors ${c.is_liked ? "text-red-500" : "text-neutral-500 hover:text-red-500"}`}
                     >
                       {c.is_liked ? <BiSolidLike size={16} /> : <BiLike size={16} />}
                       {c.total_likes || "Like"}
                     </button>
 
                     <button
-                      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors hover:text-blue-500 ${text}`}
+                      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors hover:text-red-500 ${text}`}
                       onClick={() => {
                         setActiveReplyBox(activeReplyBox === `comment-${c.id}` ? null : `comment-${c.id}`);
                         setReplyContent("");
@@ -525,7 +677,7 @@ export default function Comments() {
                   <div className="pl-[52px] mt-4">
                     {c.reply_count > 0 && (
                       <button
-                        className={`text-xs font-bold uppercase tracking-wider text-blue-500 hover:underline mb-4`}
+                        className={`text-xs font-bold uppercase tracking-wider text-red-500 hover:underline mb-4`}
                         onClick={() => loadReplies(c.id)}
                       >
                         {openReplies[c.id]
@@ -565,14 +717,14 @@ export default function Comments() {
                             <div className="flex gap-4 ml-8">
                               <button
                                 onClick={() => handleCommentLike(r.id)}
-                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${r.is_liked ? "text-blue-500" : "text-neutral-500 hover:text-blue-500"}`}
+                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${r.is_liked ? "text-red-500" : "text-neutral-500 hover:text-red-500"}`}
                               >
                                 {r.is_liked ? <BiSolidLike size={12} /> : <BiLike size={12} />}
                                 {r.total_likes || "Like"}
                               </button>
 
                               <button
-                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-blue-500`}
+                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-red-500`}
                                 onClick={() => {
                                   setActiveReplyBox(activeReplyBox === `reply-${r.id}` ? null : `reply-${r.id}`);
                                   setReplyContent(`@${r.author.username} `);
