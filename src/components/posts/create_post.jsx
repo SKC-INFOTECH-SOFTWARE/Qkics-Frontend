@@ -48,14 +48,34 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    if (previews.length + files.length > 10) {
+    const allowedImageExt = ["jpg", "jpeg", "png"];
+    const allowedVideoExt = ["mp4"];
+
+    const filteredFiles = files.filter((file) => {
+      const ext = file.name.split(".").pop().toLowerCase();
+      const isImg = file.type.startsWith("image/");
+      const isVid = file.type.startsWith("video/");
+
+      if (isImg && allowedImageExt.includes(ext)) return true;
+      if (isVid && allowedVideoExt.includes(ext)) return true;
+
+      showAlert(
+        `Invalid file: ${file.name}. Only JPG, PNG, JPEG for images and MP4 for videos are supported.`,
+        "warning"
+      );
+      return false;
+    });
+
+    if (filteredFiles.length === 0) return;
+
+    if (previews.length + filteredFiles.length > 10) {
       showAlert("Max 10 media files allowed", "warning");
       return;
     }
 
-    setMediaFiles((prev) => [...prev, ...files]);
+    setMediaFiles((prev) => [...prev, ...filteredFiles]);
 
-    const newPreviews = files.map((file) => ({
+    const newPreviews = filteredFiles.map((file) => ({
       id: `temp-${Date.now()}-${file.name}`,
       file: URL.createObjectURL(file),
       media_type: file.type.startsWith("video/") ? "video" : "image",
@@ -305,7 +325,7 @@ function CreatePostModal({ onClose, onSuccess, isDark, post, knowledgeHub = fals
                 <input
                   type="file"
                   multiple
-                  accept="image/*,video/*"
+                  accept=".jpg,.jpeg,.png,.mp4"
                   onChange={handleMediaChange}
                   className="hidden"
                 />
