@@ -115,7 +115,7 @@ const userSlice = createSlice({
         ? "dark"
         : "light"),
     activeProfileData: null,
-    picVersion: 0,
+    picVersion: Date.now(),
   },
 
   reducers: {
@@ -149,7 +149,7 @@ const userSlice = createSlice({
       if (state.data) {
         state.data.profile_picture = action.payload;
       }
-      state.picVersion = (state.picVersion || 0) + 1;
+      state.picVersion = Date.now();
     },
   },
 
@@ -164,6 +164,7 @@ const userSlice = createSlice({
         state.data = { ...state.data, ...action.payload };
         state.role = action.payload.role || state.role;
         state.error = null;
+        state.picVersion = Date.now(); // Cache-bust on every fresh fetch
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.status = "idle";

@@ -15,7 +15,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   FaUser, FaKey, FaSignOutAlt, FaSearch, FaTimes, FaFileAlt,
-  FaAddressBook, FaHandshake, FaChevronDown, FaChevronUp,
+  FaAddressBook, FaHandshake, FaChevronDown, FaChevronUp, FaBuilding,
 } from "react-icons/fa";
 import { FaUsersGear, FaCrown } from "react-icons/fa6";
 import { IoChatboxEllipses } from "react-icons/io5";
@@ -149,7 +149,7 @@ function Navbar({ theme, onToggleTheme, user, onOpenLogin, onOpenCreatePost }) {
               </button>
 
               {entDropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[750px] z-50 animate-fadeInOut">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[850px] z-50 animate-fadeInOut">
                   <div className={`rounded-3xl shadow-2xl border p-6 flex gap-8 ${isDark ? "bg-neutral-900 border-neutral-800 shadow-black/80" : "bg-white border-black/5 shadow-xl"}`}>
                     <div className="flex-1 flex flex-col pt-1">
                       <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-4 text-red-600 ml-2">Knowledge Hub</h3>
@@ -174,6 +174,20 @@ function Navbar({ theme, onToggleTheme, user, onOpenLogin, onOpenCreatePost }) {
                         >Investors</button>
                       </div>
                     </div>
+                    <div className={`w-px ${isDark ? "bg-white/5" : "bg-black/5"}`} />
+                    <div className="flex-1 flex flex-col pt-1">
+                      <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-4 text-red-600 ml-2">Organizations</h3>
+                      <div className="space-y-1">
+                        <button
+                          onClick={() => { if (!isLoggedIn) openLogin(); else { navigate("/company"); setEntDropdown(false); } }}
+                          className={`w-full text-left block px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 uppercase tracking-widest ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"}`}
+                        >Discovery Feed</button>
+                        <button
+                          onClick={() => { if (!isLoggedIn) openLogin(); else { navigate("/my-company"); setEntDropdown(false); } }}
+                          className={`w-full text-left block px-4 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 uppercase tracking-widest ${isDark ? "text-neutral-400 hover:text-white hover:bg-neutral-800" : "text-neutral-500 hover:text-black hover:bg-neutral-100"}`}
+                        >My Company</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -187,6 +201,16 @@ function Navbar({ theme, onToggleTheme, user, onOpenLogin, onOpenCreatePost }) {
               {isSearchExpanded
                 ? <FaFileAlt className="text-sm animate-fadeIn" />
                 : <span className="text-xs animate-fadeIn">Documents</span>}
+            </button>
+
+            <button
+              onClick={() => !isLoggedIn ? openLogin() : navigate("/company")}
+              className={getNavClass("/company")}
+              title="Company"
+            >
+              {isSearchExpanded
+                ? <FaBuilding className="text-sm animate-fadeIn" />
+                : <span className="text-xs animate-fadeIn">Company</span>}
             </button>
           </nav>
 
@@ -311,6 +335,7 @@ function Navbar({ theme, onToggleTheme, user, onOpenLogin, onOpenCreatePost }) {
                       </div>
                       <div className="space-y-1">
                         <DropdownItem onClick={goToProfile}                                                       icon={<FaUser />}            label="My Profile"   isDark={isDark} />
+                        <DropdownItem onClick={() => { setDropdown(false); navigate("/my-company"); }}            icon={<FaBuilding />}        label="My Company"   isDark={isDark} />
                         <DropdownItem onClick={() => { setDropdown(false); navigate("/chat"); }}                  icon={<IoChatboxEllipses />} label="Messages"     isDark={isDark} />
                         <DropdownItem onClick={() => { setDropdown(false); navigate("/my-bookings"); }}           icon={<FaAddressBook />}     label="My Bookings"  isDark={isDark} />
                         <DropdownItem onClick={() => { setDropdown(false); navigate("/subscription"); }}          icon={<FaCrown />}           label="Subscription" isDark={isDark} />

@@ -11,7 +11,8 @@ import {
   FaUserTie,
   FaUserShield,
   FaAppStoreIos,
-  FaBullhorn
+  FaBullhorn,
+  FaBuilding
 } from "react-icons/fa";
 import { MdFeed } from "react-icons/md";
 
@@ -63,6 +64,7 @@ export default function AdminSidebar({ role, isOpen, setIsOpen, theme }) {
 
         <SidebarLink to="/admin-tags" label="Tags" icon={<FaTags />} isOpen={isOpen} theme={theme} />
         <SidebarLink to="/admin-users" label="Users" icon={<FaUsers />} isOpen={isOpen} theme={theme} />
+        <SidebarLink to="/admin-companies" label="Companies" icon={<FaBuilding />} isOpen={isOpen} theme={theme} />
         <SidebarLink to="/admin-posts" label="Posts" icon={<MdFeed />} isOpen={isOpen} theme={theme} />
         <SidebarLink to="/subscriptions" label="Subscriptions" icon={<FaCreditCard />} isOpen={isOpen} theme={theme} />
         <SidebarLink to="/admin-documents" label="Documents" icon={<FaFileAlt />} isOpen={isOpen} theme={theme} />

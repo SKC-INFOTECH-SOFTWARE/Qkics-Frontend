@@ -16,6 +16,12 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("expert");
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   const text = isDark ? "text-white" : "text-black";
 
@@ -212,14 +218,24 @@ export default function MyBookings() {
                     </div>
                   </div>
 
-                  {booking.chat_room_id && (
-                    <button
-                      onClick={() => navigate(`/chat/${booking.chat_room_id}`)}
-                      className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all"
-                    >
-                      <MdChatBubbleOutline size={20} />
-                      Open Comm
-                    </button>
+                  {(booking.chat_room_id || ['CONFIRMED', 'PAID', 'COMPLETED'].includes(status.label)) && (
+                    now >= startDate ? (
+                      <button
+                        onClick={() => navigate(booking.chat_room_id ? `/chat/${booking.chat_room_id}` : '/chat')}
+                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <MdChatBubbleOutline size={20} />
+                        Open Comm
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-neutral-300 dark:bg-neutral-800 text-neutral-500 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-none cursor-not-allowed transition-all"
+                      >
+                        <MdChatBubbleOutline size={20} />
+                        Starts @ {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </button>
+                    )
                   )}
                 </div>
               );

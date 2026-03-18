@@ -32,7 +32,7 @@ export default function InvestorProfile({
   readOnly = false,
   disableSelfFetch = false,
 }) {
-  const { theme, activeProfileData, data: loggedUser } = useSelector((state) => state.user);
+  const { theme, activeProfileData, data: loggedUser, picVersion } = useSelector((state) => state.user);
   const profile = activeProfileData?.profile || propProfile;
 
   const isDark = theme === "dark";
@@ -281,7 +281,7 @@ export default function InvestorProfile({
                 {user.profile_picture ? (
                   <img
                     loading="lazy"
-                    src={`${resolveMedia(user.profile_picture)}?t=${Date.now()}`}
+                    src={`${resolveMedia(user.profile_picture)}?v=${picVersion}`}
                     className="w-full h-full object-cover transform md:group-hover:scale-110 transition-transform duration-700 cursor-pointer"
                     onClick={() => setShowImageModal(true)}
                   />
@@ -442,7 +442,7 @@ export default function InvestorProfile({
             </button>
             <img
               loading="lazy"
-              src={`${resolveMedia(user.profile_picture)}?t=${Date.now()}`}
+              src={`${resolveMedia(user.profile_picture)}?v=${picVersion}`}
               alt="Profile Large"
               className="w-80 h-80 md:w-96 md:h-96 rounded-2xl object-cover shadow-2xl ring-4 ring-white/10"
               onClick={(e) => e.stopPropagation()}

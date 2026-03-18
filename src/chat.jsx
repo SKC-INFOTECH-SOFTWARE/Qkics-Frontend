@@ -71,8 +71,10 @@ export default function ChatPage() {
   const getOtherParticipant = useCallback(
     (room) => {
       if (!room || !user) return null;
-      if (room.user?.id === user.id) return room.expert;
+      if (room.user?.id === user.id) return room.advisor || room.expert || room.investor;
+      if (room.advisor?.id === user.id) return room.user;
       if (room.expert?.id === user.id) return room.user;
+      if (room.investor?.id === user.id) return room.user;
       return null;
     },
     [user]

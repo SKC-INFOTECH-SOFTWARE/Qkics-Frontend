@@ -11,6 +11,7 @@ import { FiArrowLeft } from "react-icons/fi";
 
 import { useSelector, useDispatch } from "react-redux";
 import { clearPostViewState } from "../../redux/slices/postViewSlice";
+import { resolveAvatar } from "../utils/mediaUrl";
 
 import { useAlert } from "../../context/AlertContext";
 import { useConfirm } from "../../context/ConfirmContext";
@@ -68,7 +69,7 @@ export default function Comments() {
   const { showConfirm } = useConfirm();
 
   const dispatch = useDispatch();
-  const { data: user, theme } = useSelector((state) => state.user);
+  const { data: user, theme, picVersion } = useSelector((state) => state.user);
   const postView = useSelector((state) => state.postView);
 
   const [post, setPost] = useState(null);
@@ -383,7 +384,16 @@ export default function Comments() {
               {/* POST HEADER */}
               <div className="flex items-center gap-4 mb-6">
                 <img
-                  src={post.author.profile_picture || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`}
+                  src={(() => {
+                    const isOwn = user && (
+                      (user.id && post.author?.id && user.id == post.author.id) ||
+                      (user.uuid && post.author?.uuid && user.uuid === post.author.uuid) ||
+                      (user.username && post.author?.username && user.username === post.author.username)
+                    );
+                    const pic = isOwn ? user?.profile_picture : post.author?.profile_picture;
+                    const base = resolveAvatar(pic, post.author?.username || "O");
+                    return pic ? `${base}?v=${picVersion}` : base;
+                  })()}
                   alt="avatar"
                   className="w-12 h-12 rounded-2xl object-cover shadow-lg"
                 />
@@ -407,12 +417,12 @@ export default function Comments() {
               {(() => {
                 const isLocked = post.is_locked === true;
                 const fullContent = post.content || "";
-                const previewLength = post.preview_length || 500;
-                const isLongContent = !isLocked && fullContent.length > previewLength;
+                const previewLength = post.preview_length || 300;
+                const isLongContent = fullContent.length > previewLength || (isLocked && fullContent.length > 150);
 
-                const displayText = isLocked
-                  ? fullContent
-                  : (expandedPost ? fullContent : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent));
+                const displayText = expandedPost 
+                  ? fullContent 
+                  : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent);
                 const isGated = expandedPost && isLocked;
 
                 return (
@@ -421,13 +431,14 @@ export default function Comments() {
                       {displayText}
                     </p>
 
-                    {(isLocked || isLongContent) && !expandedPost && (
+                    {/* READ MORE — show ONLY when there's more content to reveal from the current field */}
+                    {isLongContent && !expandedPost && (
                       <div className="mt-2 text-sm">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             if (isLocked) {
-                              showAlert("This feature is available only for subscribed users. Please subscribe to a plan to continue.", "warning");
+                              showAlert("Please subscribe to see the full content", "warning");
                             }
                             setExpandedPost(true);
                           }}
@@ -550,7 +561,16 @@ export default function Comments() {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
                       <img
-                        src={c.author.profile_picture || `https://ui-avatars.com/api/?name=${c.author.username}&background=random`}
+                        src={(() => {
+                          const isOwn = user && (
+                            (user.id && c.author?.id && user.id == c.author.id) ||
+                            (user.uuid && c.author?.uuid && user.uuid === c.author.uuid) ||
+                            (user.username && c.author?.username && user.username === c.author.username)
+                          );
+                          const pic = isOwn ? user?.profile_picture : c.author?.profile_picture;
+                          const base = resolveAvatar(pic, c.author?.username || "O");
+                          return pic ? `${base}?v=${picVersion}` : base;
+                        })()}
                         className="w-10 h-10 rounded-xl"
                       />
                       <div>
@@ -580,12 +600,12 @@ export default function Comments() {
                     const expanded = expandedComments[c.id] || false;
                     const isLocked = c.is_locked === true;
                     const fullContent = c.content || "";
-                    const previewLength = c.preview_length || 500;
-                    const isLongContent = !isLocked && fullContent.length > previewLength;
+                    const previewLength = c.preview_length || 300;
+                    const isLongContent = fullContent.length > previewLength || (isLocked && fullContent.length > 150);
 
-                    const displayText = isLocked
-                      ? fullContent
-                      : (expanded ? fullContent : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent));
+                    const displayText = expanded 
+                      ? fullContent 
+                      : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent);
                     const isGated = expanded && isLocked;
 
                     return (
@@ -595,13 +615,13 @@ export default function Comments() {
                         </p>
 
                         <div className="pl-[52px] mb-4">
-                          {(isLocked || isLongContent) && !expanded && (
+                          {(isLongContent) && !expanded && (
                             <div className="mt-2 text-sm">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (isLocked) {
-                                    showAlert("This feature is available only for subscribed users. Please subscribe to a plan to continue.", "warning");
+                                    showAlert("Please subscribe to see the full content", "warning");
                                   }
                                   toggleCommentExpansion(c.id);
                                 }}
@@ -710,7 +730,16 @@ export default function Comments() {
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex items-center gap-2">
                                 <img
-                                  src={r.author.profile_picture || `https://ui-avatars.com/api/?name=${r.author.username}&background=random`}
+                                  src={(() => {
+                                    const isOwn = user && (
+                                      (user.id && r.author?.id && user.id == r.author.id) ||
+                                      (user.uuid && r.author?.uuid && user.uuid === r.author.uuid) ||
+                                      (user.username && r.author?.username && user.username === r.author.username)
+                                    );
+                                    const pic = isOwn ? user?.profile_picture : r.author?.profile_picture;
+                                    const base = resolveAvatar(pic, r.author?.username || "O");
+                                    return pic ? `${base}?v=${picVersion}` : base;
+                                  })()}
                                   className="w-6 h-6 rounded-lg"
                                 />
                                 <p className={`font-bold text-xs ${text}`}>@{r.author.username}</p>

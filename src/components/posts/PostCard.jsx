@@ -54,18 +54,25 @@ export default function PostCard({
 
     const isLocked = post.is_locked === true;
     const fullContent = post.content || "";
-    const previewLength = post.preview_length || 500;
+    const previewLength = post.preview_length || 300;
 
-    const isLongContent = !isLocked && fullContent.length > previewLength;
+    // Determine if content exceeds preview length
+    // OR if it's locked and long enough to warrant a "Read More" before showing the gate
+    const isLongContent = fullContent.length > previewLength || (isLocked && fullContent.length > 150);
 
     // What text to actually display
-    const displayText = isLocked
-        ? fullContent
-        : (expanded ? fullContent : (isLongContent ? fullContent.slice(0, previewLength) + "" : fullContent));
+    const displayText = expanded 
+        ? fullContent 
+        : (isLongContent ? fullContent.slice(0, previewLength) + "..." : fullContent);
 
     // Gated message triggers if locked and expanded
     const isGated = expanded && isLocked;
-    const isOwnPost = loggedUser && loggedUser.id === post.author.id;
+    // More robust isOwnPost check
+    const isOwnPost = loggedUser && (
+        (loggedUser.id && post.author?.id && loggedUser.id == post.author.id) ||
+        (loggedUser.uuid && post.author?.uuid && loggedUser.uuid === post.author.uuid) ||
+        (loggedUser.username && post.author?.username && loggedUser.username === post.author.username)
+    );
 
     return (
         <article className={`premium-card overflow-hidden ${isDark ? "bg-neutral-900" : "bg-white"} animate-fadeIn`}>
@@ -79,9 +86,9 @@ export default function PostCard({
                         <img
                             src={(() => {
                                 const pic = isOwnPost
-                                    ? loggedUser.profile_picture
-                                    : post.author.profile_picture;
-                                const base = resolveAvatar(pic, post.author.username);
+                                    ? loggedUser?.profile_picture
+                                    : post.author?.profile_picture;
+                                const base = resolveAvatar(pic, post.author?.username || "O");
                                 return pic ? `${base}?v=${picVersion}` : base;
                             })()}
                             className="h-full w-full object-cover"
@@ -96,12 +103,12 @@ export default function PostCard({
                                 className={`font-bold text-sm cursor-pointer hover:text-red-500 transition-colors ${text}`}
                                 onClick={() => onProfileClick?.(post.author)}
                             >
-                                {post.author.first_name || post.author.last_name
-                                    ? `${post.author.first_name || ""} ${post.author.last_name || ""}`.trim()
-                                    : post.author.username}
+                                {post.author?.first_name || post.author?.last_name
+                                    ? `${post.author?.first_name || ""} ${post.author?.last_name || ""}`.trim()
+                                    : post.author?.username}
                             </span>
-                            <UserBadge userType={post.author.user_type} isDark={isDark} />
-                            {post.author.is_subscribed && (
+                            <UserBadge userType={post.author?.user_type} isDark={isDark} />
+                            {post.author?.is_subscribed && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-600 border border-amber-500/10 shadow-sm shadow-amber-500/5">
                                     <FaCrown size={10} className="text-amber-600" /> Premium
                                 </span>
@@ -116,7 +123,7 @@ export default function PostCard({
                 </div>
 
                 {/* MENU */}
-                {loggedUser && loggedUser.id === post.author.id && (
+                {loggedUser && loggedUser.id === post.author?.id && (
                     <div className="relative" ref={menuRef}>
                         <button
                             onClick={() => setMenuOpen(!menuOpen)}
@@ -158,8 +165,8 @@ export default function PostCard({
                         {displayText}
                     </p>
 
-                    {/* READ MORE — show when there's more content and not yet expanded */}
-                    {(isLocked || isLongContent) && !expanded && (
+                    {/* READ MORE — show ONLY when there's more content to reveal from the current field */}
+                    {isLongContent && !expanded && (
                         <div className="mt-2 text-sm">
                             <button
                                 onClick={(e) => {

@@ -32,6 +32,9 @@ const Notification          = lazy(() => import("./pages/notification"));
 const ChatPage              = lazy(() => import("./chat"));
 const MyBookings            = lazy(() => import("./components/myBookings/MyBookings"));
 const Subscription          = lazy(() => import("./components/subscription/Subscription"));
+const MyCompany             = lazy(() => import("./pages/company/MyCompany"));
+const CompanyPage           = lazy(() => import("./pages/company/CompanyPage"));
+const PublicCompanyProfile  = lazy(() => import("./pages/company/PublicCompanyProfile"));
 const Comments              = lazy(() => import("./components/posts/comment"));
 const BookSession           = lazy(() => import("./components/profileFetch/expertBooking/BookSession"));
 const InvestorBookSession   = lazy(() => import("./components/profileFetch/investorFetch/InvestorBookSession"));
@@ -56,6 +59,7 @@ const AdminDocuments                  = lazy(() => import("./admin/adminPages/ad
 const SystemLogs                      = lazy(() => import("./admin/superadminPages/systemLogs"));
 const AdminExpertApplications         = lazy(() => import("./admin/adminPages/adminExpertApplications"));
 const AdminEntrepreneurApplications   = lazy(() => import("./admin/adminPages/adminEntrepreneurApplications"));
+const AdminCompanies                  = lazy(() => import("./admin/adminPages/adminCompanies"));
 const AdminAdvertisements             = lazy(() => import("./admin/adminPages/adminAdvertisements"));
 
 // ─── Full-screen loader shown while chunks download ───────────────────────────
@@ -128,6 +132,7 @@ function App() {
             <Route path="/search"                       element={<SearchResultsPage />} />
             <Route path="/entrepreneur-connect"         element={<EntrepreneurConnect />} />
             <Route path="/knowledge-hub"                element={<KnowledgeHubFeed />} />
+            <Route path="/company/:slug"                element={<PublicCompanyProfile />} />
 
             {/* Public profile pages — anyone can view another user's profile */}
             <Route path="/normal/:username?"            element={<ProfileFetcher />} />
@@ -141,6 +146,8 @@ function App() {
               <Route path="/notifications"              element={<Notification />} />
               <Route path="/chat/:roomId?"              element={<ChatPage />} />
               <Route path="/my-bookings"                element={<MyBookings />} />
+              <Route path="/company"                    element={<CompanyPage />} />
+              <Route path="/my-company"                 element={<MyCompany />} />
               <Route path="/subscription"               element={<Subscription />} />
               <Route path="/post/:id/comments"          element={<Comments />} />
               <Route path="/book-session/:expertUuid"   element={<BookSession />} />
@@ -179,7 +186,6 @@ function App() {
               STANDALONE — no navbar, no guard
           ═══════════════════════════════════════════════════════════════ */}
           <Route path="/server-down"                    element={<ServerDown />} />
-          <Route path="*"                               element={<Error setIsErrorPage={setIsErrorPage} />} />
 
           {/* ═══════════════════════════════════════════════════════════════
               ADMIN LAYOUT — AdminLayout handles its own auth + role guard
@@ -199,6 +205,7 @@ function App() {
             <Route path="/superadmin"                   element={<AdminDashboard theme={theme} />} />
             <Route path="/admin-tags"                   element={<AdminTags theme={theme} />} />
             <Route path="/admin-users"                  element={<AdminUsers theme={theme} />} />
+            <Route path="/admin-companies"              element={<AdminCompanies theme={theme} />} />
             <Route path="/admin-posts"                  element={<AdminPosts theme={theme} />} />
             <Route path="/system-logs"                  element={<SystemLogs theme={theme} />} />
             <Route path="/subscriptions"                element={<AdminSubscriptions theme={theme} />} />
@@ -207,6 +214,8 @@ function App() {
             <Route path="/admin-application/expert"     element={<AdminExpertApplications theme={theme} />} />
             <Route path="/admin-application/entrepreneur" element={<AdminEntrepreneurApplications theme={theme} />} />
           </Route>
+
+          <Route path="*"                               element={<Error setIsErrorPage={setIsErrorPage} />} />
 
         </Routes>
       </Suspense>
