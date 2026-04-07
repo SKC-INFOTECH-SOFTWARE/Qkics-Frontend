@@ -130,7 +130,7 @@ export default function CertificationPage({
   return (
     <div className={`premium-card p-8 md:p-12 ${isDark ? "bg-neutral-900" : "bg-white"}`}>
       {/* HEADING + ADD BUTTON */}
-      <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
+      <div className="flex justify-between items-center mb-2 pb-4 border-b border-white/5">
         <h2 className="text-xl font-black uppercase tracking-tight">Certifications</h2>
 
         {!readOnly && (

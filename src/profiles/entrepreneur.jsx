@@ -180,15 +180,29 @@ export default function EntrepreneurProfile({
   --------------------------- */
   const handleSaveUser = async () => {
     try {
+      // 1. Update Auth User
       await axiosSecure.patch("/v1/auth/me/update/", {
         first_name: editData.first_name,
         last_name: editData.last_name,
         ...(editData.phone ? { phone: editData.phone } : {}),
       });
 
+      // 2. Sync with Entrepreneur Profile model
+      try {
+        await axiosSecure.patch("/v1/entrepreneurs/me/profile/", {
+          first_name: editData.first_name,
+          last_name: editData.last_name,
+        });
+      } catch (err) {
+        console.warn("Failed to sync name to entrepreneur model:", err);
+      }
+
+      // 3. Update local entreData.user
       setEntreData((prev) => {
         const updated = {
           ...prev,
+          first_name: editData.first_name, // Sync entrepreneur-level name
+          last_name: editData.last_name,   // Sync entrepreneur-level name
           user: {
             ...prev.user,
             first_name: editData.first_name,
@@ -278,7 +292,7 @@ export default function EntrepreneurProfile({
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className={`premium-card p-8 md:p-12 mb-12  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+        <div className={`premium-card p-8 md:p-12 mb-5  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
 
             {/* PROFILE PICTURE */}
@@ -317,7 +331,7 @@ export default function EntrepreneurProfile({
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
                 <div>
-                  <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-2 ${text}`}>
+                  <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-2 ${isDark ? "text-white" : "text-black"}`}>
                     {user.first_name || user.last_name
                       ? `${user.first_name} ${user.last_name}`
                       : user.username}

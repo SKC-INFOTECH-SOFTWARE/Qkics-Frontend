@@ -287,7 +287,7 @@ export default function PostCard({
                                 {currentMediaIndex > 0 && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex(prev => prev - 1); }}
-                                        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-8 md:h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
                                     >
                                         <FaChevronLeft size={14} />
                                     </button>
@@ -295,7 +295,7 @@ export default function PostCard({
                                 {currentMediaIndex < post.media.length - 1 && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex(prev => prev + 1); }}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-8 md:h-8 flex items-center justify-center bg-white/80 dark:bg-black/50 text-black dark:text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-lg"
                                     >
                                         <FaChevronRight size={14} />
                                     </button>

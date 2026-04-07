@@ -31,7 +31,6 @@ export default function ExpertWizard({ theme }) {
         headline: "",
         primary_expertise: "",
         other_expertise: "",
-        hourly_rate: 1000,
         is_available: true,
     });
 
@@ -72,7 +71,6 @@ export default function ExpertWizard({ theme }) {
                     headline: data.headline || "",
                     primary_expertise: data.primary_expertise || "",
                     other_expertise: data.other_expertise || "",
-                    hourly_rate: data.hourly_rate ? Number(data.hourly_rate) : 1000,
                     is_available: data.is_available ?? true,
                 });
 
@@ -143,8 +141,6 @@ export default function ExpertWizard({ theme }) {
         if (!profile.headline?.trim()) errors.push("Headline is required");
         if (!profile.primary_expertise?.trim())
             errors.push("Primary expertise is required");
-        if (!profile.hourly_rate || Number(profile.hourly_rate) <= 0)
-            errors.push("Hourly rate must be a positive number");
         return errors;
     };
 

@@ -34,6 +34,7 @@ const bookingSlice = createSlice({
     loading: false,
     success: false,
     price: null,
+    call_Room_id: null,
     error: null,
   },
   reducers: {
@@ -41,6 +42,7 @@ const bookingSlice = createSlice({
       state.loading = false;
       state.success = false;
       state.price = null;
+      state.call_Room_id = null;
       state.error = null;
     },
   },
@@ -57,6 +59,7 @@ const bookingSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.price = action.payload.price;
+        state.call_Room_id = action.payload.call_Room_id;
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.loading = false;

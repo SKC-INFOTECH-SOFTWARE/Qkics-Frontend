@@ -126,25 +126,22 @@ function Step1({ profile, setProfile, isEditable, isDark, saving, next, handleSa
       <h2 className="text-xl font-semibold mb-4">Basic Profile</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="First Name" value={profile.first_name} disabled={!isEditable}
+        <Input label="First Name" value={profile.first_name} disabled={!isEditable} maxLength={20}
           onChange={(v) => setProfile((p) => ({ ...p, first_name: v }))} />
 
-        <Input label="Last Name" value={profile.last_name} disabled={!isEditable}
+        <Input label="Last Name" value={profile.last_name} disabled={!isEditable} maxLength={20}
           onChange={(v) => setProfile((p) => ({ ...p, last_name: v }))} />
 
-        <Input label="Headline" value={profile.headline} disabled={!isEditable}
+        <Input label="Headline" value={profile.headline} disabled={!isEditable} className="md:col-span-2"
           placeholder="e.g. PHD IN DEEP LEARNING"
           onChange={(v) => setProfile((p) => ({ ...p, headline: v }))} />
 
-        <Input label="Primary Expertise" value={profile.primary_expertise} disabled={!isEditable}
+        <Input label="Primary Expertise" value={profile.primary_expertise} disabled={!isEditable} className="md:col-span-2"
           placeholder="e.g. Deep Learning"
           onChange={(v) => setProfile((p) => ({ ...p, primary_expertise: v }))} />
 
-        <Input label="Other Expertise" value={profile.other_expertise} disabled={!isEditable}
+        <Input label="Other Expertise" value={profile.other_expertise} disabled={!isEditable} className="md:col-span-2"
           onChange={(v) => setProfile((p) => ({ ...p, other_expertise: v }))} />
-
-        <Input label="Hourly Rate (INR)" type="number" value={profile.hourly_rate} disabled={!isEditable}
-          onChange={(v) => setProfile((p) => ({ ...p, hourly_rate: Number(v) }))} />
 
         {/* Availability */}
         <div className="md:col-span-2">
@@ -335,7 +332,6 @@ function Step3({
         <ReviewRow label="Name" value={`${profile.first_name} ${profile.last_name}`} />
         <ReviewRow label="Headline" value={profile.headline} />
         <ReviewRow label="Primary Expertise" value={profile.primary_expertise} />
-        <ReviewRow label="Hourly Rate" value={`₹ ${profile.hourly_rate}`} />
 
         <ReviewList label="Experience" items={experiences} emptyText="No experiences added" />
         <ReviewList label="Education" items={educations} emptyText="No education added" />
@@ -392,7 +388,7 @@ function Step3({
 /* ----------------------------------------------
    SMALL COMPONENTS
 ---------------------------------------------- */
-function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false, isDark }) {
+function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false, isDark, maxLength, className }) {
   const inputClass = (enabled) =>
     `w-full bg-transparent border-b-2 py-2 px-1 outline-none transition-all font-medium ${isDark
       ? enabled
@@ -406,7 +402,7 @@ function Input({ label, value, onChange, type = "text", placeholder = "", disabl
   const labelClass = "text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 block";
 
   return (
-    <div>
+    <div className={className}>
       <label className={labelClass}>{label}</label>
       <input
         type={type}
@@ -415,6 +411,7 @@ function Input({ label, value, onChange, type = "text", placeholder = "", disabl
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         className={inputClass(!disabled)}
+        maxLength={maxLength}
       />
     </div>
   );

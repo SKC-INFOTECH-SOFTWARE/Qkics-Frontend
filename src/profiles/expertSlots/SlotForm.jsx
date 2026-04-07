@@ -12,9 +12,18 @@ export default function SlotForm({
 
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
-  const [duration, setDuration] = useState(30);
+  const [duration, setDuration] = useState(0);
   const [price, setPrice] = useState("");
   const [requiresApproval, setRequiresApproval] = useState(true);
+
+  // Helper: Convert Date or ISO string to local YYYY-MM-DDTHH:mm
+  const toLocalString = (dateInput) => {
+    if (!dateInput) return "";
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "";
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  };
 
   /* ----------------------------
       PREFILL (EDIT MODE)
@@ -22,30 +31,30 @@ export default function SlotForm({
   useEffect(() => {
     if (!initialData) return;
 
-    // Convert ISO string (UTC) to local time format YYYY-MM-DDTHH:mm
-    const toLocalString = (isoStr) => {
-      if (!isoStr) return "";
-      const date = new Date(isoStr);
-      const offset = date.getTimezoneOffset() * 60000;
-      return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-    };
-
     setStart(toLocalString(initialData.start_datetime));
     setEnd(toLocalString(initialData.end_datetime));
-    setDuration(initialData.duration_minutes);
+    setDuration(initialData.duration_minutes || 0);
     setPrice(initialData.price);
     setRequiresApproval(initialData.requires_approval);
   }, [initialData]);
 
+  // Recalculate duration when times change
   useEffect(() => {
-    if (!start || !end) return;
+    if (!start || !end) {
+      setDuration(0);
+      return;
+    }
 
     const startDate = new Date(start);
     const endDate = new Date(end);
 
-    if (endDate > startDate) {
-      const diffMinutes = (endDate - startDate) / (1000 * 60);
-      setDuration(diffMinutes);
+    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+      if (endDate > startDate) {
+        const diffMinutes = (endDate - startDate) / (1000 * 60);
+        setDuration(Math.round(diffMinutes));
+      } else {
+        setDuration(0);
+      }
     }
   }, [start, end]);
 
@@ -112,7 +121,7 @@ export default function SlotForm({
           <input
             type="datetime-local"
             value={start}
-            min={new Date().toISOString().slice(0, 16)}
+            min={toLocalString(new Date())}
             onChange={(e) => setStart(e.target.value)}
             className={inputClass}
           />
@@ -125,7 +134,7 @@ export default function SlotForm({
           <input
             type="datetime-local"
             value={end}
-            min={start || new Date().toISOString().slice(0, 16)}
+            min={start || toLocalString(new Date())}
             onChange={(e) => setEnd(e.target.value)}
             className={inputClass}
           />

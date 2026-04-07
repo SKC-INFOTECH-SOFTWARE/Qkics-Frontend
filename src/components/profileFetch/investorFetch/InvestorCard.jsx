@@ -1,3 +1,4 @@
+import { FaChevronRight } from "react-icons/fa";
 import useThemeClasses from "../../utils/useThemeClasses";
 
 export default function InvestorCard({
@@ -27,7 +28,7 @@ export default function InvestorCard({
   return (
     <div
       onClick={() => onClick(investor)}
-      className={`group relative cursor-pointer premium-card p-6 ${isDark ? "bg-neutral-900" : "bg-white"} hover:shadow-2xl transition-all duration-500 animate-fadeIn`}
+      className={`group relative cursor-pointer premium-card p-4 ${isDark ? "bg-neutral-900 shadow-xl shadow-black/20" : "bg-white shadow-lg shadow-black/5"} hover:shadow-2xl transition-all duration-500 animate-fadeIn border ${isDark ? "border-white/5 hover:border-red-500/20" : "border-black/5 hover:border-red-500/10"}`}
     >
       {/* VERIFIED BADGE */}
       {/* {verified_by_admin && (
@@ -40,7 +41,7 @@ export default function InvestorCard({
 
       {/* INVESTOR INFO */}
       <div className="flex flex-col items-center text-center">
-        <div className="relative mb-6">
+        <div className="relative mb-2">
           <div className="h-24 w-24 rounded-full overflow-hidden ring-4 ring-black/5 dark:ring-white/5 group-hover:ring-red-500/20 transition-all duration-700 shadow-xl mx-auto">
             <img
                 loading="lazy"
@@ -54,25 +55,26 @@ export default function InvestorCard({
         <h2 className={`font-black text-xl tracking-tight mb-1 group-hover:text-red-500 transition-colors ${text}`}>
           {display_name}
         </h2>
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 mb-2">
           {investor_type_display || "Private Investor"}
         </p>
 
-        <div className={`w-full rounded-2xl p-4 mb-6 transition-colors group-hover:bg-red-500/5 ${isDark ? "bg-white/5" : "bg-neutral-100"}`}>
+        <div className={`w-full rounded-2xl p-2 mb-2 transition-colors group-hover:bg-red-500/5 ${isDark ? "bg-white/5" : "bg-neutral-100"}`}>
           <p className={`text-xs font-medium leading-relaxed opacity-60 italic ${text}`}>
             "{one_liner || "Strategic capital focused on high-growth technology and innovative digital economies."}"
           </p>
         </div>
 
-        <div className={`w-full h-px mb-6 ${isDark ? "bg-white/5" : "bg-black/5"}`} />
+        <div className={`w-full h-px mb-2 ${isDark ? "bg-white/5" : "bg-black/5"}`} />
 
         <div className="w-full flex items-center justify-between">
           <div className="flex items-center gap-2 text-neutral-400">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
             <span className="text-[10px] font-bold uppercase tracking-wider">{location || "Remote"}</span>
           </div>
-          <button className={`h-8 w-8 flex items-center justify-center rounded-lg group-hover:bg-red-500 group-hover:text-white transition-all duration-500 ${isDark ? "bg-white/5" : "bg-black/5"}`}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+          
+          <button className={`h-10 w-10 flex items-center justify-center rounded-xl group-hover:bg-red-600 group-hover:text-white transition-all duration-500 shadow-lg ${isDark ? "bg-white/5 text-neutral-400" : "bg-black/5 text-neutral-500"} group-hover:shadow-red-600/30`}>
+             <FaChevronRight size={14} className="transform group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>

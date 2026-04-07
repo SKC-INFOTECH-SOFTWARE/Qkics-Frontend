@@ -40,12 +40,15 @@ export default function ExpertSlots({ theme: propTheme }) {
 
   /* ----------------------------
       FETCH SLOTS
+      NOTE: user.uuid might be missing after a refresh because /v1/auth/me/ 
+      doesn't always include it. The thunk fetchExpertSlots handles 
+      the fallback using localStorage.getItem("user_uuid").
   ----------------------------- */
   useEffect(() => {
     if (!user) return;
-    if (!user.uuid) return;
     if (user.user_type !== "expert") return;
 
+    // Use user.uuid if available, else let the thunk fallback to localStorage
     dispatch(fetchExpertSlots(user.uuid));
   }, [user, dispatch]);
 

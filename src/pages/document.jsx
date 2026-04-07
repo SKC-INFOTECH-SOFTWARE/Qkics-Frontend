@@ -10,13 +10,6 @@ export default function DocumentList({ theme, searchQuery = "", filter = "all", 
   const [next, setNext] = useState(null);
   const loaderRef = useRef(null);
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchDocuments(searchQuery, filter);
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, filter, refreshTrigger]);
-
   const fetchDocuments = async (query = "", currentFilter = "all") => {
     try {
       const params = new URLSearchParams();
@@ -33,6 +26,13 @@ export default function DocumentList({ theme, searchQuery = "", filter = "all", 
       console.error(err);
     }
   };
+
+   useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchDocuments(searchQuery, filter);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, filter, refreshTrigger]);
 
   const loadMore = async () => {
     if (!next) return;
@@ -62,56 +62,61 @@ export default function DocumentList({ theme, searchQuery = "", filter = "all", 
   const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className="max-w-7xl py-8 mx-auto px-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+    <div className="max-w-7xl py-1 mx-auto px-1">
+      <div className="flex flex-col gap-3 md:gap-4">
         {documents?.map((doc) => (
           <div
             key={doc.uuid}
-            className={`group relative p-4 premium-card transition-all duration-500 hover:shadow-xl animate-fadeIn ${isDark ? "bg-neutral-900" : "bg-white"}`}
+            className={`group flex items-center gap-4 md:gap-6 p-2 md:p-2 rounded-xl md:rounded-xl border transition-all duration-500 hover:scale-[1.002] hover:shadow-xl animate-fadeIn ${isDark 
+              ? "bg-neutral-900/40 border-white/5 hover:bg-neutral-900 hover:border-white/10" 
+              : "bg-white border-black/5 hover:border-black/10 shadow-sm"}`}
           >
-            {/* Icon & Access Badge */}
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-500 shadow-inner group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
-                <FaFileAlt size={18} />
+            {/* Left: Icon */}
+            <div className="flex-shrink-0">
+              <div className="h-10 w-10 md:h-10 md:w-10 rounded-xl md:rounded-xl bg-red-600/10 flex items-center justify-center text-red-500 shadow-inner group-hover:bg-red-600 group-hover:text-white transition-all duration-500 relative">
+                <FaFileAlt size={18} className="md:size-5 relative z-10" />
               </div>
-              <span
-                className={`text-[9px] uppercase font-black tracking-widest px-3 py-1 rounded-full border shadow-sm transition-all duration-500 ${doc.access_type === "PREMIUM"
-                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                  : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                  }`}
-              >
-                {doc.access_type}
-              </span>
             </div>
 
-            {/* Content */}
-            <div className="mb-4">
-              <h3 className={`font-black text-lg leading-tight mb-2 group-hover:text-red-500 transition-colors ${text}`}>
-                {doc.title}
-              </h3>
-              <p className={`text-xs font-medium leading-relaxed opacity-50 line-clamp-2 ${text}`}>
+            {/* Middle: Content */}
+            <div className="flex-grow min-w-0 pr-1 md:pr-4">
+              <div className="flex items-center gap-2 md:gap-4 mb-0.5 md:mb-1 overflow-hidden">
+                <h3 className={`font-black text-sm md:text-base truncate group-hover:text-red-500 transition-colors ${text}`}>
+                  {doc.title}
+                </h3>
+                <span
+                  className={`flex-shrink-0 text-[7px] md:text-[8px] uppercase font-black tracking-[0.2em] px-2 md:px-3 py-0.5 md:py-1 rounded-full border ${doc.access_type === "PREMIUM"
+                    ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    }`}
+                >
+                  {doc.access_type}
+                </span>
+              </div>
+              {/* <p className={`text-[10px] md:text-sm font-medium opacity-50 line-clamp-1 max-w-2xl ${text}`}>
                 {doc.description}
-              </p>
+              </p> */}
             </div>
 
-            <div className={`w-full h-px mb-4 ${isDark ? "bg-white/5" : "bg-black/5"}`} />
-
-            {/* Footer */}
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-0.5">Updated</span>
-                <span className={`text-[10px] font-bold ${text}`}>
+            {/* Right: Date & Action */}
+            <div className="flex items-center gap-3 md:gap-10 flex-shrink-0">
+              {/* Date hidden on very small mobile if needed, but keeping it small */}
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest opacity-30 mb-0.5">Updated</span>
+                <span className={`text-[10px] md:text-[12px] font-bold whitespace-nowrap ${text}`}>
                   {new Date(doc.updated_at || doc.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
+              
               <button
                 onClick={() => setSelectedDoc(doc.uuid)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${isDark
-                  ? "bg-white/5 text-white hover:bg-neutral-800"
-                  : "bg-black/5 text-black hover:bg-neutral-900 hover:text-white"}`}
+                className={`flex items-center gap-2 md:gap-3 px-4 md:px-4 py-2.5 md:py-2 rounded-xl md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all shadow-lg active:scale-95 ${isDark
+                  ? "bg-white text-black hover:bg-neutral-200"
+                  : "bg-black text-white hover:bg-neutral-800"}`}
               >
-                <FaEye size={12} />
-                <span>Analyze</span>
+                <FaEye size={12} className="md:size-[14px]" />
+                <span className="hidden xs:inline">Analyze</span>
+                <span className="xs:hidden">View</span>
               </button>
             </div>
           </div>

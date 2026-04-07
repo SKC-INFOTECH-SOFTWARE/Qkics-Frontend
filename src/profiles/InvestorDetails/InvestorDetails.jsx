@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axiosSecure from "../../components/utils/axiosSecure";
 import { useAlert } from "../../context/AlertContext";
 import { FaSearch, FaCheck } from "react-icons/fa";
+import { FiEdit, FiCheck as FiCheckIcon, FiX } from "react-icons/fi";
 
 import { useSelector } from "react-redux";
 
@@ -120,37 +121,41 @@ export default function InvestorDetails({
           <span className="md:hidden">Professional <span className="text-red-600">Profile</span></span>
         </h2>
 
-        {!readOnly &&
-          (!editMode ? (
-            <button
-              onClick={() => setEditMode(true)}
-              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
-                ? "bg-neutral-800 text-white hover:bg-neutral-700"
-                : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
-            >
-              Edit Details
-            </button>
-          ) : (
-            <div className="flex gap-2">
+        {!readOnly && (
+          <div className="flex gap-2">
+            {!editMode ? (
               <button
-                onClick={() => {
-                  setEditMode(false);
-                  setLocal(normalize(investorData));
-                }}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
-                  ? "text-white hover:bg-neutral-800"
-                  : "text-black hover:bg-neutral-100"}`}
+                onClick={() => setEditMode(true)}
+                className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${isDark
+                  ? "bg-neutral-800 text-white hover:bg-neutral-700"
+                  : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
+                title="Edit Details"
               >
-                Cancel
+                <FiEdit size={16} />
               </button>
-              <button
-                onClick={handleSave}
-                className="px-6 py-2 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20"
-              >
-                Save Changes
-              </button>
-            </div>
-          ))}
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setEditMode(false);
+                    setLocal(normalize(investorData));
+                  }}
+                  className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white`}
+                  title="Cancel"
+                >
+                  <FiX size={18} />
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all shadow-lg shadow-green-500/10"
+                  title="Save Changes"
+                >
+                  <FiCheckIcon size={20} />
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* CONTENT GRID */}

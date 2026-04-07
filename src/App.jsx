@@ -38,6 +38,7 @@ const PublicCompanyProfile  = lazy(() => import("./pages/company/PublicCompanyPr
 const Comments              = lazy(() => import("./components/posts/comment"));
 const BookSession           = lazy(() => import("./components/profileFetch/expertBooking/BookSession"));
 const InvestorBookSession   = lazy(() => import("./components/profileFetch/investorFetch/InvestorBookSession"));
+const VideoCallPage         = lazy(() => import("./components/videochat").then(m => ({ default: m.VideoCallPage })));
 
 // ─── Role-gated pages ────────────────────────────────────────────────────────
 const ExpertSlots           = lazy(() => import("./profiles/expertSlots/ExpertSlots"));
@@ -152,6 +153,7 @@ function App() {
               <Route path="/post/:id/comments"          element={<Comments />} />
               <Route path="/book-session/:expertUuid"   element={<BookSession />} />
               <Route path="/book-session/investor/:investorUuid" element={<InvestorBookSession />} />
+              <Route path="/video-call/:call_Room_id?" element={<VideoCallPage />} />
             </Route>
 
             {/* ── Expert only ───────────────────────────────────────────── */}

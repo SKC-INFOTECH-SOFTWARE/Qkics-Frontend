@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { MdOutlineSchedule, MdPerson, MdOutlinePayments, MdChatBubbleOutline, MdOutlineTimer } from "react-icons/md";
+import { MdOutlineSchedule, MdPerson, MdOutlinePayments, MdChatBubbleOutline, MdOutlineTimer, MdVideocam } from "react-icons/md";
 
 import axiosSecure from "../utils/axiosSecure";
 import { useAlert } from "../../context/AlertContext";
@@ -38,7 +38,7 @@ export default function MyBookings() {
 
       let url = "";
       if (activeTab === "expert") {
-        url = user.user_type === "expert" ? "/v1/bookings/?as_expert=true" : "/v1/bookings/";
+        url = user.user_type === "expert" ? "/v1/bookings/?as_expert=true" : "/v1/bookings/";  
       } else {
         url = user.user_type === "investor" ? "/v1/bookings/investor-bookings/list/?as_investor=true" : "/v1/bookings/investor-bookings/list/";
       }
@@ -218,15 +218,26 @@ export default function MyBookings() {
                     </div>
                   </div>
 
-                  {(booking.chat_room_id || ['CONFIRMED', 'PAID', 'COMPLETED'].includes(status.label)) && (
+                  {(booking.chat_room_id || booking.call_Room_id || ['CONFIRMED', 'PAID', 'COMPLETED'].includes(status.label)) && (
                     now >= startDate ? (
-                      <button
-                        onClick={() => navigate(booking.chat_room_id ? `/chat/${booking.chat_room_id}` : '/chat')}
-                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all"
-                      >
-                        <MdChatBubbleOutline size={20} />
-                        Open Comm
-                      </button>
+                      <div className="flex flex-col gap-3">
+                        {booking.call_Room_id && (
+                          <button
+                            onClick={() => navigate(`/video-call/${booking.call_Room_id}`)}
+                            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all"
+                          >
+                            <MdVideocam size={20} />
+                            Join Call
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate(booking.chat_room_id ? `/chat/${booking.chat_room_id}` : '/chat')}
+                          className={`w-full flex items-center justify-center gap-3 px-6 py-4 ${booking.call_Room_id ? 'bg-neutral-800 text-white' : 'bg-red-600 text-white'} rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all`}
+                        >
+                          <MdChatBubbleOutline size={20} />
+                          Open Communication
+                        </button>    
+                      </div>  
                     ) : (
                       <button
                         disabled

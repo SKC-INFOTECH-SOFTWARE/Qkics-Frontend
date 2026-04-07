@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaHome, FaLightbulb, FaHandshake, FaBuilding } from "react-icons/fa";
+import { FaHome, FaLightbulb, FaHandshake, FaBuilding, FaFileAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 
@@ -88,6 +88,20 @@ function MobileBottomNav({ theme, isLoggedIn, setShowLogin }) {
                         <FaLightbulb size={22} className={location.pathname === "/knowledge-hub" ? "scale-110" : ""} />
                         <span className="text-[7px] font-black uppercase tracking-[0.05em]">Hub</span>
                         {location.pathname === "/knowledge-hub" && (
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-red-600 rounded-full" />
+                        )}
+                    </div>
+                </button>
+
+                {/* DOCUMENTS */}
+                <button
+                    onClick={() => handleAuthNavigation("/document")}
+                    className="flex-1 h-full"
+                >
+                    <div className={getNavClass("/document")}>
+                        <FaFileAlt size={22} className={location.pathname === "/document" ? "scale-110" : ""} />
+                        <span className="text-[7px] font-black uppercase tracking-[0.05em]">Documents</span>
+                        {location.pathname === "/document" && (
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-red-600 rounded-full" />
                         )}
                     </div>

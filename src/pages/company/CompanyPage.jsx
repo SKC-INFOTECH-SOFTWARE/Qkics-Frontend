@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import axiosSecure from "../../components/utils/axiosSecure";
 import CompanyPostCard from "./components/CompanyPostCard";
+import CompanyCard from "./components/CompanyCard"; 
 import { useAlert } from "../../context/AlertContext";
-import { FaBuilding } from "react-icons/fa";
+import { FaBuilding, FaThList, FaRegNewspaper } from "react-icons/fa";
 import ConfirmationAlert from "../../components/ui/ConfirmationAlert";
 
 export default function CompanyPage() {
@@ -11,44 +12,95 @@ export default function CompanyPage() {
   const isDark = theme === "dark";
   const { showAlert } = useAlert();
 
+  /* ----------------------------
+      TABS STATE
+  ----------------------------- */
+  const [activeTab, setActiveTab] = useState(
+    sessionStorage.getItem("companyActiveTab") || "posts"
+  );
+
+  useEffect(() => {
+    sessionStorage.setItem("companyActiveTab", activeTab);
+  }, [activeTab]);
+
+  /* ----------------------------
+      POSTS STATE
+  ----------------------------- */
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [pagePosts, setPagePosts] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState(null);
   const [myCompanyIds, setMyCompanyIds] = useState([]);
 
+  /* ----------------------------
+      COMPANIES STATE
+  ----------------------------- */
+  const [companies, setCompanies] = useState([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
+  const [hasMoreCompanies, setHasMoreCompanies] = useState(true);
+  const [pageCompanies, setPageCompanies] = useState(1);
+
+  /* ----------------------------
+      OBSERVER (INFINITE SCROLL)
+  ----------------------------- */
   const observer = useRef();
-  const lastPostRef = useCallback(
+  const lastElementRef = useCallback(
     (node) => {
+      const loading = activeTab === "posts" ? loadingPosts : loadingCompanies;
+      const hasMore = activeTab === "posts" ? hasMorePosts : hasMoreCompanies;
+      
       if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
-          setPage((prevPage) => prevPage + 1);
+          if (activeTab === "posts") {
+            setPagePosts((prev) => prev + 1);
+          } else {
+            setPageCompanies((prev) => prev + 1);
+          }
         }
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loadingPosts, loadingCompanies, hasMorePosts, hasMoreCompanies, activeTab]
   );
 
+  /* ----------------------------
+      FETCHING LOGIC
+  ----------------------------- */
   const fetchGlobalCompanyPosts = async () => {
     try {
-      setLoading(true);
+      setLoadingPosts(true);
       const res = await axiosSecure.get("/v1/companies/posts/", {
-        params: { page },
+        params: { page: pagePosts },
       });
       const data = res.data?.results || res.data || [];
       const newPosts = Array.isArray(data) ? data : [];
-      setPosts((prev) => (page === 1 ? newPosts : [...prev, ...newPosts]));
-      setHasMore(!!res.data.next);
+      setPosts((prev) => (pagePosts === 1 ? newPosts : [...prev, ...newPosts]));
+      setHasMorePosts(!!res.data.next);
     } catch (err) {
       console.error("Error fetching global company posts:", err);
-      // showAlert("Error fetching discovery feed", "error");
     } finally {
-      setLoading(false);
+      setLoadingPosts(false);
+    }
+  };
+
+  const fetchCompaniesList = async () => {
+    try {
+      setLoadingCompanies(true);
+      const res = await axiosSecure.get("/v1/companies/list/", {
+        params: { page: pageCompanies },
+      });
+      const data = res.data?.results || res.data || [];
+      const newCompanies = Array.isArray(data) ? data : [];
+      setCompanies((prev) => (pageCompanies === 1 ? newCompanies : [...prev, ...newCompanies]));
+      setHasMoreCompanies(!!res.data.next);
+    } catch (err) {
+      console.error("Error fetching companies list:", err);
+    } finally {
+      setLoadingCompanies(false);
     }
   };
 
@@ -67,9 +119,20 @@ export default function CompanyPage() {
   }, []);
 
   useEffect(() => {
-    fetchGlobalCompanyPosts();
-  }, [page]);
+    if (activeTab === "posts") {
+      fetchGlobalCompanyPosts();
+    }
+  }, [pagePosts, activeTab]);
 
+  useEffect(() => {
+    if (activeTab === "companies") {
+      fetchCompaniesList();
+    }
+  }, [pageCompanies, activeTab]);
+
+  /* ----------------------------
+      DELETE LOGIC
+  ----------------------------- */
   const handleDeleteClick = (postId) => {
     setPostIdToDelete(postId);
     setShowDeleteConfirm(true);
@@ -94,47 +157,115 @@ export default function CompanyPage() {
 
   return (
     <div className={`min-h-screen px-4 py-8 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col gap-2 mb-10">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600">
-              <FaBuilding size={20} />
+      <div className="max-w-7xl mx-auto">
+        {/* HEADER & TABS SELECTOR */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 animate-fadeIn">
+          <div className="max-w-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600">
+                <FaBuilding size={20} />
+              </div>
+              <h1 className={`text-4xl md:text-5xl font-black tracking-tighter ${text}`}>
+                Company <span className="text-red-600">Discovery</span>
+              </h1>
             </div>
-            <h1 className={`text-4xl font-black tracking-tighter ${text}`}>Company Discovery</h1>
+            <p className={`text-sm tracking-wide font-medium leading-relaxed ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
+              Explore insights, updates, and innovations from across the organization. Track and manage your expert intelligence exchange.
+            </p>
           </div>
-          <p className={`text-sm tracking-wide ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
-            Explore insights, updates, and innovations from across the organization
-          </p>
+
+          <div className="flex-shrink-0">
+            <div className={`inline-flex p-1.5 rounded-2xl shadow-xl transition-all ${isDark ? "bg-white/5" : "bg-black/5"}`}>
+              {[
+                { id: "posts", label: "Posts", icon: <FaRegNewspaper size={14} /> },
+                { id: "companies", label: "Companies", icon: <FaThList size={14} /> }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2.5 px-6 py-2.5 md:px-8 md:py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
+                      : isDark ? "text-neutral-500 hover:text-white" : "text-neutral-500 hover:text-black"
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {posts.length > 0 ? (
-            posts.map((post, index) => {
-              if (posts.length === index + 1) {
-                return (
-                  <div ref={lastPostRef} key={post.id}>
-                    <CompanyPostCard key={post.id} post={post} isDark={isDark} onDelete={handleDeleteClick} isOwner={myCompanyIds.includes(post.company?.id) || post?.author?.split?.(" ")?.[0]?.trim() === loggedUser?.username} />
+          {/* TAB CONTENT: POSTS */}
+          {activeTab === "posts" && (
+            <div className="max-w-3xl mx-auto w-full space-y-6">
+              {posts.length > 0 ? (
+                posts.map((post, index) => {
+                  const nodeRef = posts.length === index + 1 ? lastElementRef : null;
+                  return (
+                    <div ref={nodeRef} key={post.id}>
+                      <CompanyPostCard 
+                        post={post} 
+                        isDark={isDark} 
+                        onDelete={handleDeleteClick} 
+                        isOwner={myCompanyIds.includes(post.company?.id) || post?.author?.split?.(" ")?.[0]?.trim() === loggedUser?.username} 
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                !loadingPosts && (
+                  <div className="text-center py-24 animate-fadeIn glass rounded-3xl border border-dashed border-red-500/10">
+                    <FaRegNewspaper size={48} className="mx-auto mb-6 opacity-10 text-red-500" />
+                    <p className={`text-lg font-bold opacity-30 ${text}`}>No company posts discovered yet.</p>
+                    <p className={`text-[10px] uppercase font-black tracking-widest opacity-20 mt-2 ${text}`}>Post insights to start the conversation</p>
                   </div>
-                );
-              } else {
-                return <CompanyPostCard key={post.id} post={post} isDark={isDark} onDelete={handleDeleteClick} isOwner={myCompanyIds.includes(post.company?.id) || post?.author?.split?.(" ")?.[0]?.trim() === loggedUser?.username} />;
-              }
-            })
-          ) : (
-            !loading && (
-              <div className="text-center py-20 animate-fadeIn">
-                <p className={`text-lg font-bold opacity-30 ${text}`}>No company posts discovered yet.</p>
-              </div>
-            )
-          )}
-
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-30">Loading Discovery...</p>
+                )
+              )}
+              {loadingPosts && (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-30">Synchronizing Posts...</p>
+                </div>
+              )}
             </div>
           )}
+
+          {/* TAB CONTENT: COMPANIES */}
+          {activeTab === "companies" && (
+            <>
+              {companies.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fadeIn">
+                  {companies.map((company, index) => {
+                    const nodeRef = companies.length === index + 1 ? lastElementRef : null;
+                    return (
+                      <div ref={nodeRef} key={company.id}>
+                        <CompanyCard company={company} isDark={isDark} />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                !loadingCompanies && (
+                  <div className="text-center py-24 animate-fadeIn glass rounded-3xl border border-dashed border-red-500/10">
+                    <FaBuilding size={48} className="mx-auto mb-6 opacity-10 text-red-500" />
+                    <p className={`text-lg font-bold opacity-30 ${text}`}>No organizations discovered yet.</p>
+                    <p className={`text-[10px] uppercase font-black tracking-widest opacity-20 mt-2 ${text}`}>Be the first to list your company</p>
+                  </div>
+                )
+              )}
+              {loadingCompanies && (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-30">Gathering Intelligence...</p>
+                </div>
+              )}
+            </>
+          )}
         </div>
+
       </div>
 
       {showDeleteConfirm && (
@@ -152,3 +283,4 @@ export default function CompanyPage() {
     </div>
   );
 }
+

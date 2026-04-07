@@ -70,12 +70,12 @@ export default function DocumentDetailsModal({ uuid, onClose, theme }) {
           <div className="flex items-center gap-2 mb-2 text-blue-500 font-bold text-xs uppercase tracking-widest">
             <FiShield /> Document Insight
           </div>
-          <h3 className="text-2xl font-extrabold leading-tight">{doc.title}</h3>
+          <h3 className="text-2xl font-extrabold leading-tight break-words pr-12">{doc.title}</h3>
         </div>
 
         {/* Modal Body */}
-        <div className="px-8 py-4">
-          <p className={`text-base leading-relaxed mb-6 ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+        <div className="px-8 py-4 overflow-y-auto max-h-[60vh] custom-scrollbar">
+          <p className={`text-base leading-relaxed mb-6 break-words ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
             {doc.description}
           </p>
 

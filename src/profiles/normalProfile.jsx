@@ -260,7 +260,7 @@ export default function NormalProfile({
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className={`premium-card p-8 md:p-12 mb-12  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
+        <div className={`premium-card p-8 md:p-12 mb-5  ${isDark ? "bg-neutral-900" : "bg-white"}`}>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
 
             {/* PROFILE PICTURE */}
@@ -296,7 +296,7 @@ export default function NormalProfile({
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-4">
                 <div>
-                  <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-2 ${text}`}>
+                  <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-2 ${isDark ? "text-white" : "text-black"}`}>
                     {profileUser.first_name || profileUser.last_name
                       ? `${profileUser.first_name} ${profileUser.last_name}`
                       : profileUser.username}

@@ -165,6 +165,11 @@ const userSlice = createSlice({
         state.role = action.payload.role || state.role;
         state.error = null;
         state.picVersion = Date.now(); // Cache-bust on every fresh fetch
+
+        // Update localStorage if uuid is provided in profile
+        if (action.payload?.uuid) {
+          localStorage.setItem("user_uuid", action.payload.uuid);
+        }
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.status = "idle";

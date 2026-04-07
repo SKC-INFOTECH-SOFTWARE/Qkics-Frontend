@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getAccessToken } from "./redux/store/tokenManager";
 
@@ -10,6 +10,7 @@ import {
   MdArrowBack,
   MdChatBubbleOutline,
   MdClose,
+  MdVideoCall,
 } from "react-icons/md";
 import axiosSecure from "./components/utils/axiosSecure";
 import useChatSocket from "./components/hooks/useChatSocket.jsx";
@@ -42,6 +43,7 @@ function formatMessageDate(dateStr) {
 
 export default function ChatPage() {
   const { roomId } = useParams();
+  const navigate = useNavigate();
   const { theme, data: user } = useSelector((state) => state.user);
   const isDark = theme === "dark";
 
@@ -526,6 +528,25 @@ export default function ChatPage() {
                         : "bg-white border-black/5"
                     }`}
                   >
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        const callId = selectedRoom?.call_Room_id || selectedRoom?.booking?.call_Room_id;
+                        if (callId) {
+                          navigate(`/video-call/${callId}`);
+                        } else {
+                          // If no ID, we can still show the button as per user request to see it, 
+                          // but maybe it navigates to a default or shows a placeholder.
+                          navigate("/video-call");
+                        }
+                      }}
+                      className={`flex items-center gap-3 px-3 py-3 text-xs font-black uppercase tracking-widest transition-colors hover:bg-red-600 hover:text-white ${
+                        isDark ? "text-white/60" : "text-black/60"
+                      }`}
+                    >
+                      <MdVideoCall size={18} />
+                      Video Call
+                    </button>
                     <button
                       onClick={() => {
                         setSelectedRoom(null);

@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import axiosSecure from "../components/utils/axiosSecure";
 
 import ExpertCard from "../components/profileFetch/expertBooking/ExpertCard";
-import ExpertModal from "../components/profileFetch/expertBooking/ExpertModal";
+import { resolveProfileRoute } from "../components/utils/getUserProfileRoute";
 
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -16,7 +16,6 @@ export default function Booking() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedExpert, setSelectedExpert] = useState(null);
   const [next, setNext] = useState(null);
   const loaderRef = useRef(null);
 
@@ -77,6 +76,11 @@ export default function Booking() {
     return `${url}?t=${Date.now()}`;
   };
 
+  const handleExpertClick = (expert) => {
+    if (!expert.user) return;
+    navigate(resolveProfileRoute(expert.user, loggedUser));
+  };
+
   if (loading) {
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center gap-4 ${isDark ? "bg-[#0a0a0a] text-white" : "bg-[#f8f9fa] text-black"}`}>
@@ -132,7 +136,7 @@ export default function Booking() {
               key={expert.id}
               expert={expert}
               isDark={isDark}
-              onClick={() => setSelectedExpert(expert)}
+              onClick={handleExpertClick}
               resolveProfileImage={resolveProfileImage}
             />
           ))}
@@ -143,15 +147,6 @@ export default function Booking() {
         <div ref={loaderRef} className="py-8 flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-red-500 border-white/10" />
         </div>
-      )}
-
-      {selectedExpert && (
-        <ExpertModal
-          expert={selectedExpert}
-          onClose={() => setSelectedExpert(null)}
-          resolveProfileImage={resolveProfileImage}
-          isDark={isDark}
-        />
       )}
     </div>
   );

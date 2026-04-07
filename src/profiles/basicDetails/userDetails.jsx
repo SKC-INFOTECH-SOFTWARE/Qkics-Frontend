@@ -1,6 +1,7 @@
 // src/shared/userDetails.jsx
 
 import { useSelector } from "react-redux";
+import { FiEdit, FiCheck, FiX } from "react-icons/fi";
 
 export default function UserDetails({
   editMode,
@@ -43,7 +44,7 @@ export default function UserDetails({
         </h2>
 
         {!readOnly && (
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {!editMode ? (
               <button
                 onClick={() => {
@@ -54,14 +55,15 @@ export default function UserDetails({
                   });
                   setEditMode(true);
                 }}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
+                className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${isDark
                   ? "bg-neutral-800 text-white hover:bg-neutral-700"
                   : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
+                title="Edit Details"
               >
-                Edit Details
+                <FiEdit size={16} />
               </button>
             ) : (
-              <div className="flex gap-2">
+              <>
                 <button
                   onClick={() => {
                     setEditData({
@@ -71,19 +73,19 @@ export default function UserDetails({
                     });
                     setEditMode(false);
                   }}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
-                    ? "text-white hover:bg-neutral-800"
-                    : "text-black hover:bg-neutral-100"}`}
+                  className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white`}
+                   title="Cancel"
                 >
-                  Cancel
+                  <FiX size={18} />
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-6 py-2 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20"
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all shadow-lg shadow-green-500/10"
+                   title="Save Changes"
                 >
-                  Save Changes
+                  <FiCheck size={20} />
                 </button>
-              </div>
+              </>
             )}
           </div>
         )}
@@ -100,6 +102,7 @@ export default function UserDetails({
             disabled={readOnly || !editMode}
             onChange={(e) => setEditData({ ...editData, first_name: e.target.value })}
             className={inputClass(!readOnly && editMode)}
+            maxLength={20}
           />
         </div>
 
@@ -111,6 +114,7 @@ export default function UserDetails({
             disabled={readOnly || !editMode}
             onChange={(e) => setEditData({ ...editData, last_name: e.target.value })}
             className={inputClass(!readOnly && editMode)}
+            maxLength={20}
           />
         </div>
 

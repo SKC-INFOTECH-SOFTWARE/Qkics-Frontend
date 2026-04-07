@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { FiEdit, FiCheck, FiX } from "react-icons/fi";
 
 export default function ExpertDetails({
   expertData,
@@ -37,31 +38,32 @@ export default function ExpertDetails({
         </h2>
 
         {!readOnly && (
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {!editExp ? (
               <button
                 onClick={() => setEditExp(true)}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
+                className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${isDark
                   ? "bg-neutral-800 text-white hover:bg-neutral-700"
                   : "bg-neutral-100 text-black hover:bg-neutral-200"}`}
+                title="Edit Details"
               >
-                Edit Details
+                <FiEdit size={16} />
               </button>
             ) : (
               <>
                 <button
                   onClick={() => setEditExp(false)}
-                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${isDark
-                    ? "text-white hover:bg-neutral-800"
-                    : "text-black hover:bg-neutral-100"}`}
+                  className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white`}
+                  title="Cancel"
                 >
-                  Cancel
+                  <FiX size={18} />
                 </button>
                 <button
                   onClick={handleSaveExpert}
-                  className="px-6 py-2 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20"
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all shadow-lg shadow-green-500/10"
+                  title="Save Changes"
                 >
-                  Save Changes
+                  <FiCheck size={20} />
                 </button>
               </>
             )}
@@ -83,25 +85,13 @@ export default function ExpertDetails({
           />
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <label className={labelClass}>Primary Expertise</label>
           <input
             value={expertData.primary_expertise}
             disabled={!editExp}
             placeholder="e.g. Finance"
             onChange={(e) => setExpertData({ ...expertData, primary_expertise: e.target.value })}
-            className={inputClass(editExp)}
-          />
-        </div>
-
-        <div>
-          <label className={labelClass}>Hourly Rate ($)</label>
-          <input
-            type="number"
-            value={expertData.hourly_rate}
-            disabled={!editExp}
-            placeholder="0.00"
-            onChange={(e) => setExpertData({ ...expertData, hourly_rate: e.target.value })}
             className={inputClass(editExp)}
           />
         </div>

@@ -25,3 +25,6 @@ dist-ssr
 
 *.zip
 test.json
+
+*.sfdx
+
