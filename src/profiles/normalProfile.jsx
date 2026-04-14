@@ -30,6 +30,7 @@ import UserDetails from "../profiles/basicDetails/userDetails";
 import UserPosts from "../profiles/basicDetails/userPosts";
 import UserBadge from "../components/ui/UserBadge";
 import ModalOverlay from "../components/ui/ModalOverlay";
+import useModalEscape from "../components/hooks/useModalEscape";
 
 export default function NormalProfile({
   profile: propProfile,
@@ -410,6 +411,7 @@ export default function NormalProfile({
    UPGRADE MODAL — Always Works
 ---------------------------------------------------- */
 function UpgradeModal({ close, navigate, isDark }) {
+  useModalEscape(close);
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
       <div

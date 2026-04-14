@@ -103,11 +103,11 @@ export default function Subscription() {
 
     return (
         <div className={`min-h-screen ${bg} transition-colors duration-300`}>
-            <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+            <div className="max-w-7xl mx-auto px-4 py-4 md:py-4">
 
                 {/* HEADER */}
-                <div className="text-center mb-12 animate-fadeIn">
-                    <h1 className={`text-4xl md:text-6xl font-black tracking-tighter mb-6 ${text}`}>
+                <div className="text-center mb-4 animate-fadeIn">
+                    <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-6 ${text}`}>
                         Upgrade your <span className="text-red-600">Impact</span>
                     </h1>
                     <p className={`text-lg md:text-xl max-w-2xl mx-auto leading-relaxed ${muted}`}>
@@ -117,7 +117,7 @@ export default function Subscription() {
 
                 {/* ACTIVE SUBSCRIPTION */}
                 {activeSubscription && (
-                    <div className={`mb-12 max-w-2xl mx-auto p-6 rounded-[2.5rem] border ${border} ${cardBg} backdrop-blur-xl animate-scaleIn relative overflow-hidden group`}>
+                    <div className={`mb-12 max-w-2xl mx-auto p-4 rounded-[2.5rem] border ${border} ${cardBg} backdrop-blur-xl animate-scaleIn relative overflow-hidden group`}>
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                             <MdDiamond size={120} />
                         </div>

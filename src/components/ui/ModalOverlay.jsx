@@ -3,13 +3,21 @@ import { useEffect } from "react";
 
 function ModalOverlay({ children, close, bgClass = "bg-black/50 backdrop-blur-sm" }) {
     useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                close();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
         const originalStyle = window.getComputedStyle(document.body).overflow;
         document.body.style.overflow = "hidden";
 
         return () => {
+            window.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = originalStyle;
         };
-    }, []);
+    }, [close]);
 
     if (typeof document === 'undefined') return null;
 

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import axiosSecure from "../utils/axiosSecure";
 import { FiDownload, FiX, FiCalendar, FiShield } from "react-icons/fi";
+import useModalEscape from "../hooks/useModalEscape";
 
 export default function DocumentDetailsModal({ uuid, onClose, theme }) {
   const isDark = theme === "dark";
   const [doc, setDoc] = useState(null);
   const [error, setError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
+
+  useModalEscape(onClose);
 
   const fetchDetails = async () => {
     try {

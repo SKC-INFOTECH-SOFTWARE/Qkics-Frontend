@@ -1,5 +1,6 @@
 import { FaTimes, FaBuilding, FaCheck } from "react-icons/fa";
 import { resolveMedia } from "../../../components/utils/mediaUrl";
+import useModalEscape from "../../../components/hooks/useModalEscape";
 
 export default function CreateCompanyModal({
   isDark,
@@ -12,6 +13,7 @@ export default function CreateCompanyModal({
   coverPreview,
   loading,
 }) {
+  useModalEscape(closeModal);
   const text = isDark ? "text-white" : "text-black";
   const bgCard = isDark ? "bg-neutral-900" : "bg-white";
 

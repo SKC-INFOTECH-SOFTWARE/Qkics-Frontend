@@ -13,15 +13,17 @@ import {
 } from "./utils/callApi";
 
 // ── Main UI Component ─────────────────────────────────────
-export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
+export default function VideoCallComponent({ call_room_id, token, onCallEnd }) {
   const localRef = useRef(null);
   const remoteRef = useRef(null);
+  const remoteAudioRef = useRef(null);
   const screenRef = useRef(null);
+  const screenAudioRef = useRef(null);
   const chatEndRef = useRef(null);
   const fileRef = useRef(null);
 
   const lk = useLiveKit();
-  const chat = useCallChat(call_Room_id, token);
+  const chat = useCallChat(call_room_id, token);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,19 +36,28 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
   useEffect(() => {
     (async () => {
       try {
-        const roomData = await getCallRoom(call_Room_id);
+        const roomData = await getCallRoom(call_room_id);
         if (!roomData.can_join) {
-          setError("Call abhi available nahi hai ya khatam ho gaya.");
+          setError("This call is not available right now or has already ended.");
           setLoading(false);
           return;
         }
-        const history = await getCallMessages(call_Room_id);
-        const noteData = await getMyNote(call_Room_id);
+        if (!roomData.livekit_token || !roomData.livekit_url) {
+          setError("Video server is unavailable. Please try again in a moment.");
+          setLoading(false);
+          return;
+        }
+        const history = await getCallMessages(call_room_id);
+        const noteData = await getMyNote(call_room_id);
         setNote(noteData.content || "");
-        await lk.connect(roomData.sfu_url, roomData.sfu_token);
+        await lk.connect(roomData.livekit_url, roomData.livekit_token);
         chat.connect(history);
-        if (roomData.remaining_seconds) {
-          setRemaining(roomData.remaining_seconds);
+        if (roomData.scheduled_end) {
+          const secs = Math.max(
+            0,
+            Math.floor((new Date(roomData.scheduled_end).getTime() - Date.now()) / 1000)
+          );
+          setRemaining(secs);
         }
         setLoading(false);
       } catch (e) {
@@ -59,7 +70,7 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
       lk.disconnect();
       chat.disconnect();
     };
-  }, [call_Room_id, lk, chat]);
+  }, [call_room_id, lk.connect, chat.connect, lk.disconnect, chat.disconnect]);
 
   useEffect(() => {
     if (!remaining) return;
@@ -73,22 +84,44 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
   }, [remaining]);
 
   useEffect(() => {
-    if (localRef.current && lk.localVideoTrack) {
-      localRef.current.srcObject = new MediaStream([lk.localVideoTrack.mediaStreamTrack]);
-    }
+    const track = lk.localVideoTrack;
+    const el = localRef.current;
+    if (!track || !el) return;
+    track.attach(el);
+    return () => { track.detach(el); };
   }, [lk.localVideoTrack]);
 
   useEffect(() => {
-    if (remoteRef.current && lk.remoteVideoTrack) {
-      remoteRef.current.srcObject = new MediaStream([lk.remoteVideoTrack.mediaStreamTrack]);
-    }
+    const track = lk.remoteVideoTrack;
+    const el = remoteRef.current;
+    if (!track || !el) return;
+    track.attach(el);
+    return () => { track.detach(el); };
   }, [lk.remoteVideoTrack]);
 
   useEffect(() => {
-    if (screenRef.current && lk.screenShareTrack) {
-      screenRef.current.srcObject = new MediaStream([lk.screenShareTrack.mediaStreamTrack]);
-    }
+    const track = lk.remoteAudioTrack;
+    const el = remoteAudioRef.current;
+    if (!track || !el) return;
+    track.attach(el);
+    return () => { track.detach(el); };
+  }, [lk.remoteAudioTrack]);
+
+  useEffect(() => {
+    const track = lk.screenShareTrack;
+    const el = screenRef.current;
+    if (!track || !el) return;
+    track.attach(el);
+    return () => { track.detach(el); };
   }, [lk.screenShareTrack]);
+
+  useEffect(() => {
+    const track = lk.screenShareAudioTrack;
+    const el = screenAudioRef.current;
+    if (!track || !el) return;
+    track.attach(el);
+    return () => { track.detach(el); };
+  }, [lk.screenShareAudioTrack]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -97,9 +130,9 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
   const handleEndCall = useCallback(async () => {
     lk.disconnect();
     chat.disconnect();
-    await endCall(call_Room_id);   
+    await endCall(call_room_id);   
     onCallEnd?.();
-  }, [lk, chat, call_Room_id, onCallEnd]);
+  }, [lk, chat, call_room_id, onCallEnd]);
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -112,7 +145,7 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const msg = await uploadCallFile(call_Room_id, file);
+      const msg = await uploadCallFile(call_room_id, file);
       chat.notifyFileShared(msg);
     } catch (err) {
       alert(err.message);
@@ -120,7 +153,7 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
     e.target.value = "";
   };
 
-  const handleNoteSave = () => saveMyNote(call_Room_id, note);
+  const handleNoteSave = () => saveMyNote(call_room_id, note);
 
   const fmt = (s) => (s || s === 0) ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : "";
 
@@ -154,6 +187,8 @@ export default function VideoCallComponent({ call_Room_id, token, onCallEnd }) {
           <video ref={remoteRef} autoPlay playsInline style={{ ...styles.pip, bottom: 120, right: 12 }} />
         )}
         <video ref={localRef} autoPlay playsInline muted style={styles.pip} />
+        <audio ref={remoteAudioRef} autoPlay style={{ display: "none" }} />
+        <audio ref={screenAudioRef} autoPlay style={{ display: "none" }} />
         {remaining !== null && <div style={{...styles.timer, color: remaining < 120 ? "#ff4444" : "#fff"}}>{fmt(remaining)}</div>}
         {!lk.isConnected && <div style={styles.connecting}>Reconnecting...</div>}
       </div>
@@ -231,7 +266,7 @@ const styles = {
 
 // ── Page Wrapper ──────────────────────────────────────────
 export function VideoCallPage() {
-  const { call_Room_id } = useParams();
+  const { call_room_id } = useParams();
   const navigate = useNavigate();
   const token = getAccessToken();
 
@@ -239,13 +274,13 @@ export function VideoCallPage() {
     return <div style={styles.center}>Session expired. Please login again.</div>;
   }
 
-  if (!call_Room_id) {
+  if (!call_room_id) {
     return <div style={styles.center}>Call session ID was not found. Please join from your bookings.</div>;
   }
 
   return (
     <VideoCallComponent
-      call_Room_id={call_Room_id}
+      call_room_id={call_room_id}
       token={token}
       onCallEnd={() => navigate("/my-bookings")}
     />

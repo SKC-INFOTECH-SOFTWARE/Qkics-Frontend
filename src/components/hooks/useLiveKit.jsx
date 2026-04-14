@@ -3,91 +3,159 @@ import { Room, RoomEvent, Track, ConnectionState } from "livekit-client";
 
 export function useLiveKit() {
   const roomRef = useRef(null);
+  const connectPromiseRef = useRef(null);
 
-  const [connectionState, setConnectionState] = useState("disconnected");
+  const [connectionState, setConnectionState] = useState(ConnectionState.Disconnected);
   const [localVideoTrack, setLocalVideoTrack] = useState(null);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
+  const [remoteAudioTrack, setRemoteAudioTrack] = useState(null);
   const [screenShareTrack, setScreenShareTrack] = useState(null);
+  const [screenShareAudioTrack, setScreenShareAudioTrack] = useState(null);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 
-  const connect = useCallback(async (sfuUrl, sfuToken) => {
-    const room = new Room({
-      adaptiveStream: true,
-      dynacast: true,
-      stopLocalTrackOnUnpublish: true,
-    });
+  const connect = useCallback((livekitUrl, livekitToken) => {
+    if (connectPromiseRef.current) return connectPromiseRef.current;
 
-    room.on(RoomEvent.ConnectionStateChanged, (state) => {
-      setConnectionState(state);
-    });
+    const promise = (async () => {
+      const room = new Room({
+        adaptiveStream: true,
+        dynacast: true,
+        stopLocalTrackOnUnpublish: true,
+      });
 
-    room.on(RoomEvent.TrackSubscribed, (track, publication) => {
-      if (publication.source === Track.Source.Camera) {
-        setRemoteVideoTrack(track);
+      room.on(RoomEvent.ConnectionStateChanged, (state) => {
+        setConnectionState(state);
+      });
+
+      room.on(RoomEvent.TrackSubscribed, (track, publication) => {
+        if (publication.source === Track.Source.Camera) {
+          setRemoteVideoTrack(track);
+        } else if (publication.source === Track.Source.Microphone) {
+          setRemoteAudioTrack(track);
+        } else if (publication.source === Track.Source.ScreenShare) {
+          setScreenShareTrack(track);
+        } else if (publication.source === Track.Source.ScreenShareAudio) {
+          setScreenShareAudioTrack(track);
+        }
+      });
+
+      room.on(RoomEvent.TrackUnsubscribed, (_track, publication) => {
+        if (publication.source === Track.Source.Camera) {
+          setRemoteVideoTrack(null);
+        } else if (publication.source === Track.Source.Microphone) {
+          setRemoteAudioTrack(null);
+        } else if (publication.source === Track.Source.ScreenShare) {
+          setScreenShareTrack(null);
+        } else if (publication.source === Track.Source.ScreenShareAudio) {
+          setScreenShareAudioTrack(null);
+        }
+      });
+
+      room.on(RoomEvent.LocalTrackPublished, (publication) => {
+        if (publication.source === Track.Source.Camera) {
+          setLocalVideoTrack(publication.track || null);
+          setIsCamOn(true);
+        }
+        if (publication.source === Track.Source.Microphone) {
+          setIsMicOn(true);
+        }
+        if (publication.source === Track.Source.ScreenShare) {
+          setIsScreenSharing(true);
+        }
+      });
+
+      room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
+        if (publication.source === Track.Source.Camera) {
+          setLocalVideoTrack(null);
+          setIsCamOn(false);
+        }
+        if (publication.source === Track.Source.Microphone) {
+          setIsMicOn(false);
+        }
+        if (publication.source === Track.Source.ScreenShare) {
+          setIsScreenSharing(false);
+        }
+      });
+
+      try {
+        await room.connect(livekitUrl.trim(), livekitToken.trim());
+        await room.localParticipant.enableCameraAndMicrophone();
+
+        const camPub = room.localParticipant.getTrack(Track.Source.Camera);
+        if (camPub?.track) setLocalVideoTrack(camPub.track);
+
+        roomRef.current = room;
+        setIsMicOn(room.localParticipant.isMicrophoneEnabled);
+        setIsCamOn(room.localParticipant.isCameraEnabled);
+        return room;
+      } catch (err) {
+        connectPromiseRef.current = null;
+        try { await room.disconnect(); } catch { /* ignore */ }
+        throw err;
       }
-      if (publication.source === Track.Source.ScreenShare) {
-        setScreenShareTrack(track);
-      }
-    });
+    })();
 
-    room.on(RoomEvent.TrackUnsubscribed, (track, publication) => {
-      if (publication.source === Track.Source.Camera) {
-        setRemoteVideoTrack(null);
-      }
-      if (publication.source === Track.Source.ScreenShare) {
-        setScreenShareTrack(null);
-      }
-    });
+    connectPromiseRef.current = promise;
+    return promise;
+  }, []);
 
-    await room.connect(sfuUrl, sfuToken);
-    await room.localParticipant.enableCameraAndMicrophone();
+  const toggleMic = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    const next = !room.localParticipant.isMicrophoneEnabled;
+    await room.localParticipant.setMicrophoneEnabled(next);
+    setIsMicOn(next);
+  }, []);
 
-    const camPub = room.localParticipant.getTrack(Track.Source.Camera);
-    if (camPub?.track) {
-      setLocalVideoTrack(camPub.track);
+  const toggleCamera = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    const next = !room.localParticipant.isCameraEnabled;
+    await room.localParticipant.setCameraEnabled(next);
+    setIsCamOn(next);
+    if (!next) setLocalVideoTrack(null);
+    else {
+      const camPub = room.localParticipant.getTrack(Track.Source.Camera);
+      if (camPub?.track) setLocalVideoTrack(camPub.track);
     }
-
-    roomRef.current = room;
-    setIsMicOn(true);
-    setIsCamOn(true);
-
-    return room;
-  }, []);
-
-  const toggleMic = useCallback(() => {
-    if (!roomRef.current) return;
-    const enabled = roomRef.current.localParticipant.isMicrophoneEnabled;
-    roomRef.current.localParticipant.setMicrophoneEnabled(!enabled);
-    setIsMicOn(!enabled);
-  }, []);
-
-  const toggleCamera = useCallback(() => {
-    if (!roomRef.current) return;
-    const enabled = roomRef.current.localParticipant.isCameraEnabled;
-    roomRef.current.localParticipant.setCameraEnabled(!enabled);
-    setIsCamOn(!enabled);
   }, []);
 
   const toggleScreenShare = useCallback(async () => {
-    if (!roomRef.current) return;
-    const sharing = roomRef.current.localParticipant.isScreenShareEnabled;
-    await roomRef.current.localParticipant.setScreenShareEnabled(!sharing);
-    setIsScreenSharing(!sharing);
+    const room = roomRef.current;
+    if (!room) return;
+    const next = !room.localParticipant.isScreenShareEnabled;
+    await room.localParticipant.setScreenShareEnabled(next);
+    setIsScreenSharing(next);
   }, []);
 
-  const disconnect = useCallback(() => {
-    roomRef.current?.disconnect();
+  const disconnect = useCallback(async () => {
+    const pending = connectPromiseRef.current;
+    connectPromiseRef.current = null;
+    if (pending) {
+      try { await pending; } catch { /* ignore */ }
+    }
+    const room = roomRef.current;
     roomRef.current = null;
-    setConnectionState("disconnected");
+    if (room) {
+      try { await room.disconnect(); } catch { /* ignore */ }
+    }
+    setConnectionState(ConnectionState.Disconnected);
     setLocalVideoTrack(null);
     setRemoteVideoTrack(null);
+    setRemoteAudioTrack(null);
     setScreenShareTrack(null);
+    setScreenShareAudioTrack(null);
   }, []);
 
   useEffect(() => {
-    return () => roomRef.current?.disconnect();
+    return () => {
+      connectPromiseRef.current = null;
+      const room = roomRef.current;
+      roomRef.current = null;
+      room?.disconnect().catch(() => {});
+    };
   }, []);
 
   return {
@@ -99,7 +167,9 @@ export function useLiveKit() {
     connectionState,
     localVideoTrack,
     remoteVideoTrack,
+    remoteAudioTrack,
     screenShareTrack,
+    screenShareAudioTrack,
     isMicOn,
     isCamOn,
     isScreenSharing,

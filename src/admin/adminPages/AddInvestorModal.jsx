@@ -2,23 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import axiosSecure from "../../components/utils/axiosSecure";
 import { FaTimes, FaSearch, FaCheck } from "react-icons/fa";
 import { useAlert } from "../../context/AlertContext";
+import useClickOutside from "../../components/hooks/useClickOutside";
 
 const SearchableMultiSelect = ({ label, options, selectedIds, onChange, isDark }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchText, setSearchText] = useState("");
     const dropdownRef = useRef(null);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    useClickOutside(dropdownRef, () => setIsOpen(false));
 
     const filteredOptions = options.filter(opt =>
         opt.name.toLowerCase().includes(searchText.toLowerCase())
@@ -143,6 +134,16 @@ export default function AddInvestorModal({ isOpen, onClose, onSuccess, theme }) 
             });
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === "Escape" && isOpen) {
+                onClose();
+            }
+        };
+        window.addEventListener("keydown", handleEsc);
+        return () => window.removeEventListener("keydown", handleEsc);
+    }, [isOpen, onClose]);
 
     const fetchOptions = async () => {
         try {

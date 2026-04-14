@@ -104,7 +104,7 @@ export default function MyBookings() {
   }
 
   return (
-    <div className={`min-h-screen px-4 py-8  md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-4  md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-8 animate-fadeIn">
           <div className="max-w-xl">
@@ -218,12 +218,12 @@ export default function MyBookings() {
                     </div>
                   </div>
 
-                  {(booking.chat_room_id || booking.call_Room_id || ['CONFIRMED', 'PAID', 'COMPLETED'].includes(status.label)) && (
+                  {(booking.chat_room_id || booking.call_room_id || ['CONFIRMED', 'PAID', 'COMPLETED'].includes(status.label)) && (
                     now >= startDate ? (
                       <div className="flex flex-col gap-3">
-                        {booking.call_Room_id && (
+                        {booking.call_room_id && (
                           <button
-                            onClick={() => navigate(`/video-call/${booking.call_Room_id}`)}
+                            onClick={() => navigate(`/video-call/${booking.call_room_id}`)}
                             className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all"
                           >
                             <MdVideocam size={20} />
@@ -232,7 +232,7 @@ export default function MyBookings() {
                         )}
                         <button
                           onClick={() => navigate(booking.chat_room_id ? `/chat/${booking.chat_room_id}` : '/chat')}
-                          className={`w-full flex items-center justify-center gap-3 px-6 py-4 ${booking.call_Room_id ? 'bg-neutral-800 text-white' : 'bg-red-600 text-white'} rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all`}
+                          className={`w-full flex items-center justify-center gap-3 px-6 py-4 ${booking.call_room_id ? 'bg-neutral-800 text-white' : 'bg-red-600 text-white'} rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-600/30 hover:scale-105 active:scale-95 transition-all`}
                         >
                           <MdChatBubbleOutline size={20} />
                           Open Communication

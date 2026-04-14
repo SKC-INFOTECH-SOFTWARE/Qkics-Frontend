@@ -4,13 +4,16 @@ import axiosSecure from "../../components/utils/axiosSecure";
 import CompanyPostCard from "./components/CompanyPostCard";
 import CompanyCard from "./components/CompanyCard"; 
 import { useAlert } from "../../context/AlertContext";
-import { FaBuilding, FaThList, FaRegNewspaper } from "react-icons/fa";
+import { FaBuilding, FaThList, FaRegNewspaper, FaArrowLeft } from "react-icons/fa";
+import SponsorCard from "../../components/ui/SponsorCard";
 import ConfirmationAlert from "../../components/ui/ConfirmationAlert";
+import { useNavigate } from "react-router-dom";
 
 export default function CompanyPage() {
   const { theme, data: loggedUser } = useSelector((state) => state.user);
   const isDark = theme === "dark";
   const { showAlert } = useAlert();
+  const navigate = useNavigate();
 
   /* ----------------------------
       TABS STATE
@@ -156,15 +159,15 @@ export default function CompanyPage() {
   const text = isDark ? "text-white" : "text-black";
 
   return (
-    <div className={`min-h-screen px-4 py-8 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
-      <div className="max-w-7xl mx-auto">
+    <div className={`min-h-screen py-4 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+      <div className="max-w-7xl mx-auto px-4">
         {/* HEADER & TABS SELECTOR */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 animate-fadeIn">
           <div className="max-w-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600">
+              {/* <div className="h-10 w-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600">
                 <FaBuilding size={20} />
-              </div>
+              </div> */}
               <h1 className={`text-4xl md:text-5xl font-black tracking-tighter ${text}`}>
                 Company <span className="text-red-600">Discovery</span>
               </h1>
@@ -197,47 +200,63 @@ export default function CompanyPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          {/* TAB CONTENT: POSTS */}
+        {/* TAB CONTENT */}
+        <div className="animate-fadeIn">
+          {/* POSTS TAB */}
           {activeTab === "posts" && (
-            <div className="max-w-3xl mx-auto w-full space-y-6">
-              {posts.length > 0 ? (
-                posts.map((post, index) => {
-                  const nodeRef = posts.length === index + 1 ? lastElementRef : null;
-                  return (
-                    <div ref={nodeRef} key={post.id}>
-                      <CompanyPostCard 
-                        post={post} 
-                        isDark={isDark} 
-                        onDelete={handleDeleteClick} 
-                        isOwner={myCompanyIds.includes(post.company?.id) || post?.author?.split?.(" ")?.[0]?.trim() === loggedUser?.username} 
-                      />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* LEFT SIDEBAR (Empty for centering) */}
+              <aside className="hidden lg:block lg:col-span-3" />
+
+              {/* MAIN COLUMN (CENTER) */}
+              <div className="col-span-12 lg:col-span-6 space-y-8">
+                <div className="w-full space-y-6">
+                  {posts.length > 0 ? (
+                    posts.map((post, index) => {
+                      const nodeRef = posts.length === index + 1 ? lastElementRef : null;
+                      return (
+                        <div ref={nodeRef} key={post.id}>
+                          <CompanyPostCard 
+                            post={post} 
+                            isDark={isDark} 
+                            onDelete={handleDeleteClick} 
+                            isOwner={myCompanyIds.includes(post.company?.id) || post?.author?.split?.(" ")?.[0]?.trim() === loggedUser?.username} 
+                          />
+                        </div>
+                      );
+                    })
+                  ) : (
+                    !loadingPosts && (
+                      <div className="text-center py-24 animate-fadeIn glass rounded-3xl border border-dashed border-red-500/10">
+                        <FaRegNewspaper size={48} className="mx-auto mb-6 opacity-10 text-red-500" />
+                        <p className={`text-lg font-bold opacity-30 ${text}`}>No company posts discovered yet.</p>
+                        <p className={`text-[10px] uppercase font-black tracking-widest opacity-20 mt-2 ${text}`}>Post insights to start the conversation</p>
+                      </div>
+                    )
+                  )}
+                  {loadingPosts && (
+                    <div className="flex flex-col items-center justify-center py-12 gap-4">
+                      <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30">Synchronizing Posts...</p>
                     </div>
-                  );
-                })
-              ) : (
-                !loadingPosts && (
-                  <div className="text-center py-24 animate-fadeIn glass rounded-3xl border border-dashed border-red-500/10">
-                    <FaRegNewspaper size={48} className="mx-auto mb-6 opacity-10 text-red-500" />
-                    <p className={`text-lg font-bold opacity-30 ${text}`}>No company posts discovered yet.</p>
-                    <p className={`text-[10px] uppercase font-black tracking-widest opacity-20 mt-2 ${text}`}>Post insights to start the conversation</p>
-                  </div>
-                )
-              )}
-              {loadingPosts && (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                  <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-30">Synchronizing Posts...</p>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* RIGHT SIDEBAR (ADS) */}
+              <aside className="hidden lg:block lg:col-span-3">
+                  <div className="sticky top-24 space-y-8">
+                      <SponsorCard isDark={isDark} />
+                  </div>
+              </aside>
             </div>
           )}
 
-          {/* TAB CONTENT: COMPANIES */}
+          {/* COMPANIES TAB */}
           {activeTab === "companies" && (
-            <>
+            <div className="animate-fadeIn">
               {companies.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fadeIn">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {companies.map((company, index) => {
                     const nodeRef = companies.length === index + 1 ? lastElementRef : null;
                     return (
@@ -262,7 +281,7 @@ export default function CompanyPage() {
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-30">Gathering Intelligence...</p>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
 

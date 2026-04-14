@@ -1,13 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { API_BASE_URL } from "../../config/api";
 
-export function useCallChat(call_Room_id, token) {
+export function useCallChat(call_room_id, token) {
   const wsRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
 
   const connect = useCallback((initialMessages = []) => {
-    if (!call_Room_id || !token) return;
+    if (!call_room_id || !token) return;
     setMessages(initialMessages);
     
     try {
@@ -15,7 +15,7 @@ export function useCallChat(call_Room_id, token) {
       const domain = urlObj.host;
       const proto = urlObj.protocol === "https:" ? "wss" : "ws";
       
-      const url = `${proto}://${domain}/ws/calls/${call_Room_id}/?token=${token}`;
+      const url = `${proto}://${domain}/ws/calls/${call_room_id}/?token=${token}`;
       const ws = new WebSocket(url);
 
       ws.onmessage = (event) => {
@@ -49,7 +49,7 @@ export function useCallChat(call_Room_id, token) {
     } catch (err) {
       console.error("WebSocket connection error:", err);
     }
-  }, [call_Room_id, token]);
+  }, [call_room_id, token]);
 
   const sendMessage = useCallback((text) => {
     if (!text.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;

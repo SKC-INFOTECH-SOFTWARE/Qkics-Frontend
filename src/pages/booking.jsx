@@ -99,7 +99,7 @@ export default function Booking() {
   }
 
   return (
-    <div className={`min-h-screen px-4 py-8 max-w-7xl mx-auto md:pb-12 ${isDark ? "text-white" : "text-black"}`}>
+    <div className={`min-h-screen px-4 py-4 max-w-7xl mx-auto md:pb-12 ${isDark ? "text-white" : "text-black"}`}>
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">

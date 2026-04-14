@@ -9,6 +9,7 @@ import axiosSecure from "../../components/utils/axiosSecure";
 import { resolveMedia } from "../../components/utils/mediaUrl";
 import CompanyPosts from "./components/CompanyPosts";
 import CompanyMembers from "./components/CompanyMembers";
+import SponsorCard from "../../components/ui/SponsorCard";
 import { useAlert } from "../../context/AlertContext";
 
 export default function PublicCompanyProfile() {
@@ -191,33 +192,35 @@ export default function PublicCompanyProfile() {
     <div className={`min-h-screen px-4 py-8 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-6xl mx-auto">
         
-        {/* Back Button */}
-        <div className="mb-6 flex justify-between items-center">
-            <button 
-                onClick={() => navigate(-1)}
-                className={`flex items-center gap-2 group transition-all ${isDark ? "text-neutral-400 hover:text-white" : "text-neutral-500 hover:text-black"}`}
-            >
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center border transition-all ${isDark ? "border-white/10 group-hover:bg-white/5" : "border-black/5 group-hover:bg-black/5"}`}>
-                    <FaArrowLeft size={12} />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Back</span>
-            </button>
-
-            {isOwner && !editMode && (
-              <button
-                onClick={() => setEditMode(true)}
-                className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/20 hover:scale-105 active:scale-95 transition-all"
-              >
-                <FaEdit size={14} />
-                Edit Profile
-              </button>
-            )}
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* MAIN COLUMN (LEFT) */}
           <div className="lg:col-span-8">
+            {/* Mobile Header Controls */}
+            {isOwner && !editMode && (
+              <div className="lg:hidden flex justify-end items-center mb-6">
+                  <button
+                    onClick={() => setEditMode(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/20"
+                  >
+                    <FaEdit size={12} /> Edit
+                  </button>
+              </div>
+            )}
+
+            {/* Desktop Edit Button - Floating above main column */}
+            {isOwner && !editMode && (
+              <div className="hidden lg:flex justify-end mb-4">
+                  <button
+                    onClick={() => setEditMode(true)}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/20 hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <FaEdit size={14} />
+                    Edit Profile
+                  </button>
+              </div>
+            )}
+
             {editMode ? (
               /* EDIT MODE CONTENT */
               <div className={`overflow-hidden rounded-3xl shadow-xl ${bgCard} border ${isDark ? 'border-white/5' : 'border-black/5'}`}>
@@ -439,6 +442,11 @@ export default function PublicCompanyProfile() {
                      </div>
                  </div>
                  <FaBuilding size={80} className="absolute -right-4 -bottom-4 opacity-10 -rotate-12" />
+            </div>
+
+            {/* SPONSOR/ADS SECTION */}
+            <div className="pt-2">
+                <SponsorCard isDark={isDark} />
             </div>
           </div>
         </div>

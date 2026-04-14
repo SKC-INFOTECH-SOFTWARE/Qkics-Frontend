@@ -11,7 +11,7 @@ export default function CompanyCard({ company, isDark }) {
   return (
     <Link 
       to={`/company/${identifier}`}
-      className={`group relative flex flex-col h-full overflow-hidden rounded-3xl border p-5 transition-all duration-500 hover:shadow-2xl cursor-pointer ${bgCard}`}
+      className={`group relative flex flex-col h-full overflow-hidden rounded-3xl border p-3 transition-all duration-500 hover:shadow-2xl cursor-pointer ${bgCard}`}
     >
       {/* Hover Background Accent */}
       <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-linear-to-br ${isDark ? "from-red-600/5 to-orange-600/5" : "from-red-50 to-orange-50"}`} />
@@ -33,7 +33,7 @@ export default function CompanyCard({ company, isDark }) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 pt-0.5">
+        <div className="flex-1 min-w-0 ">
           <div className="flex justify-between items-start mb-1">
             <h3 className={`text-lg font-black tracking-tight truncate group-hover:text-red-600 transition-colors ${text}`}>
               {company.name}
@@ -44,17 +44,17 @@ export default function CompanyCard({ company, isDark }) {
           </div>
 
           {company.industry && (
-            <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest mb-3 ${isDark ? "text-red-400" : "text-red-600"}`}>
+            <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest  ${isDark ? "text-red-400" : "text-red-600"}`}>
               <FaBriefcase size={10} />
               {company.industry}
             </div>
           )}
 
-          <p className={`text-xs truncate leading-relaxed mb-4 font-medium opacity-60 ${text}`}>
+          <p className={`text-xs truncate leading-relaxed mb-1 font-medium opacity-60 ${text}`}>
             {company.description || "No description provided."}
           </p>
 
-          <div className="mt-auto pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+          <div className="mt-auto pt-1 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
             {company.location && (
               <div className="flex items-center gap-2">
                 <FaMapMarkerAlt size={10} className="text-red-500 opacity-60" />

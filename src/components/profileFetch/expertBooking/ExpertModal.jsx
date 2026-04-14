@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useThemeClasses from "../../utils/useThemeClasses";
 import { useSelector } from "react-redux";
+import useModalEscape from "../../hooks/useModalEscape";
 import { resolveProfileRoute } from "../../utils/getUserProfileRoute";
 
 
@@ -15,6 +16,8 @@ export default function ExpertModal({
 
   const navigate = useNavigate();
   const loggedUser = useSelector((state) => state.user.data);
+
+  useModalEscape(onClose);
 
   // ✅ Use shared utility — no duplicate navigation logic
   const goToProfile = () => {

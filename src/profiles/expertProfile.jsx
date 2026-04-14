@@ -383,7 +383,7 @@ export default function ExpertProfile({
 
               {/* EDIT BUTTON */}
               {!readOnly && (
-                <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-black text-white rounded-xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-red-600 z-20">
+                <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-black text-white rounded-2xl flex items-center justify-center shadow-xl cursor-pointer hover:bg-red-600 z-20">
                   <MdEdit size={16} />
                   <input
                     type="file"

@@ -12,6 +12,7 @@ import useTags from "../components/hooks/useTags";
 import useLike from "../components/hooks/useLike";
 import { useConfirm } from "../context/ConfirmContext";
 import { useAlert } from "../context/AlertContext";
+import useModalEscape from "../components/hooks/useModalEscape";
 import { getAccessToken } from "../redux/store/tokenManager";
 import { resolveProfileRoute } from "../components/utils/getUserProfileRoute";
 import axiosSecure from "../components/utils/axiosSecure";
@@ -57,6 +58,20 @@ export default function SearchResultsPage() {
     const [showAllTags, setShowAllTags] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
+
+    useModalEscape(() => {
+        if (previewImage) { 
+            setPreviewImage(null); 
+            setZoom(1); 
+        } else if (showEditModal) {
+            setShowEditModal(false);
+            setEditingPost(null);
+        } else if (showLogin) {
+            setShowLogin(false);
+        } else if (showSignup) {
+            setShowSignup(false);
+        }
+    }, !!(previewImage || showEditModal || showLogin || showSignup));
 
     // HOOKS
     const { handleLike } = useLike(

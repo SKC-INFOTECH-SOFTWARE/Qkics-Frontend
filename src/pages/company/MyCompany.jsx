@@ -159,20 +159,55 @@ export default function MyCompany() {
   const text = isDark ? "text-white" : "text-black";
   const bgCard = isDark ? "bg-neutral-900" : "bg-white";
 
-  // MyCompany page only shows companies from /v1/companies/my/ — so the logged-in
-  // user is always the owner of every company in allCompanies.
-  // We set isOwner=true whenever the displayed company is in our fetched list.
-  const isOwner = Boolean(
-    company && (
-        (company.owner?.uuid === loggedUser?.uuid) || 
-        (company.owner === loggedUser?.uuid) ||
-        (company.owner === loggedUser?.id) ||
-        (company.owner?.id === loggedUser?.id)
-    )
-  );
+  // Permission logic - robust check similar to PublicCompanyProfile
+  const { isOwner, isMember } = (() => {
+    if (!company || !loggedUser) return { isOwner: false, isMember: false };
+
+    const currentUsername = loggedUser.username;
+    const currentUuid     = loggedUser.uuid;
+    const currentId       = loggedUser.id;
+
+    // 1. Check Owner
+    let ownerFlag = false;
+    const owner   = company.owner;
+
+    if (typeof owner === 'object' && owner !== null) {
+      ownerFlag = (
+        owner.uuid === currentUuid || 
+        owner.id   === currentId || 
+        owner.username === currentUsername
+      );
+    } else if (typeof owner === 'string' || typeof owner === 'number') {
+      const ownerStr = String(owner);
+      ownerFlag = (
+        ownerStr === String(currentUuid) || 
+        ownerStr === String(currentId) || 
+        ownerStr === currentUsername ||
+        ownerStr.split(" ")[0] === currentUsername
+      );
+    }
+
+    // 2. Check Members List
+    const memberFlag = (company.members || []).some(m => {
+      const u = m.user;
+      if (typeof u === 'object' && u !== null) {
+        return u.uuid === currentUuid || u.id === currentId || u.username === currentUsername;
+      }
+      if (typeof u === 'string' || typeof u === 'number') {
+        const uStr = String(u);
+        return uStr === String(currentUuid) || uStr === String(currentId) || uStr === currentUsername;
+      }
+      return false;
+    });
+
+    return { isOwner: ownerFlag, isMember: memberFlag };
+  })();
+
+  // On "My Company" page, we allow editing if you are an owner OR member
+  const canEdit = isOwner || isMember;
 
   return (
-    <div className={`min-h-screen px-4 py-8 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
+    <div className={`min-h-screen px-4 py-4 md:px-8 ${isDark ? "bg-[#0a0a0a]" : "bg-[#f8f9fa]"}`}>
       <div className="max-w-6xl mx-auto">
         
         {/* Header with Create Button */}
@@ -384,25 +419,13 @@ export default function MyCompany() {
                                   {company.industry}
                                 </div>
                               )}
-                              {/* {company.location && (
-                                <div className={`flex items-center gap-1.5 text-xs ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
-                                  <FaMapMarkerAlt size={12} />
-                                  {company.location}   
-                                </div>
-                              )}
-                              {company.website && (
-                                <a href={company.website} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-1.5 text-xs hover:underline ${isDark ? "text-blue-400" : "text-blue-600"}`}>
-                                  <FaGlobe size={12} />
-                                  Website
-                                </a>
-                              )} */}
                             </div>
                           </div>
                           
-                          {isOwner && (
+                          {canEdit && (
                             <button
                               onClick={() => setEditMode(true)}
-                              className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5  text-xs font-bold uppercase tracking-widest rounded-xl transition-colors"
+                              className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white shadow-lg shadow-red-600/20 hover:scale-105 active:scale-95 text-xs font-bold uppercase tracking-widest rounded-xl transition-all"
                             >
                               <FaEdit />
                               Edit

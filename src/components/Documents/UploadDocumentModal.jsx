@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axiosSecure from "../utils/axiosSecure";
 import { FiX, FiUpload, FiFileText } from "react-icons/fi";
+import useModalEscape from "../hooks/useModalEscape";
 
 export default function UploadDocumentModal({ isOpen, onClose, theme, onSuccess }) {
     const isDark = theme === "dark";
@@ -11,6 +12,8 @@ export default function UploadDocumentModal({ isOpen, onClose, theme, onSuccess 
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
+
+    useModalEscape(onClose, isOpen);
 
     if (!isOpen) return null;
 

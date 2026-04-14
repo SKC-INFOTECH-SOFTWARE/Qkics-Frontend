@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+  import { useState, useEffect, useRef } from "react";
 import axiosSecure from "../../components/utils/axiosSecure";
 import { useAlert } from "../../context/AlertContext";
 import { FaSearch, FaCheck } from "react-icons/fa";
 import { FiEdit, FiCheck as FiCheckIcon, FiX } from "react-icons/fi";
+import useClickOutside from "../../components/hooks/useClickOutside";
 
 import { useSelector } from "react-redux";
 
@@ -302,17 +303,7 @@ function MultiSelect({ label, items, selected, editMode, onToggle, labelClass })
   const theme = useSelector((state) => state.user.theme);
   const isDark = theme === "dark";
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  useClickOutside(dropdownRef, () => setIsOpen(false));
 
   const filteredOptions = items.filter((opt) =>
     opt.name.toLowerCase().includes(searchText.toLowerCase())

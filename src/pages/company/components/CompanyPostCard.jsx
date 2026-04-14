@@ -38,12 +38,12 @@ export default function CompanyPostCard({ post, isDark, onDelete, onEdit, isOwne
     const media = post.media || (post.image ? [{ file: post.image, media_type: "image" }] : []);
 
     return (
-        <article className={`overflow-hidden rounded-3xl border ${isDark ? "bg-neutral-900 border-white/5" : "bg-white border-black/5"} shadow-xl shadow-black/5 animate-fadeIn`}>
-            <header className="p-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+        <article className={`premium-card overflow-hidden ${isDark ? "bg-neutral-900" : "bg-white"} animate-fadeIn`}>
+            <header className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4">
                     <Link 
                         to={`/company/${post.company?.slug}`}
-                        className="h-10 w-10 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center border border-black/5 dark:border-white/5 hover:scale-105 transition-transform"
+                        className="h-12 w-12 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center border border-black/5 dark:border-white/5 hover:scale-105 transition-transform"
                     >
                         {post.company?.logo ? (
                             <img src={resolveMedia(post.company.logo)} alt="Company Logo" className="w-full h-full object-cover" />
@@ -54,7 +54,7 @@ export default function CompanyPostCard({ post, isDark, onDelete, onEdit, isOwne
                     <div>
                         <Link 
                             to={`/company/${post.company?.slug}`}
-                            className={`text-xs font-black uppercase tracking-widest hover:text-red-600 transition-colors ${text}`}
+                            className={`text-sm font-black uppercase tracking-widest hover:text-red-600 transition-colors ${text}`}
                         >
                             {post.company?.name || "Organisation Insight"}
                         </Link>
@@ -110,9 +110,9 @@ export default function CompanyPostCard({ post, isDark, onDelete, onEdit, isOwne
             </header>
 
             {/* Content Section */}
-            <div className="px-5 pb-5">
+            <div className="px-6 pb-6">
                 {post.title && (
-                    <h2 className={`text-xl font-black tracking-tighter mb-2 leading-tight ${text}`}>
+                    <h2 className={`text-lg font-bold mb-1 leading-tight tracking-tight ${text}`}>
                         {post.title}
                     </h2>
                 )}
@@ -123,7 +123,7 @@ export default function CompanyPostCard({ post, isDark, onDelete, onEdit, isOwne
 
                 {/* Media Gallery */}
                 {media.length > 0 && (
-                    <div className="relative mt-4 overflow-hidden rounded-2xl group bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center min-h-[250px] max-h-[500px]">
+                    <div className="relative mt-4 overflow-hidden rounded-2xl group bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center min-h-[300px] max-h-[500px]">
                         {media.length > 1 && (
                             <div className="absolute top-4 right-4 z-30 bg-black/60 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-md">
                                 {currentMediaIndex + 1} / {media.length}

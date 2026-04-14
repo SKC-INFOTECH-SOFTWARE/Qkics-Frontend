@@ -153,7 +153,7 @@ function App() {
               <Route path="/post/:id/comments"          element={<Comments />} />
               <Route path="/book-session/:expertUuid"   element={<BookSession />} />
               <Route path="/book-session/investor/:investorUuid" element={<InvestorBookSession />} />
-              <Route path="/video-call/:call_Room_id?" element={<VideoCallPage />} />
+              <Route path="/video-call/:call_room_id?" element={<VideoCallPage />} />
             </Route>
 
             {/* ── Expert only ───────────────────────────────────────────── */}

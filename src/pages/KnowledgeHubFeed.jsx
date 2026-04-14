@@ -121,7 +121,7 @@ function KnowledgeHubFeed() {
     };
 
     return (
-        <div className={`min-h-screen ${bg} md:pb-10 pt-10 lg:pt-0`}>
+        <div className={`min-h-screen ${bg} md:pb-10  lg:pt-0`}>
             <div className="max-w-7xl mx-auto px-4 grid grid-cols-12 gap-8">
 
                 {/* LEFT SIDEBAR */}

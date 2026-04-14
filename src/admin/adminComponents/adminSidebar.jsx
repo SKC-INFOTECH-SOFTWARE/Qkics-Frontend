@@ -12,7 +12,9 @@ import {
   FaUserShield,
   FaAppStoreIos,
   FaBullhorn,
-  FaBuilding
+  FaBuilding,
+  FaChevronLeft,
+  FaChevronRight
 } from "react-icons/fa";
 import { MdFeed } from "react-icons/md";
 
@@ -21,8 +23,6 @@ export default function AdminSidebar({ role, isOpen, setIsOpen, theme }) {
 
   return (
     <aside
-      onMouseEnter={() => !isOpen && setIsOpen(true)}
-      onMouseLeave={() => isOpen && setIsOpen(false)}
       className={`
         relative h-screen flex flex-col transition-all duration-200 ease-in-out z-30 shrink-0
         border-r
@@ -79,6 +79,27 @@ export default function AdminSidebar({ role, isOpen, setIsOpen, theme }) {
           </div>
         )}
       </nav>
+
+      {/* TOGGLE BUTTON SECTION */}
+      <div className={`px-1 py-1 border transition-colors duration-200 ${isDark ? "border-gray-800" : "border-gray-100"}`}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`
+            w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group
+            ${isDark 
+              ? "text-gray-400 hover:bg-gray-800/50 hover:text-gray-200" 
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}
+            ${!isOpen ? "justify-center" : ""}
+          `}
+        >
+          <span className="text-[1.1rem]">
+            {isOpen ? <FaChevronLeft /> : <FaChevronRight />}
+          </span>
+          {isOpen && (
+            <span className="text-[0.9rem] font-medium">Collapse</span>
+          )}
+        </button>
+      </div>
 
       {/* FOOTER SECTION */}
       <div className={`p-4 border-t transition-colors duration-200 ${isDark ? "border-gray-800" : "border-gray-100"}`}>

@@ -13,11 +13,21 @@ export default function useClickOutside(ref, callback) {
                 callback();
             }
         }
-        // Bind the event listener
+
+        function handleKeyDown(event) {
+            if (event.key === "Escape") {
+                callback();
+            }
+        }
+
+        // Bind the event listeners
         document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyDown);
+        
         return () => {
-            // Unbind the event listener on clean up
+            // Unbind the event listeners on clean up
             document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
         };
     }, [ref, callback]);
 }

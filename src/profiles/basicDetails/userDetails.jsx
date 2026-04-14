@@ -121,7 +121,7 @@ export default function UserDetails({
         <div className="md:col-span-2">
           <label className={labelClass}>Email Address</label>
           <input
-            value={user.email || reduxUser?.email || ""}
+            value={isOwnProfile ? (user.email || reduxUser?.email || "") : (user.email || "Private")}
             disabled
             className={`${inputClass(false)} cursor-not-allowed opacity-50`}
           />
@@ -132,12 +132,15 @@ export default function UserDetails({
           <input
             value={
               editMode
-                ? editData.phone || reduxUser?.phone || user.phone || ""
-                : user.phone || reduxUser?.phone || ""
+                ? editData.phone || ""
+                : isOwnProfile 
+                  ? (user.phone || reduxUser?.phone || "") 
+                  : (user.phone || "Not Shared")
             }
             disabled={!editMode}
             onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
             className={inputClass(editMode)}
+            placeholder={editMode ? "Enter phone number" : ""}
           />
         </div>
 
